@@ -1,0 +1,124 @@
+extends ../../../../../sites/root/cms/view/v1/layout.pug
+
+include includes/sidebar.pug
+block content
+  .container
+    .row
+      .col-md-12
+        #subjectEditor
+        #materialEditor
+        #dependencyEditor
+        #tagEditor
+append scripts
+  // Dependencies for NC Frameworks
+  script(src='/assets/vendor/intercooler/intercooler-1.1.2.min.js')
+  script(src='/assets/vendor/lodash/lodash.min.js')
+  script(src='/assets/vendor/moment/moment.js')
+  script(src='/assets/vendor/datatables/js/jquery.dataTables.js')
+  script(src="/assets/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js")
+  script(src='/assets/vendor/datatables-plugins/dataTables.bootstrap.js')
+  script(src='/assets/vendor/datatables-responsive/dataTables.responsive.js')
+  script(src='/assets/js/nc-frameworks.js')
+  script(src=rootifyPath('assets/js/test.js'))
+  script.
+    const subjectHeader = {
+      table: {
+        ui: [
+          {id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false},
+          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        ],
+        conf: {
+          orderBy: 'lastModified',
+          onRowClickListener: null
+        }
+      },
+      buttons: {
+        ui: [
+          {desc: 'Add', postTo: 'addSubject'},
+          {desc: 'Delete', postTo: 'deleteSubject'}
+        ]
+      }
+    }
+    $('#subjectEditor').NCFrameworks(subjectHeader)
+
+    const materialHeader = {
+      table: {
+        ui: [
+          {id: 'material', desc: 'Material', dataTable: true, input: 'text', disabled: false},
+          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        ],
+        conf: {
+          orderBy: 'lastModified',
+          onRowClickListener: null
+        }
+      },
+      buttons: {
+        ui: [
+          {desc: 'Add', postTo: 'addMaterial'},
+          {desc: 'Delete', postTo: 'deleteMaterial'}
+        ]
+      }
+    }
+    $('#materialEditor').NCFrameworks(materialHeader)
+
+    const dependencyHeader = {
+      table: {
+        ui: [
+          {id: 'dependency', desc: 'Dependency', dataTable: true, input: 'text', disabled: false},
+          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        ],
+        conf: {
+          orderBy: 'lastModified',
+          onRowClickListener: null
+        }
+      },
+      buttons: {
+        ui: [
+          {desc: 'Add', postTo: 'addDependency'},
+          {desc: 'Delete', postTo: 'deleteDependency'}
+        ]
+      }
+    }
+    $('#dependencyEditor').NCFrameworks(dependencyHeader)
+
+    const tagHeader = {
+      table: {
+        ui: [
+          {id: 'tag', desc: 'Tag', dataTable: true, input: 'text', disabled: false},
+          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        ],
+        conf: {
+          orderBy: 'lastModified',
+          onRowClickListener: null
+        }
+      },
+      buttons: {
+        ui: [
+          {desc: 'Add', postTo: 'addMaterial'},
+          {desc: 'Delete', postTo: 'deleteMaterial'}
+        ]
+      }
+    }
+    $('#tagEditor').NCFrameworks(tagHeader)
+
+    /*
+    Library's inner working:
+    1. Create .input .button and .table inside of the parent div
+    2. Assemble inputs, buttons, and table.
+        Inputs are surrounded by a form.
+        When pressed, the button POST the form into the specified path.
+        On POST success, table is refreshed
+    3. API returned:
+      {
+        refreshTable: fn,
+        loadURL: fn(url)
+      }
+
+    Usage:
+    1.
+
+    */

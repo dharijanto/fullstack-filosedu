@@ -1,0 +1,5 @@
+{ "type": "app"
+, "templateId": "filosedu"
+, "templateFriendlyName": "Online Mathematics Exercise"
+, "controllerData": ["globalDbService"]
+}
