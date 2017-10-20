@@ -1,124 +1,205 @@
 extends ../../../../../sites/root/cms/view/v1/layout.pug
 
 include includes/sidebar.pug
+
+append links
+  link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css")
+
 block content
   .container
     .row
       .col-md-12
         #subjectEditor
-        #materialEditor
-        #dependencyEditor
+    .row
+      .col-md-6
+        #topicEditor
+      .col-md-6
+        #topicDependencyEditor
+    .row
+      .col-md-6
+        #subtopicEditor
+      .col-md-6
         #tagEditor
+
 append scripts
-  // Dependencies for NC Frameworks
-  script(src='/assets/vendor/intercooler/intercooler-1.1.2.min.js')
-  script(src='/assets/vendor/lodash/lodash.min.js')
-  script(src='/assets/vendor/moment/moment.js')
-  script(src='/assets/vendor/datatables/js/jquery.dataTables.js')
-  script(src="/assets/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js")
-  script(src='/assets/vendor/datatables-plugins/dataTables.bootstrap.js')
-  script(src='/assets/vendor/datatables-responsive/dataTables.responsive.js')
-  script(src='/assets/js/nc-frameworks.js')
-  script(src=rootifyPath('assets/js/test.js'))
+  // NC Input Library
+  script(src=rootifyPath('assets/js/bundle.js'))
   script.
-    const subjectHeader = {
-      table: {
-        ui: [
-          {id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false},
-          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
-          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
-        ],
-        conf: {
-          orderBy: 'lastModified',
-          onRowClickListener: null
+    $(document).ready(function () {
+      const subjectHeader = {
+        design: {
+          title: 'Subject',
+          panelColor: 'green'
+        },
+        table: {
+          ui: [
+            {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+            {id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false},
+            {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+            {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'}
+          ],
+          conf: {
+            orderBy: 'lastModified',
+            getURL: getSubjectURL,
+            onRowClicked: onSubjectClicked
+          }
+        },
+        buttons: {
+          ui: [
+            {id: 'add', desc: 'Add', postTo: "#{rootifyPath('add/Subject')}"},
+            {id: 'edit', desc: 'Edit', postTo: "#{rootifyPath('edit/Subject')}"},
+            {id: 'delete', desc: 'Delete', postTo: "#{rootifyPath('delete/Subject')}"}
+          ]
         }
-      },
-      buttons: {
-        ui: [
-          {desc: 'Add', postTo: 'addSubject'},
-          {desc: 'Delete', postTo: 'deleteSubject'}
-        ]
       }
-    }
-    $('#subjectEditor').NCFrameworks(subjectHeader)
 
-    const materialHeader = {
-      table: {
-        ui: [
-          {id: 'material', desc: 'Material', dataTable: true, input: 'text', disabled: false},
-          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
-          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
-        ],
-        conf: {
-          orderBy: 'lastModified',
-          onRowClickListener: null
+      const topicHeader = {
+        design: {
+          title: 'Topic'
+        },
+        table: {
+          ui: [
+            {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+            {id: 'topic', desc: 'topic', dataTable: true, input: 'text', disabled: false},
+            {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
+            {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+            {id: 'subjectId', desc: 'Subject ID', dataTable: false, input: 'hidden'}
+          ],
+          conf: {
+            orderBy: 'lastModified',
+            getURL: getTopicURL,
+            onRowClicked: onTopicClicked
+          }
+        },
+        buttons: {
+          ui: [
+            {id: 'add', desc: 'Add', postTo: "#{rootifyPath('add/Topic')}"},
+            {id: 'edit', desc: 'Edit', postTo: "#{rootifyPath('edit/Topic')}"},
+            {id: 'delete', desc: 'Delete', postTo: "#{rootifyPath('delete/Topic')}"}
+          ]
         }
-      },
-      buttons: {
-        ui: [
-          {desc: 'Add', postTo: 'addMaterial'},
-          {desc: 'Delete', postTo: 'deleteMaterial'}
-        ]
       }
-    }
-    $('#materialEditor').NCFrameworks(materialHeader)
 
-    const dependencyHeader = {
-      table: {
-        ui: [
-          {id: 'dependency', desc: 'Dependency', dataTable: true, input: 'text', disabled: false},
-          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
-          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
-        ],
-        conf: {
-          orderBy: 'lastModified',
-          onRowClickListener: null
+      const topicDependencyHeader = {
+        design: {
+          title: 'Topic Dependency'
+        },
+        table: {
+          ui: [
+            {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+            {id: 'topic', desc: 'topic', dataTable: true, input: 'text', disabled: false},
+            {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
+            {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+            {id: 'subjectId', desc: 'Subject ID', dataTable: false, input: 'hidden'}
+          ],
+          conf: {
+            orderBy: 'lastModified',
+            getURL: getTopicURL,
+            onRowClicked: onTopicClicked
+          }
+        },
+        buttons: {
+          ui: [
+            {id: 'add', desc: 'Add', postTo: "#{rootifyPath('add/TopicDependency')}"},
+            {id: 'edit', desc: 'Edit', postTo: "#{rootifyPath('edit/TopicDependency')}"},
+            {id: 'delete', desc: 'Delete', postTo: "#{rootifyPath('delete/TopicDependency')}"}
+          ]
         }
-      },
-      buttons: {
-        ui: [
-          {desc: 'Add', postTo: 'addDependency'},
-          {desc: 'Delete', postTo: 'deleteDependency'}
-        ]
       }
-    }
-    $('#dependencyEditor').NCFrameworks(dependencyHeader)
 
-    const tagHeader = {
-      table: {
-        ui: [
-          {id: 'tag', desc: 'Tag', dataTable: true, input: 'text', disabled: false},
-          {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
-          {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
-        ],
-        conf: {
-          orderBy: 'lastModified',
-          onRowClickListener: null
+      const subtopicHeader = {
+        design: {
+          title: 'Subtopic'
+        },
+        table: {
+          ui: [
+            {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+            {id: 'subtopic', desc: 'subtopic', dataTable: true, input: 'text', disabled: false},
+            {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
+            {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+            {id: 'subjectId', desc: 'Subject ID', dataTable: false, input: 'hidden'}
+          ],
+          conf: {
+            orderBy: 'lastModified',
+            getURL: getTopicURL,
+            onRowClicked: onTopicClicked
+          }
+        },
+        buttons: {
+          ui: [
+            {id: 'add', desc: 'Add', postTo: "#{rootifyPath('add/Subtopic')}"},
+            {id: 'edit', desc: 'Edit', postTo: "#{rootifyPath('edit/Subopic')}"},
+            {id: 'delete', desc: 'Delete', postTo: "#{rootifyPath('delete/Subtopic')}"}
+          ]
         }
-      },
-      buttons: {
-        ui: [
-          {desc: 'Add', postTo: 'addMaterial'},
-          {desc: 'Delete', postTo: 'deleteMaterial'}
-        ]
-      }
-    }
-    $('#tagEditor').NCFrameworks(tagHeader)
-
-    /*
-    Library's inner working:
-    1. Create .input .button and .table inside of the parent div
-    2. Assemble inputs, buttons, and table.
-        Inputs are surrounded by a form.
-        When pressed, the button POST the form into the specified path.
-        On POST success, table is refreshed
-    3. API returned:
-      {
-        refreshTable: fn,
-        loadURL: fn(url)
       }
 
-    Usage:
-    1.
+      const tagHeader = {
+        design: {
+          title: 'Tag'
+        },
+        table: {
+          ui: [
+            {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+            {id: 'tag', desc: 'Tag', dataTable: true, input: 'text', disabled: false},
+            {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
+            {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+            {id: 'topicId', desc: 'Topic ID', dataTable: true, input: 'hidden'}
+          ],
+          conf: {
+            orderBy: 'lastModified',
+            getURL: getTagURL,
+            onRowClicked: onTagClicked
+          }
+        },
+        buttons: {
+          ui: [
+            {id: 'add', desc: 'Add', postTo: "#{rootifyPath('add/Tag')}"},
+            {id: 'edit', desc: 'Edit', postTo: "#{rootifyPath('edit/Tag')}"},
+            {id: 'delete', desc: 'Delete', postTo: "#{rootifyPath('delete/Tag')}"}
+          ]
+        }
+      }
 
-    */
+      function getSubjectURL () {
+        console.log('getSubjectURL()')
+        return "#{rootifyPath('getSubjects')}"
+      }
+
+      function getTopicURL () {
+        console.log('getTopicURL()')
+        return "#{rootifyPath('getTopics')}" + '?subject=' + selectedSubject
+      }
+
+      function getTagURL () {
+        console.log('getTagURL()')
+        return "#{rootifyPath('getTags')}" + '?topic=' + selectedTopic
+      }
+
+      var selectedSubject = null
+      function onSubjectClicked (data) {
+        console.log('onSubjectClicked(): ' + JSON.stringify(data))
+        selectedSubject = data.id
+        topicNcInput.reloadTable()
+      }
+
+      var selectedTopic = null
+      function onTopicClicked (data) {
+        console.log('onTopicClicked(): ' + JSON.stringify(data))
+        selectedTopic = data.id
+        tagNcInput.reloadTable()
+      }
+
+      function onTagClicked (data) {
+        console.log('onTagClicked(): ' + JSON.stringify(data))
+        //- tagNcInput.reloadTable()
+      }
+
+      const subjectNcInput = $('#subjectEditor').NCInputLibrary(subjectHeader)
+      const topicNcInput = $('#topicEditor').NCInputLibrary(topicHeader)
+      const topicDependencyInput = $('#topicDependencyEditor').NCInputLibrary(topicDependencyHeader)
+      const subtopicNcInput = $('#subtopicEditor').NCInputLibrary(subtopicHeader)
+      const tagNcInput = $('#tagEditor').NCInputLibrary(tagHeader)
+      // Initialze the data
+      subjectNcInput.reloadTable()
+    })

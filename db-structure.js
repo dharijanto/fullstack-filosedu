@@ -1,26 +1,52 @@
 const Sequelize = require('sequelize')
-  
+
 function addTables (sequelize, models) {
   // models.User = sequelize.define('User', ...)
-  models.Course = sequelize.define('course', {
+
+  models.Subject = sequelize.define('subject', {
+
+  })
+  models.Subject = sequelize.define('subject', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: Sequelize.STRING, unique: true},
+    subject: {type: Sequelize.STRING, unique: true},
     description: {type: Sequelize.STRING}
   })
 
-  models.CourseDependency = sequelize.define('courseDependency', {
+  models.Topic = sequelize.define('topic', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    courseId: {
+    topic: {type: Sequelize.STRING, unique: true},
+    description: {type: Sequelize.STRING}
+  })
+  models.Topic.belongsTo(models.Subject)
+
+  models.Subtopic = sequelize.define('subtopic', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    subtopic: {type: Sequelize.STRING, unique: true},
+    description: {type: Sequelize.STRING},
+    data: {type: Sequelize.TEXT}
+  })
+  models.Subtopic.belongsTo(models.Topic)
+
+  models.Tag = sequelize.define('tag', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    tag: {type: Sequelize.STRING, unique: true},
+    description: {type: Sequelize.STRING}
+  })
+  models.Tag.belongsTo(models.Topic)
+
+  models.TopicDependency = sequelize.define('topicDependency', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    topicId: {
       type: Sequelize.INTEGER,
       references: {
-        model: models.Course,
+        model: models.Topic,
         key: 'id'
       }
     },
     dependencyId: {
       type: Sequelize.INTEGER,
       references: {
-        model: models.Course,
+        model: models.Topic,
         key: 'id'
       }
     }

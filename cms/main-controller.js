@@ -1,5 +1,6 @@
 const path = require('path')
 const log = require('npmlog')
+const moment = require('moment')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 
 class DynamicHostCMSController extends BaseController {
@@ -15,6 +16,26 @@ class DynamicHostCMSController extends BaseController {
 
     this.routeGet('/', (req, res, next) => {
       res.render('index')
+    })
+
+    this.routeGet('/getSubjects', (req, res, next) => {
+      res.json({
+        status: true,
+        data: [
+          {'id': 3, subject: 'Hello', description: 'My Chonny!', lastModified: moment().format()},
+          {'id': 3, subject: 'World', description: 'My Hello!', lastModified: moment().format()}
+        ]
+      })
+    })
+
+    this.routeGet('/getTopics', (req, res, next) => {
+      const subjectId = req.query.subject
+      res.json({
+        status: true,
+        data: [
+          {subjectId, id: 1, topic: `Topic for ${subjectId}`, description: `This data is generated because ${subjectId} was clicked`, lastModified: moment().format()}
+        ]
+      })
     })
   }
 
