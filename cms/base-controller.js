@@ -7,6 +7,7 @@ class BaseController {
     this._siteHash = site.hash
     // Since the path is prefixed with /:hash/, we don't wanna handle it manually everytime, hence we use two routers
     this._logTag = logTag
+    this._db = db
     this._router = express()
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
@@ -32,6 +33,10 @@ class BaseController {
 
   getRouter () {
     return this._router
+  }
+
+  getDb () {
+    return this._db
   }
 
   _extendInterceptors (fns) {
