@@ -21,16 +21,6 @@ class DynamicHostCMSController extends BaseController {
       res.render('index')
     })
 
-    this.routeGet('/getSubjects', (req, res, next) => {
-      res.json({
-        status: true,
-        data: [
-          {'id': 3, subject: 'Hello', description: 'My Chonny!', lastModified: moment().format()},
-          {'id': 3, subject: 'World', description: 'My Hello!', lastModified: moment().format()}
-        ]
-      })
-    })
-
     this.routeGet('/get/:model', (req, res, next) => {
       req.courseService.read({modelName: req.params.model, searchClause: req.query}).then(resp => {
         log.verbose(this.getTag(), `/get/${req.params.model}.get(): resp=${JSON.stringify(resp)}`)
@@ -46,6 +36,7 @@ class DynamicHostCMSController extends BaseController {
     })
 
     this.routePost('/edit/:model', (req, res, next) => {
+      // Path is of format /add/Topic?subjectId=5
       req.courseService.update({modelName: req.params.model, data: req.body}).then(resp => {
         res.json(resp)
       }).catch(err => next(err))
@@ -57,14 +48,8 @@ class DynamicHostCMSController extends BaseController {
       }).catch(err => next(err))
     })
 
-    this.routeGet('/getTopics', (req, res, next) => {
-      const subjectId = req.query.subject
-      res.json({
-        status: true,
-        data: [
-          {subjectId, id: 1, topic: `Topic for ${subjectId}`, description: `This data is generated because ${subjectId} was clicked`, lastModified: moment().format()}
-        ]
-      })
+    // Controller for subtopic page
+    this.routeGet('/subtopic/:id', (req, res, next) => {
     })
   }
 
