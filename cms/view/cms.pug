@@ -1,0 +1,77 @@
+extends ../../../../../sites/root/cms/view/v1/layout.pug
+
+include includes/sidebar.pug 
+
+append links
+  link(href="/assets/vendor/summernote/summernote.css" rel="stylesheet")
+  link(href=rootifyPath('/assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
+
+block content
+    if (status)
+      div.alert.alert-success #{status}
+
+    h1 #{subtopic} - Description
+    form(method='POST' action=`/e1cc3c2b195be554d7321e6e0114bf27/subtopic/submit/${subtopic_id}`)
+      div.form-group
+        label(for='link') 
+          | Link Youtube
+          span(style='color:red') *
+          | :
+        if (data && data.link_youtube)
+          input.form-control(type='text', name='link_youtube' required value=`${data.link_youtube}`)
+        else
+          input.form-control(type='text', placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='link_youtube' required)
+      a#imagePicker.btn.btn-primary Upload Image
+      div.form-group
+        label(for='description') 
+          | Detail About Course
+          span(style='color:red') *
+          | :
+        if (data && data.detail_course)
+          textarea#description.form-control(rows="10" name="detail_course" required) #{data.detail_course}
+        else
+          textarea#description.form-control(rows="10" name="detail_course" required)
+      div(section="Code Section" style="border-bottom:1px solid black; margin-bottom:15px;")
+        h2 Excercise
+        div#codeInput
+          if (question)
+            each val, index in question
+              div.form-group
+                label(for="code") 
+                  | Insert the correct code here 
+                  span(style='color:red') *
+                  | : 
+                textarea.form-control(id=`textcoder${index}` rows="10" name="exercise_code[]" required) #{val.dataValues.data}
+                div.text-right
+                  a.btn.btn-danger(onclick="deleteCode(this)") Delete this
+                  a.btn.btn-primary.btn-check-code Check the Code
+          else 
+            div.form-group
+              label(for="code") 
+                | Insert the correct code here 
+                span(style='color:red') *
+                | : 
+              textarea.form-control(id="textcoder0" rows="10" name="exercise_code[]" required)
+              div.text-right
+                a.btn.btn-danger(onclick="deleteCode(this)") Delete this
+                a.btn.btn-primary.btn-check-code Check the Code
+
+        div.text-right(style="margin-bottom:10px;")
+          a.btn.btn-success.addNewCode Add New Answer
+      div.text-center
+        input#dummy(type='hidden')
+        button#btnSave.btn.btn-primary(ic-post-to=`/e1cc3c2b195be554d7321e6e0114bf27/subtopic/submit/${subtopic_id}` ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') SUBMIT THE FORM
+        i#indicator.fa.fa-spinner.fa-spin(style="display:none")
+
+
+append scripts
+  script(src="/assets/vendor/summernote/summernote.js")
+  script(src='/assets/bundle.js')
+  script(src=rootifyPath('/assets/js/subtopic-cms-bundle.js'))
+  script.
+    function deleteCode (val) {
+      console.log(val)
+      if (confirm('Are you sure you want to delete this?')) {
+          $(val).parent().parent().remove()
+      } 
+    }

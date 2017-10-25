@@ -67,6 +67,52 @@ class CourseService {
       return this.read('Courses', {id: dependencies.map(dependency => dependency.topicId)})
     })
   }
+
+  getSubTopic (subTopicId) {
+    return this._models['Subtopic'].findOne({where: {id: subTopicId}}).then(resp => {
+      if (resp) {
+        return {status: true, data: resp}
+      } else {
+        return {status: false, data: resp}
+      }
+    })
+  }
+
+  updateSubTopic (subTopicId, data) {
+    var makeIntoJSON = {
+      link_youtube: data.link_youtube,
+      detail_course: data.detail_course
+      // exercise_code: data.exercise_code
+    }
+
+    return this._models['Subtopic'].update({data: JSON.stringify(makeIntoJSON)}, {where: {id: subTopicId}}).then(resp => {
+      if (resp) {
+        return {status: true, data: resp}
+      } else {
+        return {status: false, data: resp}
+      }
+    })
+  }
+
+  deleteQuestion (subTopicId) {
+    return this._models['Question'].destroy({where: {subtopicId: subTopicId}}).then(numDeleted => {
+      if (numDeleted > 0) {
+        return {status: true}
+      } else {
+        return {status: false, errMessage: 'Data Not Found!'}
+      }
+    })
+  }
+
+  getYoutubeEmbedURL (url) {
+    var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
+    var match = url.match(regExp)
+    if (match && match[2].length === 11) {
+        return match[2]
+    } else {
+        return 'error'
+    }
+  }
 }
 
 module.exports = CourseService

@@ -52,6 +52,22 @@ function addTables (sequelize, models) {
     }
   })
 
+  models.Question = sequelize.define('question', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    subtopicId: {type: Sequelize.INTEGER},
+    data: {type: Sequelize.TEXT}
+  })
+  models.Question.belongsTo(models.Subtopic)
+
+  models.Exercise = sequelize.define('exercise', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    userId: {type: Sequelize.INTEGER},
+    questionId: {type: Sequelize.INTEGER},
+    questionHash: {type: Sequelize.STRING},
+    knowns: {type: Sequelize.TEXT},
+    unknowns: {type: Sequelize.TEXT}
+  })
+
   return models
 }
 

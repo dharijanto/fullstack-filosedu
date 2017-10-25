@@ -1,6 +1,8 @@
 const path = require('path')
 const log = require('npmlog')
 const moment = require('moment')
+const Promise = require('bluebird')
+
 const BaseController = require(path.join(__dirname, 'base-controller'))
 
 const CourseService = require(path.join(__dirname, '../course-service'))
@@ -50,6 +52,72 @@ class DynamicHostCMSController extends BaseController {
 
     // Controller for subtopic page
     this.routeGet('/subtopic/:id', (req, res, next) => {
+      const subtopicId = req.params.id
+      Promise.join(
+        req.courseService.getSubTopic(req.params.id),
+        req.courseService.read({modelName: 'Question', data: {subtopicId: subtopicId}}),
+        function (subtopic, question) {
+          var resultObject = {}
+          if (subtopic.status && question.status) {
+            resultObject = {
+              status: true,
+              subtopic: subtopic.data,
+              question: question.data
+            }
+          } else {
+            resultObject = {
+              status: true,
+              subtopic: subtopic.data
+            }
+          }
+          return resultObject
+        }
+      ).then(resp => {
+        if (resp.question.length > 0) {
+          res.locals.question = resp.question
+        }
+
+        if (resp.status) {
+          res.locals.subtopic_id = subtopicId
+          res.locals.subtopic = resp.subtopic.subtopic
+          res.locals.description = resp.subtopic.description
+          res.locals.data = null
+          if (resp.subtopic.data) {
+            res.locals.data = JSON.parse(resp.subtopic.data)
+          }
+
+          if (req.session['status']) {
+            res.locals.status = req.session['status']
+            req.session['status'] = null
+          }
+        }
+        res.render('cms')
+      })
+    })
+
+    // Controller for submit subtopic
+    this.routePost('/subtopic/submit/:id', (req, res, next) => {
+      const subtopicId = req.params.id
+      console.log('nyari exercise')
+      console.log(req.body)
+
+      req.courseService.updateSubTopic(req.params.id, req.body).then(resp => {
+        var index = 0
+
+        while (index < req.body.exercise_code.length) {
+          var contentQuery = {
+            subtopicId: subtopicId,
+            data: req.body.exercise_code[index]
+          }
+          req.courseService.create({modelName: 'Question', data: contentQuery}).then(resp => {
+            console.log('di bagian create')
+            console.log(resp)
+          })
+          index++
+        }
+        req.session['status'] = 'Update Subtopic was successfully'
+        res.json(resp)
+      }).catch(err => next(err))
     })
   }
 
