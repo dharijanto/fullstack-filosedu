@@ -38,8 +38,8 @@ const printFn = ({a, b}) => {
 }
 
 // In addition to exact matches, this describe the other matches
-// equation1 = {a, b, x}
-// equation2 = {a, b, x}
+// unknowns1 = {a, b}
+// unknowns2 = {a, b}
 const isEqualFn = (unknowns1, unknowns2) => {
   // For this example, exact match is the only match
   return _.isEqual(unknowns1, unknowns2)
