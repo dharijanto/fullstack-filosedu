@@ -17,13 +17,12 @@ var _ = require('lodash')
 const knowns = ['a', 'b']
 const unknowns = ['x']
 
-const randomGeneratorFn = (variable) => {
-  switch (variable) {
-    case 'a':
-    case 'b':
-    case 'x':
-      return _.random(0, 16)
-  }
+const randomGeneratorFn = () => {
+  const result = {knowns: {}, unknowns: {}}
+  result.knowns.b = _.random(10, 20)
+  result.knowns.a = _.random(1, result.knowns.b)
+  result.unknowns.x = result.knowns.b - result.knowns.a
+  return result
 }
 
 // param1: knowns
@@ -39,11 +38,11 @@ const printFn = ({a, b}) => {
 }
 
 // In addition to exact matches, this describe the other matches
-// equation1 = {a, b, c}
-// equation2 = {a, b, c}
-const isEqualFn = (equation1, equation2) => {
-  // x + 5 = 7 is the same as 5 + x = 7
-  return equation1.b === equation2.b && (equation1.x === equation2.a && equation1.a === equation2.x)
+// equation1 = {a, b, x}
+// equation2 = {a, b, x}
+const isEqualFn = (unknowns1, unknowns2) => {
+  // For this example, exact match is the only match
+  return _.isEqual(unknowns1, unknowns2)
 }
 
 module.exports = {
@@ -51,11 +50,11 @@ module.exports = {
   solver: {
     type: 'bruteforce_solver', // The questions are generated using bruteforce
     randomGeneratorFn, // 'bruteforce_solver' uses random generator to generate each of the variables
+    isEqualFn, // Return true if 2 equations are the same
     timeout: 1000 // Maximum time to generate all of the questions
   },
   knowns, // 'Given' variables
   unknowns, // 'Question' variables
   isAnswerFn, // Return true if the combination of 'knowns' and 'unknowns' solve the problem
-  isEqualFn, // Return true if 2 equations are the same
   printFn // Print the question
 }
