@@ -7,6 +7,8 @@ const BaseController = require(path.join(__dirname, 'base-controller'))
 
 const CourseService = require(path.join(__dirname, '../course-service'))
 
+const ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
+
 class DynamicHostCMSController extends BaseController {
   constructor (initData) {
     initData.logTag = 'FiloseduCMSController'
@@ -91,19 +93,14 @@ class DynamicHostCMSController extends BaseController {
           if (resp.subtopic.data) {
             res.locals.data = JSON.parse(resp.subtopic.data)
           }
-
-          if (req.session['status']) {
-            res.locals.status = req.session['status']
-            req.session['status'] = null
-          }
         }
         res.render('cms')
       })
     })
 
     // Controller for submit subtopic
-    // In this controller, we do 2 query at different model. Which is Question and Subtopic.
-    // At subtopic, we just updated the data from front end.
+    // In this controller, we do 2 queries at different model. Which is Question and Subtopic.
+    // At subtopic, we just updated the data from frontend.
     // this controller focused to model Question, which we must separate them,
     // check whether they have a same duplicate or not, update or create
     this.routePost('/subtopic/submit/:id', (req, res, next) => {
@@ -209,6 +206,21 @@ class DynamicHostCMSController extends BaseController {
       }).catch(err => {
         next(err)
       })
+    })
+
+    this.routePost('/checkcode', (req, res, next) => {
+      var valueTextCodeTobeCheck = req.body.text
+      var exercise = ExerciseGenerator.getExercise(valueTextCodeTobeCheck)
+      var questions = exercise.generateQuestion()
+      var temporaryQuestion = []
+      questions.forEach(data => {
+        temporaryQuestion.push({
+          question: exercise._question.printFn({a: data.knowns.a, b: data.knowns.b}),
+          answer: data.unknowns.x
+        })
+      })
+      console.log(temporaryQuestion)
+      res.json({status: true, data: temporaryQuestion})
     })
   }
 

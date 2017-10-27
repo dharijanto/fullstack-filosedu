@@ -4,7 +4,7 @@ const log = require('npmlog')
 const Util = require('util')
 
 const CourseService = require(path.join(__dirname, '../course-service'))
-const Question = require(path.join(__dirname, '../lib/exercise_generators/bruteforce_template/question1'))
+const Question = require(path.join(__dirname, '../test/unit-test/data/bruteforce-question-1'))
 
 const TAG = 'FiloseduAppController'
 class Controller extends BaseController {

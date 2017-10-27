@@ -42,6 +42,7 @@ block content
                   span(style='color:red') *
                   | : 
                 textarea.form-control(id=`textcoder_${index}` rows="10" name=`question-${val.dataValues.id}` required) #{val.dataValues.data}
+                div.resultCode
                 div.text-right
                   a.btn.btn-danger(onclick=`deleteCode(this, ${val.dataValues.id})`) Delete this
                   a.btn.btn-primary.btn-check-code Check the Code
@@ -52,6 +53,7 @@ block content
                 span(style='color:red') *
                 | : 
               textarea.form-control(id="textcoder_0" rows="10" name="textcoder_0" required)
+              div.resultCode
               div.text-right
                 a.btn.btn-danger(onclick="deleteCode(this)") Delete this
                 a.btn.btn-primary.btn-check-code Check the Code
@@ -84,3 +86,24 @@ append scripts
       } 
     }
 
+    $('.btn-check-code').on('click', e => {
+      var parentCodeArea = $(e.target).parent().parent()
+      var resultCode = parentCodeArea.find('.resultCode')
+      var textArea = parentCodeArea.find('textarea')
+      var contentTextArea = textArea[0].value
+      var url = rootPath + '/checkcode'
+
+      resultCode.empty()
+
+      $.post(url, {
+        text: contentTextArea
+      },
+      function (data, status) {
+        var index = 0
+        data.data.map(e => {
+          $(resultCode).append(`${index+1}. ${e.question} ? Answer: ${e.answer} <br/>`)
+          //- $('<p>hello world</p>').append(resultCode)
+          index++
+        })
+      })
+    })

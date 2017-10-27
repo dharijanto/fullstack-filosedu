@@ -25,7 +25,7 @@ if ($('#codeInput').children().length > 0) {
 
 // this is behavior of button when clicked to add new code editor
 $('.addNewCode').on('click', function (e) {
-  var CodeForm = $('<div class="form-group"> <label>Insert the code here :</label> <textarea class="form-control" id="textcoder2" rows="10"></textarea> <div class="text-right"> <a class="btn btn-danger" onclick="deleteCode(this)">Delete this</a> <a class="btn btn-primary btn-check-code"> Check the Code </a></div>')
+  var CodeForm = $('<div class="form-group"> <label>Insert the code here :</label> <textarea class="form-control" id="textcoder2" rows="10"></textarea> <div class="resultCode"></div> <div class="text-right"> <a class="btn btn-danger" onclick="deleteCode(this)">Delete this</a> <a class="btn btn-primary btn-check-code"> Check the Code </a></div>')
   // CodeForm.find('textarea').attr('id', elementIdText)
   $('#codeInput').append(CodeForm)
 
@@ -61,6 +61,7 @@ function initCodeMirror (elementId) {
 
   editor.on('change', function (codeMirror) { codeMirror.save() })
   editor.on('keyup', function (codeMirror) {
+    console.log('unsaved = ' + unsaved)
     unsaved = true
     $('#btnSave').text('SUBMIT THE FORM')
   })
@@ -96,6 +97,7 @@ $('#description').summernote({
 function onInputChange () {
   unsaved = true
   $('#btnSave').text('SUBMIT THE FORM')
+  console.log('unsaved = ' + unsaved)
 }
 
 $('input[name=link_youtube]').on('keyup', e => {
@@ -117,11 +119,11 @@ $('#btnSave').on('success.ic', function (evt, elt, data, textStatus, xhr, reques
   if (data[0].status && data[1][0] && data[1][0].status && data[1][0].data) {
     unsaved = false
     data[1].map(data => {
-      console.log(data)
       $('#codeInput').find(`textarea[name=${data.data.currentStage}]`).attr('name', `question-${data.data.id}`).parent().find('.btn-danger').attr('onclick', `deleteCode(this, ${data.data.id})`)
     })
     $('#btnSave').text('Up to Date')
   } else if (data[0].status || data[2]) {
+    unsaved = false
     $('#btnSave').text('Up to Date')
   } else {
     $('#btnSave').text('Failed to Save...')
@@ -131,15 +133,3 @@ $('#btnSave').on('error.ic', function (evt, elt, status, str, xhr) {
   alert('Error=' + str)
   $('#btnSave').text('Error')
 })
-
-// function deleteQuestionCode (questionId) {
-//   axios.post(rootifyPath('/delete/Question'), {
-//     id: questionId
-//   })
-//   .then(function (response) {
-//     console.log(response)
-//   })
-//   .catch(function (error) {
-//     console.log(error)
-//   })
-// }
