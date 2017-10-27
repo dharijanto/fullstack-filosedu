@@ -2,20 +2,20 @@ var $ = require('jquery')
 var unique = require('uniq')
 var codeMirror = require('codemirror')
 var axios = require('axios')
-var intercooler = require('intercooler')
 var Promise = require('bluebird')
 
 class MyClass {
 }
 
+var unsaved = false
 
 // this section is initialize code mirror when page loaded
-var elementIdText = 'textcoder0'
+var elementIdText = 'textcoder_0'
 if ($('#codeInput').children().length > 0) {
   var banyaknyaTextArea = $('#codeInput').children().length
   var index = 0
   while (index < banyaknyaTextArea) {
-    elementIdText = 'textcoder' + index
+    elementIdText = 'textcoder_' + index
     initCodeMirror(elementIdText)
     index++
   }
@@ -25,12 +25,14 @@ if ($('#codeInput').children().length > 0) {
 
 // this is behavior of button when clicked to add new code editor
 $('.addNewCode').on('click', function (e) {
-  var CodeForm = $('<div class="form-group"> <label>Insert the code here :</label> <textarea class="form-control" id="textcoder2" rows="10" name="exercise_code[]"></textarea> <div class="text-right"> <a class="btn btn-danger" onclick="deleteCode(this)">Delete this</a> <a class="btn btn-primary btn-check-code"> Check the Code </a></div>')
+  var CodeForm = $('<div class="form-group"> <label>Insert the code here :</label> <textarea class="form-control" id="textcoder2" rows="10"></textarea> <div class="text-right"> <a class="btn btn-danger" onclick="deleteCode(this)">Delete this</a> <a class="btn btn-primary btn-check-code"> Check the Code </a></div>')
   // CodeForm.find('textarea').attr('id', elementIdText)
   $('#codeInput').append(CodeForm)
 
-  if ($('#codeInput').children().length > 1){
-    elementIdText = 'textcoder' + $('#codeInput').children().length
+  if ($('#codeInput').children().length > 1) {
+    var incrementLength = $('#codeInput').children().length
+    elementIdText = 'textcoder_' + incrementLength
+    $('#codeInput').children().last().find('textarea').attr('name', elementIdText)
     $('#codeInput').children().last().find('textarea').attr('id', elementIdText)
     initCodeMirror(elementIdText)
   }
@@ -57,9 +59,12 @@ function initCodeMirror (elementId) {
     continuousScanning: 500
   })
 
-  editor.on('change', function(codeMirror) { codeMirror.save() })
+  editor.on('change', function (codeMirror) { codeMirror.save() })
+  editor.on('keyup', function (codeMirror) {
+    unsaved = true
+    $('#btnSave').text('SUBMIT THE FORM')
+  })
 }
-
 
 var HelloButton = function (context) {
   var ui = $.summernote.ui
@@ -87,33 +92,54 @@ $('#description').summernote({
   //-   }
 })
 
-var unsaved = false
 // Buffered input change listener
-// var onInputChanged = _.debounce(function onInputChange () {
-//   unsaved = true
-//   $('#btnSave').text('Save Change')
-// }, 100)
-$('#btnSave').on('success.ic', function(evt, elt, data, textStatus, xhr, requestId) {
-  console.log(data)
+function onInputChange () {
+  unsaved = true
+  $('#btnSave').text('SUBMIT THE FORM')
+}
+
+$('input[name=link_youtube]').on('keyup', e => {
+  onInputChange()
+})
+$('#description').on('summernote.change', e => {
+  onInputChange()
+})
+
+window.onbeforeunload = function () {
+  if (unsaved) {
+    return 'You have unsaved changes on this page. Do you want to leave and discard it?'
+  }
+}
+
+$('#btnSave').on('success.ic', function (evt, elt, data, textStatus, xhr, requestId) {
   data = JSON.parse(data)
-  if (data.status) {
+
+  if (data[0].status && data[1][0] && data[1][0].status && data[1][0].data) {
     unsaved = false
-    const filename = data.filename
-    if (filename) {
-      $('input[name="filename"]').val(filename)
-    }
-    console.log('textStatus=' + textStatus)
+    data[1].map(data => {
+      console.log(data)
+      $('#codeInput').find(`textarea[name=${data.data.currentStage}]`).attr('name', `question-${data.data.id}`).parent().find('.btn-danger').attr('onclick', `deleteCode(this, ${data.data.id})`)
+    })
+    $('#btnSave').text('Up to Date')
+  } else if (data[0].status || data[2]) {
     $('#btnSave').text('Up to Date')
   } else {
     $('#btnSave').text('Failed to Save...')
   }
 })
-$('#btnSave').on('error.ic', function(evt, elt, status, str, xhr) {
+$('#btnSave').on('error.ic', function (evt, elt, status, str, xhr) {
   alert('Error=' + str)
   $('#btnSave').text('Error')
 })
 
-
-
-
-$('.btn-check-code').on('click')
+// function deleteQuestionCode (questionId) {
+//   axios.post(rootifyPath('/delete/Question'), {
+//     id: questionId
+//   })
+//   .then(function (response) {
+//     console.log(response)
+//   })
+//   .catch(function (error) {
+//     console.log(error)
+//   })
+// }

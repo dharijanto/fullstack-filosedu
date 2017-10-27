@@ -82,7 +82,6 @@ class CourseService {
     var makeIntoJSON = {
       link_youtube: data.link_youtube,
       detail_course: data.detail_course
-      // exercise_code: data.exercise_code
     }
 
     return this._models['Subtopic'].update({data: JSON.stringify(makeIntoJSON)}, {where: {id: subTopicId}}).then(resp => {
@@ -104,15 +103,23 @@ class CourseService {
     })
   }
 
-  getYoutubeEmbedURL (url) {
-    var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
-    var match = url.match(regExp)
-    if (match && match[2].length === 11) {
-        return match[2]
-    } else {
-        return 'error'
-    }
-  }
+
+  // insertQuestion (inputData) {
+
+  //   return this._models['Question'].upsert(inputData).then(resp => {
+  //     return {status: true}
+  //   })
+  // }
+
+  // getYoutubeEmbedURL (url) {
+  //   var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
+  //   var match = url.match(regExp)
+  //   if (match && match[2].length === 11) {
+  //       return match[2]
+  //   } else {
+  //       return 'error'
+  //   }
+  // }
 }
 
 module.exports = CourseService
