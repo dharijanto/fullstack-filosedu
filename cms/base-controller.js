@@ -1,5 +1,7 @@
-const express = require('express')
 const path = require('path')
+
+const express = require('express')
+const bodyParser= require('body-parser')
 const log = require('npmlog')
 
 class BaseController {
@@ -9,17 +11,13 @@ class BaseController {
     this._logTag = logTag
     this._db = db
     this._router = express()
+    this._router.use(bodyParser.json()) // Required for unit-testing
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
     this._subRouter.use(express.static(path.join(__dirname, 'view')))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
 
-    this._subRouter.use((req, res, next) => {
-      log.verbose(this.getTag(), 'req.path=' + req.path)
-      log.verbose(this.getTag(), 'site.id=' + site.id)
-      next()
-    })
     this._subRouter.set('views', path.join(__dirname, 'view'))
     this._subRouter.set('view engine', 'pug')
     this._interceptors = []

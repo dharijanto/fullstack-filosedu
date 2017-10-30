@@ -6,8 +6,8 @@ var expect = chai.expect
 
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 
-describe('Backend Data Parsed Correctly to What Frontend Expects', function () {
-  it('parseRoomInfo() should return expected format', function (done) {
+describe('Bruteforce Solver', function () {
+  it('Should parse a specified question properly', function (done) {
     const q1 = require(path.join(__dirname, 'data/bruteforce-question-1'))
     var exercise = ExerciseGenerator.getExercise(q1)
     // Since this is a bruteforce method, makes sense to try it multiple times

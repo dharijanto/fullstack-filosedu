@@ -1,12 +1,10 @@
 const path = require('path')
+
 const log = require('npmlog')
-const moment = require('moment')
 const Promise = require('bluebird')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
-
 const CourseService = require(path.join(__dirname, '../course-service'))
-
 const ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 
 class DynamicHostCMSController extends BaseController {
@@ -52,159 +50,112 @@ class DynamicHostCMSController extends BaseController {
       }).catch(err => next(err))
     })
 
-    // Controller for Subtopic Detail Page
-    // This controller only retrieve the content from DB and parse it into frontend. eg: cms.pug
+    // Retrieve information about subtopic
     this.routeGet('/subtopic/:id', (req, res, next) => {
       const subtopicId = req.params.id
-
-      // Using promise join, because its query 2 place which is to get subtopic and get the question
-      // both return data and parse it into JSON, to passing to next process
       Promise.join(
-        req.courseService.getSubTopic(req.params.id),
-        req.courseService.read({modelName: 'Question', data: {subtopicId: subtopicId}}),
-        function (subtopic, question) {
-          var resultObject = {}
-          if (subtopic.status && question.status) {
-            resultObject = {
+        req.courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+        req.courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})).spread((sResp, eResp) => {
+          // If subtopic is retrieved, it's a success. Questions are optional
+          if (sResp.status) {
+            return {
               status: true,
-              subtopic: subtopic.data,
-              question: question.data
+              data: {
+                subtopic: sResp.data[0],
+                exercises: eResp.data || []
+              }
             }
           } else {
-            resultObject = {
-              status: true,
-              subtopic: subtopic.data
-            }
+            return {status: false, errMessage: 'Failed to retrieve subtopic with id=' + subtopicId}
           }
-          return resultObject
-        }
-      ).then(resp => {
-        // resultObject get passed here, changed name as 'resp' here
-        // we process the data in here, then pass it to frontend cms.pug
-        if (resp.question.length > 0) {
-          res.locals.question = resp.question
-        }
-
-        if (resp.status) {
-          res.locals.subtopic_id = subtopicId
-          res.locals.subtopic = resp.subtopic.subtopic
-          res.locals.description = resp.subtopic.description
-          res.locals.data = null
-          if (resp.subtopic.data) {
-            res.locals.data = JSON.parse(resp.subtopic.data)
+        }).then(resp => {
+          if (resp.status) {
+            res.locals.subtopic = resp.data.subtopic
+            res.locals.exercises = resp.data.exercises
+            res.locals.subtopicData = resp.data.subtopic.data ? JSON.parse(resp.data.subtopic.data) : {}
+            res.render('subtopic')
+          } else {
+            next() // 404 not found
           }
-        }
-        res.render('cms')
-      })
+        })
     })
 
-    // Controller for submit subtopic
-    // In this controller, we do 2 queries at different model. Which is Question and Subtopic.
-    // At subtopic, we just updated the data from frontend.
-    // this controller focused to model Question, which we must separate them,
-    // check whether they have a same duplicate or not, update or create
+    // When subtopic is submitted, there 3 informations:
+    // 1. Updated subtopic detail: req.body.subtopicData
+    // 2. New exercises: req.body.new-exercise-*
+    // 3. Updated exercises: req.body.exercise-*
     this.routePost('/subtopic/submit/:id', (req, res, next) => {
-      // This section contain variable declaration which will be used in this controller
-      // First, we trying to get specified name from req.body, therefore we use Object.key
-      // Then we loop the Object key as many as they have.
-      // We search if they match any pattern like 'textcoder' or 'question-'
+      log.verbose(this.getTag(), 'req.body=' + JSON.stringify(req.body))
       const subtopicId = req.params.id
-      var index = 0
-      var getIdQuestion = []
-      var getInput = Object.keys(req.body)
-      var getnewQuestionId = []
+      var reqBodyKeys = Object.keys(req.body || {})
+      var newExercises = []
+      var existingExercises = []
 
-      // get the ID of question-1
-      // get the textcoder temporary ID
-      // which we will pass through to front end again
-      while (index < getInput.length) {
-        if (getInput[index].startsWith('textcoder')) {
-          getnewQuestionId.push(getInput[index].split('_')[1])
+      // Process exercises
+      reqBodyKeys.forEach(key => {
+        // New exercise is identified with key new-exercise-[ID]
+        if (key.startsWith('new-exercise')) {
+          // frontendKey is used to map POST's key to actual question key
+          newExercises.push({subtopicId, data: req.body[key], frontendKey: key})
         }
-        if (getInput[index].startsWith('question-')) {
-          getIdQuestion.push(getInput[index].split('-')[1])
+        // Existing exercise is identified with key exercise-[ID]
+        if (key.startsWith('exercise-')) {
+          const exerciseId = key.split('-')[1]
+          existingExercises.push({subtopicId, id: exerciseId, data: req.body[key]})
         }
-        index++
-      }
+      })
 
-      // Section updating subtopic model
-      function updateSubtopic () {
-        return new Promise((resolve, reject) => {
-          req.courseService.updateSubTopic(subtopicId, req.body).then(resp => {
-            resolve(resp)
-          }).catch(err => {
-            reject(err)
-          })
-        })
-      }
+      const updateSubtopicPromise = req.courseService.update({modelName: 'Subtopic',
+        data: {
+          id: subtopicId,
+          data: JSON.stringify(req.body.subtopicData)
+        }
+      })
 
-      // Section we create new Question, we check if it has any new data. we determine it with .length
-      // we also use currentText as parameter to apply the changes in cms.pug when done.
-      // The data create new with looping if avaiable
-      // resultResp is just a collector of data which return the result as we call it resolve in promise
-      function createNewQuestion () {
-        return new Promise((resolve, reject) => {
-          var resultResp = []
-          if (getnewQuestionId.length > 0) {
-            index = 0
-            while (index < getnewQuestionId.length) {
-              var currentText = `textcoder_${getnewQuestionId[index]}`
-              var newQuestion = {
-                subtopicId: subtopicId,
-                data: req.body[`textcoder_${getnewQuestionId[index]}`]
-              }
+      const createExercisePromise = Promise.map(newExercises, newExercise => {
+        return req.courseService.create({modelName: 'Exercise', data: newExercise})
+      })
 
-              req.courseService.create({modelName: 'Question', data: newQuestion}).then(resp => {
-                // .id .subtopicId .data
-                resp.data.dataValues.currentStage = currentText
-                resultResp.push(resp)
-              }).catch(err => reject(err))
-              index++
-            }
+      const updateExercisePromises = Promise.map(existingExercises, existingExercise => {
+        return req.courseService.update({modelName: 'Exercise', data: existingExercise})
+      })
+
+      log.verbose(this.getTag(), `newExercises = ${JSON.stringify(newExercises)}`)
+      log.verbose(this.getTag(), `existingExercises = ${JSON.stringify(existingExercises)}`)
+
+      // Pre-requisite of returning 'status: true'
+      // 1. updateSubtopicPromise (resp1) has to succeed
+      // 2. createExercisePromise (resp2) and updateExercisePromises (resp3) has to either be null or all succeeded
+      //
+      // Return: {status: true, data: {newExerciseIds: {new-exercise-3: 5}}}
+      // newExerciseIds is used by frontend to map temporary id to real id
+      Promise.join(updateSubtopicPromise, createExercisePromise, updateExercisePromises).spread((resp1, resp2, resp3) => {
+        if (resp1.status) {
+          var data = {newExerciseIds: {}} // newExercises: {frontendKey: exerciseId}, this is used by frontend to map temporary key to actual key
+          var success = true
+          var errMessage = null
+          // If new exercise(s) is added, all of them has to succeed
+          if (newExercises.length) {
+            success = resp2.reduce((acc, resp, index) => {
+              errMessage = resp.status === false ? resp.errMessage : errMessage
+              const frontendKey = newExercises[index].frontendKey
+              data.newExerciseIds[frontendKey] = resp.data.id
+              return acc && resp.status
+            }, success)
           }
-          resolve(resultResp)
-        })
-      }
-
-      // Update Question if it already has ID attached
-      // we only packaging the updateQuestion include ID, because the model will check them automatically when called.
-      // resultUpdated is a collector data which will passed to frontend cms pug
-      // It same as create new Question which using iterate.
-      function updateCurrentQuestion () {
-        return new Promise((resolve, reject) => {
-          // check if there's already has ID in it, and iterate them
-          var resultUpdated = []
-          if (getIdQuestion.length > 0) {
-            index = 0
-            while (index < getIdQuestion.length) {
-              var updateQuestion = {
-                id: getIdQuestion[index],
-                subtopicId: subtopicId,
-                data: req.body[`question-${getIdQuestion[index]}`]
-              }
-
-              req.courseService.update({modelName: 'Question', data: updateQuestion}).then(resp => {
-                resultUpdated.push(resp)
-              }).catch(err => reject(err))
-              index++
-            }
+          // If any exercise(s) is updated, all of them has to succeed
+          if (existingExercises.length) {
+            success = resp3.reduce((acc, resp) => {
+              errMessage = resp.status === false ? resp.errMessage : errMessage
+              return acc && resp.status
+            }, success)
           }
-          resolve(resultUpdated)
-        })
-      }
-
-      // This is promise that working into 3 task;
-      // First one is update the subtopic like detail description and link youtube;
-      // Second one is create new question if avaiable
-      // Third one is update the question if avaiable
-      // All has return like {status:true, data}
-      // for subtopic, it has only one return;
-      // as for create and update, it has array [{status: true}, {status: true}]
-      // which is sending back to front end at cms.pug
-      Promise.all([updateSubtopic(), createNewQuestion(), updateCurrentQuestion()]).then(data => {
-        res.json(data)
-      }).catch(err => {
-        next(err)
+          // errMessage is one of the returned
+          res.send(Object.assign({status: success, data}, errMessage && {errMessage}))
+        } else {
+          res.send({status: false,
+            errMessage: resp1.errMessage})
+        }
       })
     })
 

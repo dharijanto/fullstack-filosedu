@@ -8,10 +8,13 @@ class CourseService {
   }
 
   create ({modelName, data}) {
-    delete data.id // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
+    delete data.id // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
+    if (!data) {
+      throw new Error('data has to be specified!')
+    }
     return this._models[modelName].create(data).then(createdData => {
-      return {status: true, data: createdData}
+      return {status: true, data: createdData.get({plain: true})}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
         return {status: false, errMessage: 'Invalid Input!'}
@@ -24,20 +27,26 @@ class CourseService {
   }
 
   read ({modelName, searchClause}) {
+    if (!searchClause) {
+      throw new Error('searchClause has to be specified!')
+    }
     log.verbose(TAG, `read(): modelName=${modelName} searchClause=${JSON.stringify(searchClause)}`)
     return this._models[modelName].findAll({where: searchClause}).then(readData => {
-      return {status: true, data: readData}
+      if (readData.length > 0) {
+        return {status: true, data: readData.map(data => data.get({plain: true}))}
+      } else {
+        return {status: false}
+      }
     })
   }
 
   update ({modelName, data}) {
+    if (!('id' in data)) {
+      throw new Error('data needs to have id!')
+    }
     log.verbose(TAG, `update(): modelName=${modelName} data=${JSON.stringify(data)}`)
-    return this._models[modelName].update(data, {where: {id: data.id}}).spread((count, updatedData) => {
-      if (count) {
-        return {status: true, data: updatedData}
-      } else {
-        return {status: false, errMessage: 'Data not found!'}
-      }
+    return this._models[modelName].update(data, {where: {id: data.id}}).spread((count) => {
+      return {status: true}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
         return {status: false, errMessage: 'Invalid Input!'}
@@ -68,41 +77,40 @@ class CourseService {
     })
   }
 
-  getSubTopic (subTopicId) {
-    return this._models['Subtopic'].findOne({where: {id: subTopicId}}).then(resp => {
-      if (resp) {
-        return {status: true, data: resp}
-      } else {
-        return {status: false, data: resp}
-      }
-    })
-  }
+  // getSubtopic (subTopicId) {
+  //   return this._models['Subtopic'].findOne({where: {id: subTopicId}}).then(resp => {
+  //     if (resp) {
+  //       return {status: true, data: resp}
+  //     } else {
+  //       return {status: false, data: resp}
+  //     }
+  //   })
+  // }
 
-  updateSubTopic (subTopicId, data) {
-    var makeIntoJSON = {
-      link_youtube: data.link_youtube,
-      detail_course: data.detail_course
-    }
+  // updateSubtopicData (subTopicId, data) {
+  //   var makeIntoJSON = {
+  //     link_youtube: data.link_youtube,
+  //     detail_course: data.detail_course
+  //   }
 
-    return this._models['Subtopic'].update({data: JSON.stringify(makeIntoJSON)}, {where: {id: subTopicId}}).then(resp => {
-      if (resp) {
-        return {status: true, data: resp}
-      } else {
-        return {status: false, data: resp}
-      }
-    })
-  }
+  //   return this._models['Subtopic'].update({data: JSON.stringify(makeIntoJSON)}, {where: {id: subTopicId}}).then(resp => {
+  //     if (resp) {
+  //       return {status: true, data: resp}
+  //     } else {
+  //       return {status: false, data: resp}
+  //     }
+  //   })
+  // }
 
-  deleteQuestion (subTopicId) {
-    return this._models['Question'].destroy({where: {subtopicId: subTopicId}}).then(numDeleted => {
-      if (numDeleted > 0) {
-        return {status: true}
-      } else {
-        return {status: false, errMessage: 'Data Not Found!'}
-      }
-    })
-  }
-
+  // deleteQuestion (subTopicId) {
+  //   return this._models['Question'].destroy({where: {subtopicId: subTopicId}}).then(numDeleted => {
+  //     if (numDeleted > 0) {
+  //       return {status: true}
+  //     } else {
+  //       return {status: false, errMessage: 'Data Not Found!'}
+  //     }
+  //   })
+  // }
 
   // insertQuestion (inputData) {
 
