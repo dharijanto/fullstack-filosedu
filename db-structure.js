@@ -52,6 +52,20 @@ function addTables (sequelize, models) {
     }
   })
 
+  models.Exercise = sequelize.define('exercise', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    data: {type: Sequelize.TEXT}
+  })
+  models.Exercise.belongsTo(models.Subtopic)
+
+  models.GeneratedExercise = sequelize.define('generatedExercise', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    exerciseHash: {type: Sequelize.STRING},
+    knowns: {type: Sequelize.TEXT},
+    unknowns: {type: Sequelize.TEXT}
+  })
+  models.GeneratedExercise.belongsTo(models.Exercise)
+
   return models
 }
 

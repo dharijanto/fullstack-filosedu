@@ -1,3 +1,12 @@
 .highlight-dt-row {
   background-color: #DAF7A6 !important;
 }
+
+.required-content {
+  color: red;
+}
+
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}

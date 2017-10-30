@@ -7,6 +7,7 @@ class BaseController {
   constructor ({site, user, socketIO, db, logTag}) {
     this._router = express()
     this._viewPath = path.join(__dirname, 'views')
+    this._db = db
     this.getRouter().set('views', this._viewPath)
     this.getRouter().set('view engine', 'pug')
     this.getRouter().use(express.static(this._viewPath))
@@ -16,6 +17,10 @@ class BaseController {
   initialize () {
     this._initializeStaticHostRoute()
     return Promise.resolve()
+  }
+
+  getDb () {
+    return this._db
   }
 
   isUpToDate () {
