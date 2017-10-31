@@ -159,19 +159,22 @@ class DynamicHostCMSController extends BaseController {
       })
     })
 
-    this.routePost('/checkcode', (req, res, next) => {
+    this.routePost('/generateExercise', (req, res, next) => {
       var valueTextCodeTobeCheck = req.body.text
-      var exercise = ExerciseGenerator.getExercise(valueTextCodeTobeCheck)
-      var questions = exercise.generateQuestion()
-      var temporaryQuestion = []
-      questions.forEach(data => {
-        temporaryQuestion.push({
-          question: exercise._question.printFn({a: data.knowns.a, b: data.knowns.b}),
-          answer: data.unknowns.x
+      try {
+        var exercise = ExerciseGenerator.getExercise(valueTextCodeTobeCheck)
+        var questions = exercise.generateQuestions()
+        var temporaryQuestion = []
+        questions.forEach(data => {
+          temporaryQuestion.push({
+            question: exercise._question.printFn({a: data.knowns.a, b: data.knowns.b}),
+            answer: data.unknowns.x
+          })
         })
-      })
-      console.log(temporaryQuestion)
-      res.json({status: true, data: temporaryQuestion})
+        res.json({status: true, data: temporaryQuestion})
+      } catch (err) {
+        res.json({status: false, errMessage: err.message})
+      }
     })
   }
 
