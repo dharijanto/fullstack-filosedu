@@ -121,6 +121,10 @@ $(document).ready(function () {
     onInputChange()
   })
 
+  $('#subtopicDescription').summernote({
+    minHeight: 300
+  })
+
   $('#subtopicDescription').on('summernote.change', e => {
     onInputChange()
   })
