@@ -13,6 +13,7 @@ var AppConfig = require(path.join(__dirname, '../../app-config'))
 var createSequelizeModel = require(path.join(__dirname, '../../db-structure'))
 var CourseService = require(path.join(__dirname, '../../course-service'))
 var MainController = require(path.join(__dirname, '../../cms/main-controller'))
+var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 
 describe('Subtopic Controller', function () {
   var sequelize
@@ -21,13 +22,13 @@ describe('Subtopic Controller', function () {
   const site = {
     hash: 'JustARandomValue'
   }
-
-  var courseService
-  beforeEach((done) => {
+  beforeEach(function (done) {
     const db = {
       sequelize,
       models
     }
+
+    this.timeout(10000)
     sequelize = new Sequelize(AppConfig.testDbPath, {logging: false})
     createSequelizeModel(sequelize, models)
 
@@ -60,7 +61,7 @@ describe('Subtopic Controller', function () {
   })
 
   // Update only subtopicData and check if it is updated
-  it('POST subtopic/submit/[id] should update subtopic detail', function(done) {
+  it('POST subtopic/submit/[id] should update subtopic detail', function (done) {
     courseService.read({modelName: 'Subtopic', searchClause: {subtopic: 'Mengenal Aljabar'}}).then(resp => {
       expect(resp.status).to.be.ok
       const subtopicId = resp.data[0].id
@@ -186,4 +187,36 @@ describe('Subtopic Controller', function () {
     })
   })
 
+  it('POST /generateExercise should produce line of question exercise', function (done) {
+    const q1 = require(path.join(__dirname, 'data/bruteforce-question-1'))
+    var exercise = ExerciseGenerator.getExercise(q1)
+    // Since this is a bruteforce method, makes sense to try it multiple times
+    _.range(0, 50).forEach(() => {
+      var questions = exercise.generateQuestions()
+      // Number of generated questions should be the same as what's asked
+      expect(questions).to.have.length(q1.quantity)
+      // Check that each question is correct
+      questions.forEach(question => {
+        // Specified knowns should be generated
+        expect(Object.keys(question.knowns)).to.include.members(q1.knowns)
+        // Specified unknowns should be generated
+        expect(Object.keys(question.unknowns)).to.include.members(q1.unknowns)
+        // Formatted question should be a string
+        expect(exercise.formatQuestion(question.knowns)).to.be.a('string')
+        // Questions should be answered correctly
+        expect(exercise.isAnswer(question.knowns, question.unknowns)).to.be.ok
+      })
+    })
+    done()
+  })
+
+  it('POST /generateExercise should produce error message because knowns and unknowns was intentional deleted', function (done) {
+    const q1 = require(path.join(__dirname, 'data/bruteforce-question-1-false'))
+    try {
+      var exercise = ExerciseGenerator.getExercise(q1)
+    } catch (err) {
+      expect(err.message).to.be.equal('knowns is not found!')
+      done()
+    }
+  })
 })

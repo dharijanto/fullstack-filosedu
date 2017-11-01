@@ -6,6 +6,7 @@ append links
   link(href="/assets/vendor/summernote/summernote.css" rel="stylesheet")
   link(href=rootifyPath('/assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
   link(href=rootifyPath('/assets/css/style.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
 
 block content
     h1 #{subtopic.subtopic}
@@ -13,31 +14,31 @@ block content
       div.form-group
         label(for='link') 
           | Youtube Video #[span.required-content *] :
-        input.form-control(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData.youtube_url' required value=subtopicData.youtube_url)
+        input.form-control.subtopicInput(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData[youtube_url]' required value=subtopicData.youtube_url)
       div.form-group
         label(for='description') 
           | Description #[span.required-content *] :
-        textarea#description.form-control(rows="10" name="subtopicData.detail" required)= subtopicData.detail
+        textarea#subtopicDescription.form-control(rows="10" name='subtopicData[detail]' required)= subtopicData.detail
       div(section="exercise-section" style="border-bottom:1px solid black; margin-bottom:15px;")
         h2 Excercise
-        div#codeInput
+        div#exerciseContainer
           each exercise, index in exercises
             div.form-group
               label(for="code") Exercise Code:
-              textarea.form-control(id=`textcoder_${index}` rows="10" name=`exercise-${exercise.id}` required) #{exercise.data}
+              textarea.form-control(id=`exercise-${index}` rows="10" name=`exercise-${exercise.id}` required) #{exercise.data}
               div.resultCode
               div.text-right
-                a.btn.btn-danger(onclick=`deleteCode(this, ${exercise.id})`) Delete
+                a.btn.btn-danger.deleteExercise(data-exercise-id=`${exercise.id}`) Delete
                 | 
-                a.btn.btn-primary.btn-generate Generate
+                a.btn.btn-primary.btnGenerate Generate
         div.text-right(style="margin-bottom:10px;")
-          a.btn.btn-success.addNewCode Add Exercise
+          a.btn.btn-success.addNewExercise Add Exercise
       div.text-center
-        button.btn.btn-primary(id="btnSave" ic-post-to=rootifyPath(`/subtopic/submit/${subtopic.id}`) ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') Save Change
+        button.btn.btn-primary(id="btnSave" ic-post-to=rootifyPath(`subtopic/submit/${subtopic.id}`) ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') Save Change
         i#indicator.fa.fa-spinner.fa-spin(style="display:none")
 
 
 append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
-  script(src=rootifyPath('/assets/js/subtopic-cms-bundle.js'))
+  script(src=rootifyPath('assets/js/subtopic-cms-bundle.js'))

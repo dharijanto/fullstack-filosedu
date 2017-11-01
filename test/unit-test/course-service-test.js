@@ -17,11 +17,11 @@ describe('Course Service', function () {
   var models = {}
   var courseService
 
-  beforeEach((done) => {
+  beforeEach(function (done) {
+    this.timeout(10000)
     // console.log('Begin initialization....')
     sequelize = new Sequelize(AppConfig.testDbPath, {logging: false})
-    createSequelizeModel(sequelize, models)
-
+    models = createSequelizeModel(sequelize, models)
     sequelize.sync({force: true}).then(() => {
       courseService = new CourseService(sequelize, models)
       // console.log('Completed initialization!')
@@ -29,8 +29,26 @@ describe('Course Service', function () {
     })
   })
 
-  function create(id) {
-    return courseService.create({modelName: 'Subject', data: {subject: `Test Subject ${id}`, description: `Test Description ${id}`}})
+  function create (id) {
+    return courseService.create({
+      modelName: 'Subject',
+      data: {
+        id: `${id}`,
+        subject: `Test Subject ${id}`,
+        description: `Test Description ${id}`
+      }
+    })
+  }
+
+  function update (id) {
+    return courseService.update({
+      modelName: 'Subject',
+      data: {
+        id: `${id}`,
+        subject: `Updated Subject ${id}`,
+        description: `Updated Description ${id}`
+      }
+    })
   }
 
   it('create() should work', function (done) {
@@ -121,5 +139,61 @@ describe('Course Service', function () {
       })
     })
   })
-  // TODO: Add test for parallel update and delete
+
+  it ('parallel update() should work', function (done) {
+    const ids = [1, 2, 3, 4]
+    Promise.map(ids, id => create(id)).then(resp => {
+      expect(resp).to.have.length(ids.length)
+      Promise.map(ids, id => update(id)).then(resp2 => {
+        expect(resp2).to.have.length(ids.length)
+        ids.map(id => {
+          courseService.read({modelName: 'Subject', searchClause: {id}}).then(resp3 => {
+            expect(resp3.status).to.be.ok
+            expect(resp3.data[0].subject).to.equal(`Updated Subject ${id}`)
+            expect(resp3.data[0].description).to.equal(`Updated Description ${id}`)
+          })
+        })
+        done()
+      })
+    })
+  })
+
+  it('delete() should work', function (done) {
+    create(1).then(resp => {
+      const data = resp.data
+      courseService.delete({modelName: 'Subject',
+        data: {
+          id: data.id
+        }
+      }).then(resp2 => {
+        expect(resp2.status).to.be.ok
+        courseService.read({modelName: 'Subject', searchClause: {id: 1}}).then(resp3 => {
+          // False mean the data has been deleted.
+          expect(resp3.status).to.be.false
+          done()
+        })
+      })
+    })
+  })
+
+  it ('parallel delete() should work', function (done) {
+    const ids = [1, 2, 3, 4]
+    Promise.map(ids, id => create(id)).then(resp => {
+      expect(resp).to.have.length(ids.length)
+      Promise.map(ids, id => {
+        return courseService.delete({modelName: 'Subject', data: {id}})
+      }).then(results => {
+        results.forEach(result => {
+          expect(result.status).to.be.ok
+        })
+
+        ids.map(id => {
+          courseService.read({modelName: 'Subject', searchClause: {id}}).then(resp3 => {
+            expect(resp3.status).to.be.false
+          })
+        })
+        done()
+      })
+    })
+  })
 })
