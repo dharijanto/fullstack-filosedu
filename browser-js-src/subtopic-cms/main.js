@@ -1,9 +1,12 @@
 var $ = require('jquery')
+var _ = require('lodash')
+
 var codeMirror = require('codemirror')
 require('summernote')
 
-// This is the key to syntax highlighting valu
+// Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
+var Formatter = require('../libs/formatter')
 
 var unsaved = false
 
@@ -108,6 +111,29 @@ function initCodeMirror (elementId) {
 }
 
 $(document).ready(function () {
+  // Debounce this to prevent spamming request to Youtube that can cause 'This Video is Unavailable'
+  var embedId = null
+  const tryEmbedYoutube = _.debounce(() => {
+    const currentEmbedId = Formatter.getYoutubeEmbedURL($('#ytInput').val())
+    // Handle keyUp that doesn't change the input (e.g. arrow key)
+    if (currentEmbedId && currentEmbedId !== embedId) {
+      $('#ytPlayer').attr('src', `https://www.youtube.com/embed/${currentEmbedId}?autoplay=0&origin=http://www.nusantara-cloud.com`)
+      $('#ytPlayer').css('display', 'block')
+      $('#ytError').css('display', 'none')
+    } else if (!currentEmbedId) { // Hide video if current embedId is invalid
+      $('#ytPlayer').css('display', 'none')
+      $('#ytPlayer').attr('src', ``)
+      $('#ytError').css('display', 'block')
+    }
+    embedId = currentEmbedId
+  }, 500)
+
+  $('#ytInput').on('keyup', function () {
+    tryEmbedYoutube()
+  })
+  // Embed when page first load
+  tryEmbedYoutube()
+
   $('.deleteExercise').on('click', function () {
     deleteExercise(this)
   })

@@ -14,7 +14,11 @@ block content
       div.form-group
         label(for='link') 
           | Youtube Video #[span.required-content *] :
-        input.form-control.subtopicInput(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData[youtube_url]' required value=subtopicData.youtube_url)
+        input#ytInput.form-control.subtopicInput(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData[youtube_url]' required value=subtopicData.youtube_url)
+        div#ytPlayerContainer
+          iframe#ytPlayer(style='display: none' type='text/html', width='640', height='360', src='', frameborder='0')
+          span#ytError.required-content(style='display: none') Invalid Youtube URL
+
       div.form-group
         label(for='description') 
           | Description #[span.required-content *] :
