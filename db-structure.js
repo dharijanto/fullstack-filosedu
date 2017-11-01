@@ -23,7 +23,7 @@ function addTables (sequelize, models) {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     subtopic: {type: Sequelize.STRING, unique: true},
     description: {type: Sequelize.STRING},
-    data: {type: Sequelize.TEXT}
+    data: {type: Sequelize.TEXT('long')}
   })
   models.Subtopic.belongsTo(models.Topic)
 
