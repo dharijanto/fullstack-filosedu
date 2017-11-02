@@ -30,22 +30,11 @@ html
       // /.container-fluid
 
     div.container
-      - var subtopic = null
-      - var subtopicId = null
-      each val, index in data
-        h1.text-center #{val.subtopic}
-        h4.text-center #{val.description}
-        hr
-        - subtopic = val.subtopic
-        - subtopicId = val.id
-        - var content = JSON.parse(val.data)
-          | !{content.detail}
-          
-          iframe(width="100%", height="100%", src=`//youtube.com/embed/${embedYoutube(content.youtube_url)}`, frameborder="0", allowfullscreen="")
-
-      div.text-center(style="margin-top:50px;margin-bottom:50px;")
-        each val, index in exercise
-          a.btn.btn-primary(href=`/topic/${getSlug(subtopic)}-${subtopicId}/latihan-${val.id}`)= 'Latihan ' + val.id
+      if (data)
+        h1 Soal Quiz Subtopic :
+        each val, index in data
+          span= (index + 1) + '. '
+          a(href=`/topic/${getSlug(val.subtopic)}-${val.id}` class="btn btn-primary" target="_blank") #{val.subtopic}
 
     script(src="https://code.jquery.com/jquery-3.2.1.js")
     script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")

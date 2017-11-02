@@ -62,9 +62,11 @@ function addTables (sequelize, models) {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     exerciseHash: {type: Sequelize.STRING},
     knowns: {type: Sequelize.TEXT},
-    unknowns: {type: Sequelize.TEXT}
+    unknowns: {type: Sequelize.TEXT},
+    userAnswer: {type: Sequelize.TEXT}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
+  // models.GeneratedExercise.belongsTo(models.User)
 
   return models
 }

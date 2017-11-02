@@ -3,10 +3,16 @@ const BaseController = require(path.join(__dirname, 'base-controller'))
 const log = require('npmlog')
 const Util = require('util')
 
+const Promise = require('bluebird')
+
 const CourseService = require(path.join(__dirname, '../course-service'))
 const Question = require(path.join(__dirname, '../test/unit-test/data/bruteforce-question-1'))
+var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 
 const TAG = 'FiloseduAppController'
+
+var getSlug = require('speakingurl')
+
 class Controller extends BaseController {
   constructor (initData) {
     super(initData)
@@ -14,17 +20,150 @@ class Controller extends BaseController {
     this.addInterceptor((req, res, next) => {
       res.locals.site = req.site
       res.locals.user = req.user
+      res.locals.getSlug = getSlug
       req.courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
       next()
     })
 
     this.routeGet('/', (req, res, next) => {
-      req.courseService.read({modelName: 'Subtopic', searchClause: {id: 1}}).then(resp => {
-        console.log(resp.data[0].dataValues)
-        res.locals.data = resp.data
-        // res.send('hello world')
-        res.render('subtopic')
-      }).catch(err => next(err))
+      req.courseService.read({modelName: 'Subtopic', searchClause: {}}).then(resp => {
+        if (resp.status) {
+          res.locals.data = resp.data
+        } else {
+          res.locals.data = false
+        }
+        res.render('home')
+      })
+    })
+
+    function getYoutubeEmbedURL (url) {
+      var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
+      var match = url.match(regExp)
+      if (match && match[2].length === 11) {
+        return match[2]
+      } else {
+        return 'error'
+      }
+    }
+
+    this.routeGet('/topic/:subtopicSlug', (req, res, next) => {
+      // pop() mean get the very last element in array.
+      var subtopicId = req.params.subtopicSlug.split('-').pop()
+      if (subtopicId) {
+        Promise.join(
+          req.courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+          req.courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
+          function (subtopic, exercise) {
+            if (subtopic.status) {
+              res.locals.data = subtopic.data
+              res.locals.embedYoutube = getYoutubeEmbedURL
+              if (exercise.status) {
+                res.locals.exercise = exercise.data
+              } else {
+                res.locals.exercise = false
+              }
+            } else {
+              res.locals.data = false
+            }
+            res.render('subtopic')
+          })
+      } else {
+        res.send('Whoops! 404 Not Found !')
+        // TODO : Error Handling
+      }
+    })
+
+    // route to get exercise table
+    this.routeGet('/topic/:subtopicSlug/:exerciseSlug', (req, res, next) => {
+      // pop() means get the very last element in array.
+      var exerciseId = req.params.exerciseSlug.split('-').pop()
+
+      req.courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
+        var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
+        var exercise = ExerciseGenerator.getExercise(resp.data[0].data)
+        var questions = exercise.generateQuestions()
+
+        var knownsJSON = []
+        var unknownsJSON = []
+        questions.forEach(question => {
+          knownsJSON.push(question.knowns)
+          unknownsJSON.push(question.unknowns)
+        })
+
+        /**
+        Nanti disini isi function check if exerciseHash nya sama / tidak.
+          kalau tidak sama, update question dengan hash yang baru;
+          kalau sama, jangan lakukan apa".
+          kalau belum ada, create yang baru
+        **/
+
+        console.log(req)
+        // req.courseService.read({
+        //   modelName: 'GeneratedExercise',
+        //   searchClause: {userId: req.user.id, exerciseHash}
+        // }).then(resp2 => {
+        //   if (resp2.status) {
+        //     // tanda nya exercise hashnya sama, dan tidak terjadi apa"
+        //     res.render('question')
+        //   } else {
+        //     // tanda nya exercise hashnya tidak sama, update dengan hash yang baru
+        //   }
+        // })
+
+        // lakukan aksi save question ke DB
+        req.courseService.create({
+          modelName: 'GeneratedExercise',
+          data: {
+            exerciseHash,
+            knowns: JSON.stringify(knownsJSON),
+            unknowns: JSON.stringify(unknownsJSON),
+            exerciseId
+          }
+        }).then(resp2 => {
+          if (resp2.status) {
+            var groupKnowns = JSON.parse(resp2.data.knowns)
+            var formatQuestion = []
+
+            groupKnowns.forEach(question => {
+              formatQuestion.push(exercise.formatQuestion(question))
+            })
+
+            res.locals.questions = formatQuestion
+            res.locals.generateExerciseId = resp2.data.id
+            res.render('question')
+          } else {
+            res.send('Whoops, Something went wrong!')
+          }
+        }).catch(err => {
+          console.error(err)
+          next(err)
+        })
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routePost('/checkAnswer', (req, res, next) => {
+      var generateExerciseId = req.body.generatedExerciseId
+
+      req.courseService.saveAndGetGeneratedExercise(generateExerciseId, JSON.stringify(req.body.answer)).then(resp => {
+        if (resp.status) {
+          var unknowns = JSON.parse(resp.data[0].unknowns)
+          var userAnswer = JSON.parse(resp.data[0].userAnswer)
+          var correction = []
+
+          for (var i = 0; i < unknowns.length; i++) {
+            if (unknowns[i].x === parseInt(userAnswer[i])) {
+              correction.push(true)
+            } else {
+              correction.push(false)
+            }
+          }
+          res.json({status: true, data: {realAnswer: unknowns, correctAnswer: correction}})
+        } else {
+          res.json({status: false})
+        }
+      })
     })
 
     this.getRouter().get('/aljabar2', (req, res, next) => {

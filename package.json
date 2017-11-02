@@ -14,7 +14,8 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/nusantaracloud/filosedu#readme",
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "speakingurl": "^14.0.1"
   },
   "devDependencies": {
     "supertest": "^3.0.0"

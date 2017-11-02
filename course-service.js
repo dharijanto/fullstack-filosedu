@@ -1,4 +1,6 @@
 var log = require('npmlog')
+var Promise = require('bluebird')
+
 
 const TAG = 'CourseService'
 class CourseService {
@@ -74,6 +76,15 @@ class CourseService {
     log.verbose(TAG, `getTopicDependencies(): courseId=${courseId} whereClause=${JSON.stringify(whereClause)}`)
     return this._models.TopicDependency.findAll(whereClause).then(dependencies => {
       return this.read('Courses', {id: dependencies.map(dependency => dependency.topicId)})
+    })
+  }
+
+  saveAndGetGeneratedExercise (generateExerciseId, userAnswer) {
+    return this.update({
+      modelName: 'GeneratedExercise',
+      data: {id: generateExerciseId, userAnswer}
+    }).then(resp => {
+      return this.read({modelName: 'GeneratedExercise', searchClause: {id: generateExerciseId}})
     })
   }
 }
