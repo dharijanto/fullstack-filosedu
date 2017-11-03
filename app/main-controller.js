@@ -1,218 +1,296 @@
 const path = require('path')
-const BaseController = require(path.join(__dirname, 'base-controller'))
-const log = require('npmlog')
-const Util = require('util')
-
-const Promise = require('bluebird')
-
-const CourseService = require(path.join(__dirname, '../course-service'))
-const Question = require(path.join(__dirname, '../test/unit-test/data/bruteforce-question-1'))
-var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
-
-const TAG = 'FiloseduAppController'
 
 var getSlug = require('speakingurl')
+var LocalStrategy = require('passport-local').Strategy
+var log = require('npmlog')
+var Promise = require('bluebird')
+var PassportHelper = require('connect-ensure-login')
+var passport = require('passport')
+
+var BaseController = require(path.join(__dirname, 'base-controller'))
+var CourseService = require(path.join(__dirname, '../course-service'))
+var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
+var Formatter = require(path.join(__dirname, '../lib/utils/formatter.js'))
+var UserService = require(path.join(__dirname, '../user-service'))
+
+const TAG = 'FiloseduAppController'
 
 class Controller extends BaseController {
   constructor (initData) {
     super(initData)
+
+    const userService = new UserService(this.getDb().sequelize, this.getDb().models)
+    const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
+
+    this.routeUse(passport.initialize())
+    this.routeUse(passport.session())
+
+    passport.use(new LocalStrategy(
+    function (username, password, cb) {
+      // TODO: Error handling
+      userService.findByUsername(username, function (err, user) {
+        if (err) { return cb(err) }
+        if (!user) { return cb(null, false) }
+        if (user.password !== password) { return cb(null, false) }
+        return cb(null, user)
+      }).catch(err => {
+        log.error(TAG, err)
+        cb(err)
+      })
+    }))
+
+    passport.serializeUser(function (user, done) {
+      done(null, user.id)
+    })
+
+    passport.deserializeUser(function (id, done) {
+      // TODO: Use "status" convention
+      userService.findById(id, function (err, user) {
+        done(err, user)
+      })
+    })
     // console.log('initData = ' + Util.inspect(Object.keys(initData.db)))
     this.addInterceptor((req, res, next) => {
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.getSlug = getSlug
-      req.courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
+      res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 
     this.routeGet('/', (req, res, next) => {
-      req.courseService.read({modelName: 'Subtopic', searchClause: {}}).then(resp => {
+      // TODO: error handling
+      courseService.read({modelName: 'Subtopic', searchClause: {}}).then(resp => {
         if (resp.status) {
           res.locals.data = resp.data
         } else {
-          res.locals.data = false
+          res.locals.data = []
         }
         res.render('home')
       })
     })
 
-    function getYoutubeEmbedURL (url) {
-      var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
-      var match = url.match(regExp)
-      if (match && match[2].length === 11) {
-        return match[2]
-      } else {
-        return 'error'
-      }
-    }
+    this.routeGet('/login', (req, res, next) => {
+      res.render('login')
+    })
+
+    this.routePost('/submitlogin', passport.authenticate('local', {
+      failureRedirect: '/'
+    }), (req, res, next) => {
+      res.redirect('/')
+    })
+
+    this.routeGet('/logout', (req, res, next) => {
+      req.logout()
+      res.redirect('/login')
+    })
 
     this.routeGet('/topic/:subtopicSlug', (req, res, next) => {
       // pop() mean get the very last element in array.
       var subtopicId = req.params.subtopicSlug.split('-').pop()
       if (subtopicId) {
         Promise.join(
-          req.courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-          req.courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
-          function (subtopic, exercise) {
+          courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+          courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
+          (subtopic, exercise) => {
             if (subtopic.status) {
               res.locals.data = subtopic.data
-              res.locals.embedYoutube = getYoutubeEmbedURL
-              if (exercise.status) {
-                res.locals.exercise = exercise.data
-              } else {
-                res.locals.exercise = false
-              }
+              res.locals.embedYoutube = Formatter.getYoutubeEmbedURL
+              res.locals.exercise = exercise.data || []
+              res.render('subtopic')
             } else {
-              res.locals.data = false
+              next() // 404
             }
-            res.render('subtopic')
           })
       } else {
-        res.send('Whoops! 404 Not Found !')
-        // TODO : Error Handling
+        next() // 404
       }
     })
 
+    function displayQuestion (exercise, generatedExercise, exerciseId, localsData) {
+      var knowns = JSON.parse(generatedExercise.knowns)
+
+      localsData.allQuestion = {
+        questions: knowns.map(known => exercise.formatQuestion(known)),
+        userAnswers: generatedExercise.userAnswer
+      }
+
+      localsData.generateExerciseId = generatedExercise.id
+      localsData.exerciseId = exerciseId
+    }
+
     // route to get exercise table
-    this.routeGet('/topic/:subtopicSlug/:exerciseSlug', (req, res, next) => {
+    this.routeGet('/topic/:subtopicSlug/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       // pop() means get the very last element in array.
       var exerciseId = req.params.exerciseSlug.split('-').pop()
+      courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
+        if (resp.status) {
+          var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
+          var exercise = ExerciseGenerator.getExercise(resp.data[0].data)
+          var questions = exercise.generateQuestions()
 
-      req.courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
-        var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
-        var exercise = ExerciseGenerator.getExercise(resp.data[0].data)
-        var questions = exercise.generateQuestions()
-
-        var knownsJSON = []
-        var unknownsJSON = []
-        questions.forEach(question => {
-          knownsJSON.push(question.knowns)
-          unknownsJSON.push(question.unknowns)
-        })
-
-        /**
-        Nanti disini isi function check if exerciseHash nya sama / tidak.
-          kalau tidak sama, update question dengan hash yang baru;
-          kalau sama, jangan lakukan apa".
-          kalau belum ada, create yang baru
-        **/
-
-        console.log(req)
-        // req.courseService.read({
-        //   modelName: 'GeneratedExercise',
-        //   searchClause: {userId: req.user.id, exerciseHash}
-        // }).then(resp2 => {
-        //   if (resp2.status) {
-        //     // tanda nya exercise hashnya sama, dan tidak terjadi apa"
-        //     res.render('question')
-        //   } else {
-        //     // tanda nya exercise hashnya tidak sama, update dengan hash yang baru
-        //   }
-        // })
-
-        // lakukan aksi save question ke DB
-        req.courseService.create({
-          modelName: 'GeneratedExercise',
-          data: {
-            exerciseHash,
-            knowns: JSON.stringify(knownsJSON),
-            unknowns: JSON.stringify(unknownsJSON),
-            exerciseId
-          }
-        }).then(resp2 => {
-          if (resp2.status) {
-            var groupKnowns = JSON.parse(resp2.data.knowns)
-            var formatQuestion = []
-
-            groupKnowns.forEach(question => {
-              formatQuestion.push(exercise.formatQuestion(question))
-            })
-
-            res.locals.questions = formatQuestion
-            res.locals.generateExerciseId = resp2.data.id
-            res.render('question')
-          } else {
-            res.send('Whoops, Something went wrong!')
-          }
-        }).catch(err => {
-          console.error(err)
-          next(err)
-        })
+          // Check whether previous exercise has been submitted or not. If submitted,
+          // we create new question for student otherwise, restore previous exercise.
+          return courseService.read({
+            modelName: 'GeneratedExercise',
+            searchClause: {
+              userId: req.user.id,
+              exerciseHash,
+              submitted: false
+            }
+          }).then(resp2 => {
+            if (resp2.status) {
+              displayQuestion(exercise, resp2.data[0], exerciseId, res.locals)
+              res.render('exercise')
+            } else {
+              // lakukan aksi save question ke DB
+              return courseService.createGenerateExercise(
+                exerciseHash,
+                questions,
+                exerciseId,
+                req.user.id
+              ).then(resp3 => {
+                if (resp3.status) {
+                  displayQuestion(exercise, resp3.data, exerciseId, res.locals)
+                  res.render('exercise')
+                } else {
+                  throw new Error('Cannot create exercise!')
+                }
+              })
+            }
+          })
+        } else {
+          next()
+        }
       }).catch(err => {
         next(err)
       })
     })
 
-    this.routePost('/checkAnswer', (req, res, next) => {
-      var generateExerciseId = req.body.generatedExerciseId
-
-      req.courseService.saveAndGetGeneratedExercise(generateExerciseId, JSON.stringify(req.body.answer)).then(resp => {
-        if (resp.status) {
-          var unknowns = JSON.parse(resp.data[0].unknowns)
-          var userAnswer = JSON.parse(resp.data[0].userAnswer)
-          var correction = []
-
-          for (var i = 0; i < unknowns.length; i++) {
-            if (unknowns[i].x === parseInt(userAnswer[i])) {
-              correction.push(true)
-            } else {
-              correction.push(false)
-            }
-          }
-          res.json({status: true, data: {realAnswer: unknowns, correctAnswer: correction}})
+    this.routePost('/checkAnswer', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+      const userId = req.user.id
+      const exerciseId = req.body.exerciseId
+      log.verbose(TAG, `checkAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
+      Promise.join(
+        courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
+        courseService.getSubmittedExercises({userId, exerciseId}),
+        courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}})
+      ).spread((geResp, sgeResp, eResp) => {
+        if (!geResp.status) {
+          log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
+          res.json({status: false, errMessage: 'Current exercise cannot be found'})
+        } else if (!eResp.status) {
+          res.json({status: false, errMessage: 'Exercise information be found'})
         } else {
-          res.json({status: false})
+          const generatedExercise = geResp.data[0]
+          const generatedQuestions = JSON.parse(generatedExercise.knowns)
+          const submittedExercises = sgeResp.status ? sgeResp.data : []
+          const exerciseSolver = ExerciseGenerator.getExercise(eResp.data[0].data)
+
+          // TODO: User answer should be array of objects of unknowns
+          const userAnswer = req.body.answer // [5,3,1,2,5]
+          log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswer)}`)
+          if (userAnswer.length !== generatedQuestions.length) {
+            res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
+          } else {
+            // Flag array identifying which user answer is correct/wrong
+            const isAnswerCorrect = []
+            // Compute the score of current exercise
+            const currentScore = generatedQuestions.reduce((numCorrect, knowns, index) => {
+              // TODO: User answer should be array of objects of unknowns
+              const unknowns = {x: parseFloat(userAnswer[index])}
+              log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns)} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns)}`)
+              const isCorrect = exerciseSolver.isAnswer(knowns, unknowns)
+              isAnswerCorrect.push(isCorrect)
+              return isCorrect ? numCorrect + 1 : numCorrect
+            }, 0) / parseFloat(generatedQuestions.length) * 100
+
+            // Compute the best score
+            const bestScore = submittedExercises.reduce((bestScore, submitedExercise) => {
+              return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
+            }, 0)
+
+            // TODO: Update current exercise
+            courseService.update({
+              modelName: 'GeneratedExercise',
+              data: {
+                id: generatedExercise.id,
+                score: currentScore,
+                submitted: true}
+            }).then(resp => {
+              if (resp.status) {
+                res.json({
+                  status: true,
+                  data: {
+                    realAnswer: JSON.parse(generatedExercise.unknowns),
+                    isAnswerCorrect,
+                    currentScore,
+                    bestScore
+                  }
+                })
+              } else {
+                res.json({status: false, errMessage: 'Failed to save generated exercise'})
+              }
+            })
+          }
         }
       })
     })
-
-    this.getRouter().get('/aljabar2', (req, res, next) => {
-      res.render('subtopic2')
-    })
-
-    this.getRouter().get('/question', (req, res, next) => {
-      /*
-        1. Check duplicate
-        2. Timeout -> use hard-coded value
-        3. knowns kita ga tau brp length-nya, jgn di hardcode
-        4. Pindahin ke brute-force generator
-      */
-      var tampungQuestion = []
-      var tampungVariable = []
-      var index = 0
-      while (index < Question.quantity) {
-        var number1 = Question.solver.randomGeneratorFn(Question.knowns[0])
-        var number2 = Question.solver.randomGeneratorFn(Question.knowns[1])
-        var newQuestion = Question.printFn({a: number1, b: number2})
-        tampungVariable[index] = {a: number1, b: number2}
-        tampungQuestion[index] = newQuestion
-        index++
-      }
-      req.session.questionVariable = tampungVariable
-      req.session.realQuestion = tampungQuestion
-      res.locals.question = tampungQuestion
-      res.render('question')
-    })
-
-    this.routePost('/done', (req, res, next) => {
-      // 1. Jangan parseInt, tp jadiin double agar bisa handle decimal jg
-      // 2. Untuk komparasi double, cek di google utk javascript
-      // 3. a & b jgn di hard-code
-      var index = 0
-      var checkAnswer = []
-      var quizAnswer = []
-      while (index < req.session.questionVariable.length) {
-        quizAnswer[index] = parseInt(req.body.answer[index])
-        checkAnswer[index] = Question.isAnswerFn({a: req.session.questionVariable[index].a, b: req.session.questionVariable[index].b}, {x: quizAnswer[index]})
-        index++
-      }
-
-      res.locals.question = req.session.realQuestion
-      res.locals.answer = quizAnswer
-      res.locals.resultAnswer = checkAnswer
-      res.render('done')
-    })
   }
 }
+
+    //   var generateExerciseId = req.body.generatedExerciseId
+    //   var exerciseId = req.body.exerciseId
+
+    //   Promise.join(
+    //     courseService.saveAndGetGeneratedExercise(generateExerciseId, JSON.stringify(req.body.answer)),
+    //     courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
+    //     function (generatedExerciseData, exerciseData) {
+    //       if (generatedExerciseData.status && exerciseData.status) {
+    //         var knowns = JSON.parse(generatedExerciseData.data[0].knowns)
+    //         var unknowns = JSON.parse(generatedExerciseData.data[0].unknowns)
+    //         var userAnswer = JSON.parse(generatedExerciseData.data[0].userAnswer)
+    //         var isAnswerCorrect = []
+    //         var totalCorrectAnswer = []
+    //         var exercise = ExerciseGenerator.getExercise(exerciseData.data[0].data)
+    //         var exerciseHash = ExerciseGenerator.getHash(exerciseData.data[0].data)
+
+    //         for (var i = 0; i < knowns.length; i++) {
+    //           var answer = exercise._question.isAnswerFn({a: knowns[i].a, b: knowns[i].b}, {x: parseFloat(userAnswer[i])})
+    //           isAnswerCorrect.push(answer)
+    //         }
+
+    //         totalCorrectAnswer = isAnswerCorrect.filter(v => v).length
+    //         var currentScore = ((totalCorrectAnswer / knowns.length) * 100)
+
+    //         // must get the best score from all exercise, with user_id and generate hash and exercise id
+    //         var bestScore = currentScore
+    //         courseService.update({modelName: 'GeneratedExercise', data: {id: generateExerciseId, score: currentScore}}).then(resp3 => {
+    //           courseService.read(
+    //             {
+    //               modelName: 'GeneratedExercise',
+    //               searchClause: {
+    //                 userId: req.user.id,
+    //                 exerciseHash,
+    //                 exerciseId: exerciseData.data[0].id
+    //               }
+    //             }
+    //           ).then(resp2 => {
+    //             if (resp2.data) {
+    //               resp2.data.forEach(data => {
+    //                 if (bestScore < data.score) {
+    //                   bestScore = parseInt(data.score)
+    //                 }
+    //               })
+    //             }
+    //             res.json({status: true, data: {realAnswer: unknowns, isAnswerCorrect, currentScore, bestScore}})
+    //           })
+    //         })
+    //       } else {
+    //         res.json({status: false})
+    //       }
+    //     }
+    //   )
+    // })
 
 module.exports = Controller

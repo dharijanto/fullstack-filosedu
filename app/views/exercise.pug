@@ -1,0 +1,31 @@
+extends layout/index.pug
+
+block contents
+    div.container
+      h1.text-center Question Start
+      h4.text-center Please answer the question below !
+      hr
+
+      form#questionSubmit(method="POST")
+        input(type="hidden" name="exerciseId" value=`${exerciseId}`)
+        input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
+        div#QuestionSection
+          each val, index in allQuestion.questions
+            div.form-group
+            | #{index + 1}. 
+            | #{val}
+            if (allQuestion.userAnswers)
+              input.form-control(name="answer[]" type="text" value=`${allQuestion.userAnswers[index]}`)
+            else
+              input.form-control(name="answer[]" type="text")
+            div(class=`resultAnswer_${index}`)
+
+        div.text-center(style="margin-top:50px;margin-bottom:50px;")
+          div.scoreSection.hidden
+            p(class='currentScore')
+            p(class='bestScore')
+          a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") SUBMIT ANSWER
+          a.btn.btn-primary.btn_retry_question.hidden(href="") RETRY
+
+block scripts
+  script(src=('/assets/js/subtopic-app-bundle.js'))

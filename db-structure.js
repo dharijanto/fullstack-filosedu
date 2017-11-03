@@ -52,6 +52,13 @@ function addTables (sequelize, models) {
     }
   })
 
+  models.User = sequelize.define('users', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    username: {type: Sequelize.STRING, unique: true},
+    password: {type: Sequelize.TEXT},
+    email: {type: Sequelize.STRING, unique: true}
+  })
+
   models.Exercise = sequelize.define('exercise', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     data: {type: Sequelize.TEXT}
@@ -61,12 +68,14 @@ function addTables (sequelize, models) {
   models.GeneratedExercise = sequelize.define('generatedExercise', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     exerciseHash: {type: Sequelize.STRING},
-    knowns: {type: Sequelize.TEXT},
-    unknowns: {type: Sequelize.TEXT},
-    userAnswer: {type: Sequelize.TEXT}
+    knowns: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}] (this is answer key)
+    unknowns: {type: Sequelize.TEXT}, // JSON: array of unknowns i.e. [{a: 1, b: 3}, {a: 7, b: 3}]
+    userAnswer: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}]
+    submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
+    score: {type: Sequelize.INTEGER}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
-  // models.GeneratedExercise.belongsTo(models.User)
+  models.GeneratedExercise.belongsTo(models.User)
 
   return models
 }

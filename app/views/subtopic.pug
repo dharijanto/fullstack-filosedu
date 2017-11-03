@@ -1,34 +1,6 @@
-html
-  head
-    title Aljabar Linear
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+extends layout/index.pug
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-  body
-    nav.navbar.navbar-default
-      .container-fluid
-        // Brand and toggle get grouped for better mobile display
-        .navbar-header
-          button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#bs-example-navbar-collapse-1", aria-expanded="false")
-            span.sr-only Toggle navigation
-            span.icon-bar
-            span.icon-bar
-            span.icon-bar
-          a.navbar-brand(href="/") Filosedu
-        // Collect the nav links, forms, and other content for toggling
-        #bs-example-navbar-collapse-1.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            li.active
-              a(href="/") Homepage
-            li
-              a(href="#") Course
-        // /.navbar-collapse
-      // /.container-fluid
-
+block contents
     div.container
       - var subtopic = null
       - var subtopicId = null
@@ -45,7 +17,5 @@ html
 
       div.text-center(style="margin-top:50px;margin-bottom:50px;")
         each val, index in exercise
-          a.btn.btn-primary(href=`/topic/${getSlug(subtopic)}-${subtopicId}/latihan-${val.id}`)= 'Latihan ' + val.id
-
-    script(src="https://code.jquery.com/jquery-3.2.1.js")
-    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
+          a.btn.btn-primary(href=`/topic/${getSlug(subtopic)}-${subtopicId}/latihan-${val.id}` style="margin-top:10px;" target="_blank")= 'Latihan ' + val.id
+          br

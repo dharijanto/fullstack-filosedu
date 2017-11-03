@@ -14,7 +14,11 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/nusantaracloud/filosedu#readme",
   "dependencies": {
+    "connect-ensure-login": "^0.1.1",
     "lodash": "^4.17.4",
+    "passport": "^0.4.0",
+    "passport-http": "^0.3.0",
+    "passport-local": "^1.0.0",
     "speakingurl": "^14.0.1"
   },
   "devDependencies": {
