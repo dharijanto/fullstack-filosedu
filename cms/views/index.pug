@@ -1,0 +1,44 @@
+extends ../../../../../sites/root/cms/view/v1/layout.pug
+
+include includes/sidebar.pug
+
+append links
+  link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css")
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/style.css'))
+
+block content
+  .container
+    .row
+      .col-md-12
+        #subjectEditor
+    .row
+      .col-md-6
+        #topicEditor
+      .col-md-6
+        #subtopicEditor
+        //- #topicDependencyEditor
+    .row
+      .col-md-6
+      .col-md-6
+        #tagEditor
+
+append scripts
+  // Rooth path is pug-rendered
+  script.
+    var rootPath = "#{rootifyPath('')}"
+    var NCInputs = {}
+    var selectedIds  = {subject: null, topic: null, subtopic: null, topicDependency: null, tag: null}
+  script(src=rootifyPath('assets/js/bundle.js'))
+  script(src=rootifyPath('assets/js/nc-input-logic.js'))
+  script(src=rootifyPath('assets/js/nc-input-headers.js'))
+  script.
+    
+    $(document).ready(function () {
+      NCInputs.subjectNcInput = $('#subjectEditor').NCInputLibrary(subjectHeader)
+      NCInputs.topicNcInput = $('#topicEditor').NCInputLibrary(topicHeader)
+      NCInputs.topicDependencyInput = $('#topicDependencyEditor').NCInputLibrary(topicDependencyHeader)
+      NCInputs.subtopicNcInput = $('#subtopicEditor').NCInputLibrary(subtopicHeader)
+      //- NCInputs.tagNcInput = $('#tagEditor').NCInputLibrary(tagHeader)
+      // Initialze the data
+      NCInputs.subjectNcInput.reloadTable()
+    })
