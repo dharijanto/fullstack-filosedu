@@ -5,8 +5,12 @@ block contents
     if user
       p= 'Welcome Back, ' + user.username
 
-    h1 Subtopic :
+
+    .row
+      .col-md-12
+      h1 Belajar:
     each val, index in data
-      span= (index + 1) + '. '
-      a(href=`/topic/${getSlug(val.subtopic)}-${val.id}` class="btn btn-primary" target="_blank") #{val.subtopic}
+      .row
+        .col-md12
+        a(href=`/topic/${getSlug(val.subtopic)}-${val.id}` class="btn btn-primary") #{val.subtopic}
 

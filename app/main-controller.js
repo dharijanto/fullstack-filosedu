@@ -3,7 +3,7 @@ const path = require('path')
 var getSlug = require('speakingurl')
 var log = require('npmlog')
 var Promise = require('bluebird')
-var PassportHelper = require('connect-ensure-login')
+var PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
 var passport = require('passport')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
@@ -21,11 +21,13 @@ class Controller extends BaseController {
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
+      log.verbose(TAG, 'req.path=' + req.path)
+      log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
+      log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.getSlug = getSlug
       res.locals.loggedIn = req.isAuthenticated()
-      log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
       next()
     })
 
@@ -54,13 +56,22 @@ class Controller extends BaseController {
     this.routePost('/register', passport.authenticate('app_register', {
       failureRedirect: '/register'
     }), (req, res, next) => {
-      res.redirect('/')
+      // Need to wait until user logged state is saved before redirecting to avoid
+      // race condition
+      req.session.save(() => {
+        res.redirect(req.session.returnTo || '/')
+      })
     })
 
     this.routePost('/submitlogin', passport.authenticate('app_login', {
       failureRedirect: '/login'
     }), (req, res, next) => {
-      res.redirect('/')
+      log.verbose(TAG, 'submitlogin.POST(): redirecting to: ' + req.session.returnTo)
+      // Need to wait until user logged state is saved before redirecting to avoid
+      // race condition
+      req.session.save(() => {
+        res.redirect(req.session.returnTo || '/')
+      })
     })
 
     this.routeGet('/logout', (req, res, next) => {

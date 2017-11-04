@@ -19,10 +19,13 @@ body
             a(href="/") Homepage
           li
             a(href="#") Course
-          li
-            if (!loggedIn)
+          if (!loggedIn)
+            li
               a(href="/login") Login
-            else
+            li
+              a(href="/register") Register
+          else
+            li
               a(href="/logout") Logout
 
   block contents
