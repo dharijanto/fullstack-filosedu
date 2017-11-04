@@ -55,8 +55,10 @@ function addTables (sequelize, models) {
   models.User = sequelize.define('users', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     username: {type: Sequelize.STRING, unique: true},
-    password: {type: Sequelize.TEXT},
-    email: {type: Sequelize.STRING, unique: true}
+    saltedPass: {type: Sequelize.STRING},
+    salt: {type: Sequelize.STRING},
+    email: {type: Sequelize.STRING, unique: true},
+    siteId: {type: Sequelize.INTEGER, defaultValue: -1} // siteId is needed only by App
   })
 
   models.Exercise = sequelize.define('exercise', {

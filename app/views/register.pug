@@ -1,0 +1,22 @@
+extends layout/index.pug
+
+block contents
+    div.container
+      form(action="/register" method="POST")
+        div.form-group
+          label Username
+          input(type="text" name="username" class="form-control")
+        div.form-group
+          label Password
+          input(type="password" name="password" class="form-control")
+        div.form-group
+          label Confirm Password
+          input(type="password" name="passwordConfirm" class="form-control")
+        div.form-group
+          label Email
+          input(type="text" name="email" class="form-control")
+        div.form-group
+          input(type="hidden" name="siteId" class="form-control" value=siteId)
+
+        div.form-group
+          button(type="submit" class="btn btn-primary") SUBMIT

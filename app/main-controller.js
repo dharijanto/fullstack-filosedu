@@ -19,42 +19,15 @@ class Controller extends BaseController {
   constructor (initData) {
     super(initData)
 
-    const userService = new UserService(this.getDb().sequelize, this.getDb().models)
+    // const userService = new UserService(this.getDb().sequelize, this.getDb().models)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
 
-    this.routeUse(passport.initialize())
-    this.routeUse(passport.session())
-
-    passport.use(new LocalStrategy(
-    function (username, password, cb) {
-      // TODO: Error handling
-      userService.findByUsername(username, function (err, user) {
-        if (err) { return cb(err) }
-        if (!user) { return cb(null, false) }
-        if (user.password !== password) { return cb(null, false) }
-        return cb(null, user)
-      }).catch(err => {
-        log.error(TAG, err)
-        cb(err)
-      })
-    }))
-
-    passport.serializeUser(function (user, done) {
-      done(null, user.id)
-    })
-
-    passport.deserializeUser(function (id, done) {
-      // TODO: Use "status" convention
-      userService.findById(id, function (err, user) {
-        done(err, user)
-      })
-    })
-    // console.log('initData = ' + Util.inspect(Object.keys(initData.db)))
     this.addInterceptor((req, res, next) => {
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.getSlug = getSlug
       res.locals.loggedIn = req.isAuthenticated()
+      log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
       next()
     })
 
@@ -74,8 +47,20 @@ class Controller extends BaseController {
       res.render('login')
     })
 
-    this.routePost('/submitlogin', passport.authenticate('local', {
-      failureRedirect: '/'
+    this.routeGet('/register', (req, res, next) => {
+      // Used by pre-defined passport 'app_register'
+      res.locals.siteId = req.site.id
+      res.render('register')
+    })
+
+    this.routePost('/register', passport.authenticate('app_register', {
+      failureRedirect: '/register'
+    }), (req, res, next) => {
+      res.redirect('/')
+    })
+
+    this.routePost('/submitlogin', passport.authenticate('app_login', {
+      failureRedirect: '/login'
     }), (req, res, next) => {
       res.redirect('/')
     })
