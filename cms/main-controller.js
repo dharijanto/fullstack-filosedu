@@ -165,10 +165,10 @@ class DynamicHostCMSController extends BaseController {
         var exercise = ExerciseGenerator.getExercise(valueTextCodeTobeCheck)
         var questions = exercise.generateQuestions()
         var temporaryQuestion = []
-        questions.forEach(data => {
+        questions.forEach(question => {
           temporaryQuestion.push({
-            question: exercise._question.printFn({a: data.knowns.a, b: data.knowns.b}),
-            answer: data.unknowns.x
+            question: exercise.formatQuestion(question.knowns),
+            answer: question.unknowns
           })
         })
         res.json({status: true, data: temporaryQuestion})

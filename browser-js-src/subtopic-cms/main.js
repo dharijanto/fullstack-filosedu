@@ -38,7 +38,7 @@ $('.addNewExercise').on('click', function () {
 
   $('#exerciseContainer').append(divFormGroup)
   var newIndex = $('#exerciseContainer').children().length
-  var exerciseId = 'new-exercise-' + newIndex
+  var exerciseId = 'new-generateExerciseexercise-' + newIndex
   $('#exerciseContainer').children().last().find('textarea').attr('name', exerciseId)
   $('#exerciseContainer').children().last().find('textarea').attr('id', exerciseId)
   initCodeMirror(exerciseId)
@@ -81,6 +81,7 @@ function generateExercise (generateBtnElement) {
   var exerciseCode = exerciseContainer.find('textarea')[0].value
   var url = rootPath + 'generateExercise'
 
+  // TODO: Disable the button while request is being processed (i.e. slow internet)
   resultCode.empty() // Clear generated exercise
   $.post(url, {
     text: exerciseCode
@@ -88,7 +89,7 @@ function generateExercise (generateBtnElement) {
   function (resp, status) {
     if (resp.status) {
       resp.data.forEach((e, index) => {
-        $(resultCode).append(`${index + 1}. ${e.question} ? Answer: ${e.answer} <br/>`)
+        $(resultCode).append(`${index + 1}. ${e.question} ? Answer: ${JSON.stringify(e.answer)} <br/>`)
       })
     } else {
       var errMessage = $('<p style="color:red">' + resp.errMessage + '</p>')
@@ -128,7 +129,7 @@ $(document).ready(function () {
     embedId = currentEmbedId
   }, 500)
 
-  $('#ytInput').on('keyup', function () {
+  $('#ytInput').keyup(function () {
     tryEmbedYoutube()
   })
   // Embed when page first load

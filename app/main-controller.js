@@ -1,7 +1,6 @@
 const path = require('path')
 
 var getSlug = require('speakingurl')
-var LocalStrategy = require('passport-local').Strategy
 var log = require('npmlog')
 var Promise = require('bluebird')
 var PassportHelper = require('connect-ensure-login')
@@ -11,7 +10,6 @@ var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../course-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 var Formatter = require(path.join(__dirname, '../lib/utils/formatter.js'))
-var UserService = require(path.join(__dirname, '../user-service'))
 
 const TAG = 'FiloseduAppController'
 
