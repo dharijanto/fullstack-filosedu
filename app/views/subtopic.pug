@@ -17,5 +17,5 @@ block contents
 
       div.text-center(style="margin-top:50px;margin-bottom:50px;")
         each val, index in exercise
-          a.btn.btn-primary(href=`/topic/${getSlug(subtopic)}-${subtopicId}/latihan-${val.id}` style="margin-top:10px;" target="_blank")= 'Latihan ' + val.id
+          a.btn.btn-primary(href=`/topic/${subtopicId}/${getSlug(subtopic)}/${val.id}/latihan-${index+1}` style="margin-top:10px;" target="_blank")= 'Latihan ' + (index+1)
           br

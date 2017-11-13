@@ -2,6 +2,7 @@ const path = require('path')
 
 const log = require('npmlog')
 const Promise = require('bluebird')
+const marked = require('marked')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../course-service'))
@@ -15,6 +16,7 @@ class DynamicHostCMSController extends BaseController {
     this.addInterceptor((req, res, next) => {
       res.locals.site = req.site
       res.locals.user = req.user
+      res.locals.marked = marked
       req.courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
       next()
     })

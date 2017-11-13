@@ -5,6 +5,7 @@ var log = require('npmlog')
 var Promise = require('bluebird')
 var PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
 var passport = require('passport')
+var marked = require('marked')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../course-service'))
@@ -27,19 +28,27 @@ class Controller extends BaseController {
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.getSlug = getSlug
+      res.locals.marked = marked
       res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 
     this.routeGet('/', (req, res, next) => {
-      // TODO: error handling
-      courseService.read({modelName: 'Subtopic', searchClause: {}}).then(resp => {
-        if (resp.status) {
-          res.locals.data = resp.data
+      Promise.join(
+        courseService.read({modelName: 'Subtopic', searchClause: {}}),
+        courseService.read({modelName: 'Topic', searchClause: {}})
+      ).spread((subtopicContent, topicContent) => {
+
+        if (topicContent.status && subtopicContent.status) {
+          res.locals.subtopics = subtopicContent.data
+          res.locals.topics = topicContent.data
         } else {
-          res.locals.data = []
+          res.locals.subtopics = []
+          res.locals.topics = []
         }
         res.render('home')
+      }).catch(err => {
+        next(err)
       })
     })
 
@@ -74,14 +83,10 @@ class Controller extends BaseController {
       })
     })
 
-    this.routeGet('/logout', (req, res, next) => {
-      req.logout()
-      res.redirect('/login')
-    })
+    this.routeGet('/logout', PassportHelper.logOut())
 
-    this.routeGet('/topic/:subtopicSlug', (req, res, next) => {
-      // pop() mean get the very last element in array.
-      var subtopicId = req.params.subtopicSlug.split('-').pop()
+    this.routeGet('/topic/:subtopicId/:subtopicSlug', (req, res, next) => {
+      var subtopicId = req.params.subtopicId
       if (subtopicId) {
         Promise.join(
           courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
@@ -105,6 +110,7 @@ class Controller extends BaseController {
       var knowns = JSON.parse(generatedExercise.knowns)
 
       localsData.allQuestion = {
+        unknowns: exercise._question.unknowns,
         questions: knowns.map(known => exercise.formatQuestion(known)),
         userAnswers: generatedExercise.userAnswer
       }
@@ -114,14 +120,14 @@ class Controller extends BaseController {
     }
 
     // route to get exercise table
-    this.routeGet('/topic/:subtopicSlug/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      // pop() means get the very last element in array.
-      var exerciseId = req.params.exerciseSlug.split('-').pop()
+    this.routeGet('/topic/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+      var exerciseId = req.params.exerciseId
       courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
         if (resp.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
           var exercise = ExerciseGenerator.getExercise(resp.data[0].data)
           var questions = exercise.generateQuestions()
+
 
           // Check whether previous exercise has been submitted or not. If submitted,
           // we create new question for student otherwise, restore previous exercise.
@@ -164,6 +170,7 @@ class Controller extends BaseController {
     this.routePost('/checkAnswer', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
+
       log.verbose(TAG, `checkAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
       Promise.join(
         courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
@@ -180,21 +187,20 @@ class Controller extends BaseController {
           const generatedQuestions = JSON.parse(generatedExercise.knowns)
           const submittedExercises = sgeResp.status ? sgeResp.data : []
           const exerciseSolver = ExerciseGenerator.getExercise(eResp.data[0].data)
+          const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
-          // TODO: User answer should be array of objects of unknowns
-          const userAnswer = req.body.answer // [5,3,1,2,5]
-          log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswer)}`)
-          if (userAnswer.length !== generatedQuestions.length) {
+          log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
+          if (userAnswers.length !== generatedQuestions.length) {
             res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
           } else {
             // Flag array identifying which user answer is correct/wrong
             const isAnswerCorrect = []
             // Compute the score of current exercise
             const currentScore = generatedQuestions.reduce((numCorrect, knowns, index) => {
-              // TODO: User answer should be array of objects of unknowns
-              const unknowns = {x: parseFloat(userAnswer[index])}
-              log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns)} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns)}`)
-              const isCorrect = exerciseSolver.isAnswer(knowns, unknowns)
+              const unknowns = userAnswers
+
+              log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
+              const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
               isAnswerCorrect.push(isCorrect)
               return isCorrect ? numCorrect + 1 : numCorrect
             }, 0) / parseFloat(generatedQuestions.length) * 100
@@ -204,19 +210,19 @@ class Controller extends BaseController {
               return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
             }, 0)
 
-            // TODO: Update current exercise
             courseService.update({
               modelName: 'GeneratedExercise',
               data: {
                 id: generatedExercise.id,
                 score: currentScore,
+                userAnswer: JSON.stringify(userAnswers),
                 submitted: true}
             }).then(resp => {
               if (resp.status) {
                 res.json({
                   status: true,
                   data: {
-                    realAnswer: JSON.parse(generatedExercise.unknowns),
+                    realAnswers: JSON.parse(generatedExercise.unknowns),
                     isAnswerCorrect,
                     currentScore,
                     bestScore
@@ -232,59 +238,5 @@ class Controller extends BaseController {
     })
   }
 }
-
-    //   var generateExerciseId = req.body.generatedExerciseId
-    //   var exerciseId = req.body.exerciseId
-
-    //   Promise.join(
-    //     courseService.saveAndGetGeneratedExercise(generateExerciseId, JSON.stringify(req.body.answer)),
-    //     courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
-    //     function (generatedExerciseData, exerciseData) {
-    //       if (generatedExerciseData.status && exerciseData.status) {
-    //         var knowns = JSON.parse(generatedExerciseData.data[0].knowns)
-    //         var unknowns = JSON.parse(generatedExerciseData.data[0].unknowns)
-    //         var userAnswer = JSON.parse(generatedExerciseData.data[0].userAnswer)
-    //         var isAnswerCorrect = []
-    //         var totalCorrectAnswer = []
-    //         var exercise = ExerciseGenerator.getExercise(exerciseData.data[0].data)
-    //         var exerciseHash = ExerciseGenerator.getHash(exerciseData.data[0].data)
-
-    //         for (var i = 0; i < knowns.length; i++) {
-    //           var answer = exercise._question.isAnswerFn({a: knowns[i].a, b: knowns[i].b}, {x: parseFloat(userAnswer[i])})
-    //           isAnswerCorrect.push(answer)
-    //         }
-
-    //         totalCorrectAnswer = isAnswerCorrect.filter(v => v).length
-    //         var currentScore = ((totalCorrectAnswer / knowns.length) * 100)
-
-    //         // must get the best score from all exercise, with user_id and generate hash and exercise id
-    //         var bestScore = currentScore
-    //         courseService.update({modelName: 'GeneratedExercise', data: {id: generateExerciseId, score: currentScore}}).then(resp3 => {
-    //           courseService.read(
-    //             {
-    //               modelName: 'GeneratedExercise',
-    //               searchClause: {
-    //                 userId: req.user.id,
-    //                 exerciseHash,
-    //                 exerciseId: exerciseData.data[0].id
-    //               }
-    //             }
-    //           ).then(resp2 => {
-    //             if (resp2.data) {
-    //               resp2.data.forEach(data => {
-    //                 if (bestScore < data.score) {
-    //                   bestScore = parseInt(data.score)
-    //                 }
-    //               })
-    //             }
-    //             res.json({status: true, data: {realAnswer: unknowns, isAnswerCorrect, currentScore, bestScore}})
-    //           })
-    //         })
-    //       } else {
-    //         res.json({status: false})
-    //       }
-    //     }
-    //   )
-    // })
 
 module.exports = Controller

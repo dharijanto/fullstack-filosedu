@@ -25,6 +25,16 @@ class PassportHelper {
       }
     }
   }
+
+  static logOut () {
+    return function (req, res, next) {
+      req.session.returnTo = '/'
+      req.logout()
+      req.session.save(() => {
+        res.redirect('/login')
+      })
+    }
+  }
 }
 
 module.exports = PassportHelper

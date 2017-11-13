@@ -3,6 +3,7 @@ var _ = require('lodash')
 
 var codeMirror = require('codemirror')
 require('summernote')
+var marked = require('marked')
 
 // Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
@@ -22,7 +23,7 @@ if ($('#exerciseContainer').children().length > 0) {
 $('.addNewExercise').on('click', function () {
   var divTextRight = $('<div class="text-right"></div>')
   var btnDeleteExercise = $('<a class="btn btn-danger deleteExercise" data-exercise-id="">Delete</a>')
-  var btnGenerate = $('<a class="btn btn-primary btnGenerate"> Generate </a>')
+  var btnGenerate = $('<button class="btn btn-primary btnGenerate"> Generate </button>')
   var labelInsert = $('<label>Insert the code here :</label>')
   var textAreaCode = $('<textarea class="form-control" id="" rows="10"></textarea>')
   var divResultCode = $('<div class="resultCode"></div>')
@@ -38,7 +39,7 @@ $('.addNewExercise').on('click', function () {
 
   $('#exerciseContainer').append(divFormGroup)
   var newIndex = $('#exerciseContainer').children().length
-  var exerciseId = 'new-generateExerciseexercise-' + newIndex
+  var exerciseId = 'new-exercise-' + newIndex
   $('#exerciseContainer').children().last().find('textarea').attr('name', exerciseId)
   $('#exerciseContainer').children().last().find('textarea').attr('id', exerciseId)
   initCodeMirror(exerciseId)
@@ -83,13 +84,17 @@ function generateExercise (generateBtnElement) {
 
   // TODO: Disable the button while request is being processed (i.e. slow internet)
   resultCode.empty() // Clear generated exercise
+  $(generateBtnElement).attr('disabled', 'disabled')
   $.post(url, {
     text: exerciseCode
   },
   function (resp, status) {
+    $(generateBtnElement).removeAttr('disabled')
     if (resp.status) {
       resp.data.forEach((e, index) => {
-        $(resultCode).append(`${index + 1}. ${e.question} ? Answer: ${JSON.stringify(e.answer)} <br/>`)
+        $(resultCode).append(`${marked(e.question)}`)
+        $(resultCode).append(`Answer: ${JSON.stringify(e.answer)}`)
+        $(resultCode).append($(`<hr>`))
       })
     } else {
       var errMessage = $('<p style="color:red">' + resp.errMessage + '</p>')

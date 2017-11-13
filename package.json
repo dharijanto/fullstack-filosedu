@@ -16,6 +16,7 @@
   "dependencies": {
     "connect-ensure-login": "^0.1.1",
     "lodash": "^4.17.4",
+    "marked": "^0.3.6",
     "speakingurl": "^14.0.1"
   },
   "devDependencies": {

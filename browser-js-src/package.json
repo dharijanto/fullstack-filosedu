@@ -27,5 +27,8 @@
     "summernote": "^0.8.8",
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
+  },
+  "dependencies": {
+    "marked": "^0.3.6"
   }
 }

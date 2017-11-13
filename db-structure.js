@@ -74,7 +74,7 @@ function addTables (sequelize, models) {
     unknowns: {type: Sequelize.TEXT}, // JSON: array of unknowns i.e. [{a: 1, b: 3}, {a: 7, b: 3}]
     userAnswer: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}]
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
-    score: {type: Sequelize.INTEGER}
+    score: {type: Sequelize.FLOAT}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
   models.GeneratedExercise.belongsTo(models.User)
