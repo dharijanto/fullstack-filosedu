@@ -43,7 +43,10 @@ describe('Subtopic Controller', function () {
           expect(resp2.status).to.be.ok
           courseService.create({modelName: 'Subtopic', data: {subtopic: 'Mengenal Aljabar', topicId: resp2.data.id}}).then(resp3 => {
             expect(resp3.status).to.be.ok
-            done()
+            courseService.create({modelName: 'Exercise', data: {data: 'kkk', subtopicId: resp3.data.id}}).then(resp4 => {
+              expect(resp4.status).to.be.ok
+              done()
+            })
           })
         })
       })
@@ -185,38 +188,5 @@ describe('Subtopic Controller', function () {
           })
       })
     })
-  })
-
-  it('POST /generateExercise should produce line of question exercise', function (done) {
-    const q1 = require(path.join(__dirname, 'data/bruteforce-question-1'))
-    var exercise = ExerciseGenerator.getExercise(q1)
-    // Since this is a bruteforce method, makes sense to try it multiple times
-    _.range(0, 50).forEach(() => {
-      var questions = exercise.generateQuestions()
-      // Number of generated questions should be the same as what's asked
-      expect(questions).to.have.length(q1.quantity)
-      // Check that each question is correct
-      questions.forEach(question => {
-        // Specified knowns should be generated
-        expect(Object.keys(question.knowns)).to.include.members(q1.knowns)
-        // Specified unknowns should be generated
-        expect(Object.keys(question.unknowns)).to.include.members(q1.unknowns)
-        // Formatted question should be a string
-        expect(exercise.formatQuestion(question.knowns)).to.be.a('string')
-        // Questions should be answered correctly
-        expect(exercise.isAnswer(question.knowns, question.unknowns)).to.be.ok
-      })
-    })
-    done()
-  })
-
-  it('POST /generateExercise should produce error message because knowns and unknowns was intentional deleted', function (done) {
-    const q1 = require(path.join(__dirname, 'data/bruteforce-question-1-false'))
-    try {
-      var exercise = ExerciseGenerator.getExercise(q1)
-    } catch (err) {
-      expect(err.message).to.be.equal('knowns is not found!')
-      done()
-    }
   })
 })
