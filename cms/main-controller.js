@@ -164,12 +164,12 @@ class DynamicHostCMSController extends BaseController {
     this.routePost('/generateExercise', (req, res, next) => {
       var valueTextCodeTobeCheck = req.body.text
       try {
-        var exercise = ExerciseGenerator.getExercise(valueTextCodeTobeCheck)
-        var questions = exercise.generateQuestions()
+        var exerciseSolver = ExerciseGenerator.getExerciseSolver(valueTextCodeTobeCheck)
+        var questions = exerciseSolver.generateQuestions()
         var temporaryQuestion = []
         questions.forEach(question => {
           temporaryQuestion.push({
-            question: exercise.formatQuestion(question.knowns),
+            question: exerciseSolver.formatQuestion(question.knowns),
             answer: question.unknowns
           })
         })

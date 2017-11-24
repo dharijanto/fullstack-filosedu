@@ -25,10 +25,9 @@
     "codemirror": "^5.31.0",
     "lodash": "^4.17.4",
     "summernote": "^0.8.8",
+    "marked": "^0.3.6",
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
   },
-  "dependencies": {
-    "marked": "^0.3.6"
-  }
+  "dependencies": {}
 }

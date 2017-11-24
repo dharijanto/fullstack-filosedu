@@ -1,7 +1,7 @@
 var $ = require('jquery')
 
 $('.btn_submit_answer').on('click', function (e) {
-  if (confirm('Are you sure want to submit the answer? Please check again !!')){
+  if (confirm('Submit your answers?')) {
 
     var answers = $('#questionSubmit').children()
     var userAnswers = []
@@ -25,10 +25,10 @@ $('.btn_submit_answer').on('click', function (e) {
         var bestScore = resp.data.bestScore
 
         $('.scoreSection').removeClass('hidden')
-        $('.currentScore').text(`YOUR CURRENT SCORE IS ${currentScore}`)
+        $('.currentScore').text(`Your score is ${currentScore}`)
 
         if (bestScore !== 0) {
-          $('.bestScore').text(`YOUR BEST SCORE IS ${bestScore}`)
+          $('.bestScore').text(`Your best score is ${bestScore}`)
         }
 
         realAnswers.forEach((realAnswer, index) => {

@@ -29,6 +29,12 @@ describe('Course Service', function () {
     })
   })
 
+  afterEach(function () {
+    sequelize.close().catch(err => {
+      console.error(err)
+    })
+  })
+
   function create (id) {
     return courseService.create({
       modelName: 'Subject',

@@ -22,6 +22,7 @@ describe('Subtopic Controller', function () {
   const site = {
     hash: 'JustARandomValue'
   }
+
   beforeEach(function (done) {
     const db = {
       sequelize,
@@ -43,13 +44,17 @@ describe('Subtopic Controller', function () {
           expect(resp2.status).to.be.ok
           courseService.create({modelName: 'Subtopic', data: {subtopic: 'Mengenal Aljabar', topicId: resp2.data.id}}).then(resp3 => {
             expect(resp3.status).to.be.ok
-            courseService.create({modelName: 'Exercise', data: {data: 'kkk', subtopicId: resp3.data.id}}).then(resp4 => {
-              expect(resp4.status).to.be.ok
-              done()
-            })
+            done()
           })
         })
       })
+    })
+  })
+
+  afterEach(function () {
+    // Close connection so mocha exits gracefully
+    sequelize.close().catch(err => {
+      console.error(err)
     })
   })
 
@@ -93,7 +98,7 @@ describe('Subtopic Controller', function () {
   })
 
   // Create only new exercises and check if they are created
-  it('POST subtopic/submit/[id] should add new exercises', function(done) {
+  it('POST subtopic/submit/[id] should add new exercises', function (done) {
     courseService.read({modelName: 'Subtopic', searchClause: {subtopic: 'Mengenal Aljabar'}}).then(resp => {
       expect(resp.status).to.be.ok
       const subtopicId = resp.data[0].id
@@ -106,14 +111,14 @@ describe('Subtopic Controller', function () {
           // newExerciseIds should be returned
           const newExerciseIds = res.body.data.newExerciseIds
           expect(newExerciseIds).to.exist
-          expect(Object.keys(newExerciseIds)).to.have.length(2)
+          expect(Object.keys(newExerciseIds), `IDs: ${newExerciseIds}`).to.have.length(2)
           const exerciseId1 = newExerciseIds['new-exercise-1']
           const exerciseId2 = newExerciseIds['new-exercise-2']
           expect(exerciseId1).to.be.a('number')
           expect(exerciseId2).to.be.a('number')
           courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}).then(resp => {
             expect(resp.status).to.be.ok
-            expect(resp.data).to.have.length(2)
+            expect(resp.data, `Exercises: ${JSON.stringify(resp.data)}`).to.have.length(2)
             expect(resp.data[0].data).to.equal('hello this is new exercise 1')
             expect(resp.data[1].data).to.equal('hello this is new exercise 2')
             // newExerciseIds should be correct
@@ -189,4 +194,5 @@ describe('Subtopic Controller', function () {
       })
     })
   })
+
 })

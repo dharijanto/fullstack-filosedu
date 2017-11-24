@@ -12,10 +12,10 @@ describe('Bruteforce Solver', function () {
     // console.log(data)
     data.bruteforceQuestionPositiveQuestions.forEach(item => {
       const q1 = require(path.join(__dirname, `data/${item}`))
-      var exercise = ExerciseGenerator.getExercise(q1)
+      var exerciseSolver = ExerciseGenerator.getExerciseSolver(q1)
       // Since this is a bruteforce method, makes sense to try it multiple times
       _.range(0, 10).forEach(() => {
-        var questions = exercise.generateQuestions()
+        var questions = exerciseSolver.generateQuestions()
         // Number of generated questions should be the same as what's asked
         expect(questions).to.have.length(q1.quantity)
         // Check that each question is correct
@@ -25,9 +25,9 @@ describe('Bruteforce Solver', function () {
           // Specified unknowns should be generated
           expect(Object.keys(question.unknowns)).to.include.members(q1.unknowns)
           // Formatted question should be a string
-          expect(exercise.formatQuestion(question.knowns)).to.be.a('string')
+          expect(exerciseSolver.formatQuestion(question.knowns)).to.be.a('string')
           // Questions should be answered correctly
-          expect(exercise.isAnswer(question.knowns, question.unknowns)).to.be.ok
+          expect(exerciseSolver.isAnswer(question.knowns, question.unknowns)).to.be.ok
         })
       })
     })

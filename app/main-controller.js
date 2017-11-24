@@ -46,7 +46,7 @@ class Controller extends BaseController {
           res.locals.subtopics = []
           res.locals.topics = []
         }
-        res.render('home')
+        res.render('topics')
       }).catch(err => {
         next(err)
       })
@@ -85,49 +85,72 @@ class Controller extends BaseController {
 
     this.routeGet('/logout', PassportHelper.logOut())
 
-    this.routeGet('/topic/:subtopicId/:subtopicSlug', (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', (req, res, next) => {
       var subtopicId = req.params.subtopicId
       if (subtopicId) {
         Promise.join(
           courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-          courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
-          (subtopic, exercise) => {
-            if (subtopic.status) {
-              res.locals.data = subtopic.data
+          courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})
+        ).spread((resp, resp2) => {
+          if (resp.status) {
+            const subtopic = resp.data[0]
+            courseService.read({modelName: 'Topic', searchClause: {id: subtopic.topicId}}).then(resp3 => {
+              res.locals.topic = resp3.data[0]
+              res.locals.subtopic = subtopic
               res.locals.embedYoutube = Formatter.getYoutubeEmbedURL
-              res.locals.exercise = exercise.data || []
+              res.locals.exercises = resp2.data || []
+              res.locals.isAuthenticated = req.isAuthenticated()
+
+              // If user isn't logged in, we tell them they need to login/register to
+              // access exercise. And when they do, we want to redirect here
+              if (!req.isAuthenticated()) {
+                req.session.returnTo = req.originalUrl || req.url
+              }
               res.render('subtopic')
-            } else {
-              next() // 404
-            }
-          })
+            })
+          } else {
+            next() // 404
+          }
+        }).catch(err => {
+          next(err)
+        })
       } else {
         next() // 404
       }
     })
 
-    function displayQuestion (exercise, generatedExercise, exerciseId, localsData) {
+    // Helper function: data that are used for exercise view
+    function getExerciseData (exercise, generatedExercise, exerciseId) {
+      const data = {}
       var knowns = JSON.parse(generatedExercise.knowns)
 
-      localsData.allQuestion = {
+      data.allQuestion = {
         unknowns: exercise._question.unknowns,
         questions: knowns.map(known => exercise.formatQuestion(known)),
         userAnswers: generatedExercise.userAnswer
       }
 
-      localsData.generateExerciseId = generatedExercise.id
-      localsData.exerciseId = exerciseId
+      data.generateExerciseId = generatedExercise.id
+      data.exerciseId = exerciseId
+
+      return data
     }
 
     // route to get exercise table
-    this.routeGet('/topic/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       var exerciseId = req.params.exerciseId
-      courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
-        if (resp.status) {
+      var subtopicId = req.params.subtopicId
+      var topicId = req.params.topicId
+      Promise.join(
+        courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
+        courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+        courseService.read({modelName: 'Topic', searchClause: {id: topicId}})
+      ).spread((resp, resp2, resp3) => {
+        if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
-          var exercise = ExerciseGenerator.getExercise(resp.data[0].data)
-          var questions = exercise.generateQuestions()
-
+          var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data[0].data)
+          res.locals.subtopic = resp2.data[0]
+          res.locals.topic = resp3.data[0]
 
           // Check whether previous exercise has been submitted or not. If submitted,
           // we create new question for student otherwise, restore previous exercise.
@@ -140,18 +163,17 @@ class Controller extends BaseController {
             }
           }).then(resp2 => {
             if (resp2.status) {
-              displayQuestion(exercise, resp2.data[0], exerciseId, res.locals)
+              Object.assign(res.locals, getExerciseData(exerciseSolver, resp2.data[0], exerciseId))
               res.render('exercise')
             } else {
-              // lakukan aksi save question ke DB
               return courseService.createGenerateExercise(
                 exerciseHash,
-                questions,
+                exerciseSolver.generateQuestions(),
                 exerciseId,
                 req.user.id
               ).then(resp3 => {
                 if (resp3.status) {
-                  displayQuestion(exercise, resp3.data, exerciseId, res.locals)
+                  Object.assign(res.locals, getExerciseData(exerciseSolver, resp3.data, exerciseId))
                   res.render('exercise')
                 } else {
                   throw new Error('Cannot create exercise!')
@@ -186,7 +208,7 @@ class Controller extends BaseController {
           const generatedExercise = geResp.data[0]
           const generatedQuestions = JSON.parse(generatedExercise.knowns)
           const submittedExercises = sgeResp.status ? sgeResp.data : []
-          const exerciseSolver = ExerciseGenerator.getExercise(eResp.data[0].data)
+          const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data[0].data)
           const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
           log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)

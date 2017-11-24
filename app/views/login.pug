@@ -2,12 +2,17 @@ extends layout/index.pug
 
 block contents
     div.container
-      form(action="/submitlogin" method="POST")
-        div.form-group
-          label Username
-          input(type="text" name="username" class="form-control")
-        div.form-group
-          label Password
-          input(type="password" name="password" class="form-control")
-        div.form-group
-          button(type="submit" class="btn btn-primary") SUBMIT
+      .row
+        .col-md-12
+          form(action="/submitlogin" method="POST")
+            div.form-group
+              label Username
+              input(type="text" name="username" class="form-control")
+            div.form-group
+              label Password
+              input(type="password" name="password" class="form-control")
+            div.form-group
+              button(type="submit" class="btn btn-primary") SUBMIT
+      .row
+          .col-md-12
+            | Don't have an account? Click #[a(href='/register') here] to register.

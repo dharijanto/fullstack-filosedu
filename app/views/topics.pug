@@ -17,4 +17,4 @@ block contents
                 if (subtopic.topicId === topic.id)
                   li.list-group-item
                     | #{++numbering}. 
-                    a(href=`/topic/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
+                    a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}

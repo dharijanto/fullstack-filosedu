@@ -1,4 +1,5 @@
 class PassportHelper {
+  // TODO: No longer needed as the session bug apparently came from express-session and is already fixed
   // Adapted from Jared Hanson's connect-ensure-login
   // The difference is that this waits until session is saved before redirecting
   static ensureLoggedIn (options) {
