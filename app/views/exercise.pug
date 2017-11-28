@@ -9,7 +9,7 @@ block contents
       input(type="hidden" name="exerciseId" value=`${exerciseId}`)
       input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
 
-      div#questionSubmit
+      div.text-center#questionSubmit
         each question, index in allQuestion.questions
           form.QuestionSection(method="POST")
             div.form-group
@@ -28,6 +28,6 @@ block contents
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") SUBMIT ANSWER
         a.btn.btn-primary.btn_retry_question.hidden(href="") RETRY
 
-block scripts
+append scripts
   script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
   script(src=('/assets/js/subtopic-app-bundle.js'))

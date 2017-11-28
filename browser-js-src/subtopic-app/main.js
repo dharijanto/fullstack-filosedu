@@ -34,7 +34,6 @@ $('.btn_submit_answer').on('click', function (e) {
         realAnswers.forEach((realAnswer, index) => {
           // var collectAnswer = ''
           var correctUnknowns = []
-          var iteration = 0
           for (var unknown in realAnswer) {
             // collectAnswer = unknown + ' = ' + realAnswer[unknown]
             correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
@@ -51,7 +50,11 @@ $('.btn_submit_answer').on('click', function (e) {
 
         $('.btn_submit_answer').addClass('hidden')
         $('.btn_retry_question').removeClass('hidden')
+      } else {
+        console.error('Failed to submit answers!', resp)
       }
+    }).fail(err => {
+      console.error(err)
     })
   }
 })

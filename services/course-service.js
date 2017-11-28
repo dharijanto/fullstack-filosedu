@@ -2,15 +2,13 @@ var path = require('path')
 
 // var Promise = require('bluebird')
 var log = require('npmlog')
+var Promise = require('bluebird')
+var Sequelize = require('sequelize')
 
 var BaseService = require(path.join(__dirname, 'base-service'))
 
 const TAG = 'CourseService'
 class CourseService extends BaseService {
-  constructor (sequelize, models) {
-    super(sequelize, models)
-  }
-
   getTopicDependencies (courseId, whereClause = null) {
     whereClause = Object.assign({courseId}, whereClause)
     log.verbose(TAG, `getTopicDependencies(): courseId=${courseId} whereClause=${JSON.stringify(whereClause)}`)
@@ -19,22 +17,27 @@ class CourseService extends BaseService {
     })
   }
 
-  createGenerateExercise (exerciseHash, questions, exerciseId, userId) {
-    var knowns = []
-    var unknowns = []
-    questions.forEach(question => {
-      knowns.push(question.knowns)
-      unknowns.push(question.unknowns)
-    })
-    return this.create({
-      modelName: 'GeneratedExercise',
-      data: {
-        exerciseHash,
-        knowns: JSON.stringify(knowns),
-        unknowns: JSON.stringify(unknowns),
-        exerciseId,
-        userId
-      }
+  generateExercise (exerciseHash, questions, exerciseId, userId) {
+    // Note: There's a case where exercise has to be generated again
+    // because the original question has change. Due to this, we need
+    // to delete previously generated exercise
+    return this._models['GeneratedExercise'].destroy({where: {userId, exerciseId, submitted: false}}).then(() => {
+      var knowns = []
+      var unknowns = []
+      questions.forEach(question => {
+        knowns.push(question.knowns)
+        unknowns.push(question.unknowns)
+      })
+      return this.create({
+        modelName: 'GeneratedExercise',
+        data: {
+          exerciseHash,
+          knowns: JSON.stringify(knowns),
+          unknowns: JSON.stringify(unknowns),
+          exerciseId,
+          userId
+        }
+      })
     })
   }
 
@@ -64,6 +67,39 @@ class CourseService extends BaseService {
     return this.read({
       modelName: 'GeneratedExercise',
       searchClause: {userId, exerciseId, submitted: true}
+    })
+  }
+
+  // Get user score of an exercise
+  //
+  // Return:
+  // 0 - 4: How many of the submitted scores are > 80%
+  getExerciseStar (userId, exerciseId) {
+    return this._sequelize.query(`SELECT score FROM generatedExercises WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${exerciseId} ORDER BY score DESC LIMIT 4;`,
+      { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+        const stars = datas.reduce((acc, data) => {
+          if (parseInt(data.score) >= 80) {
+            return acc + 1
+          } else {
+            return acc
+          }
+        }, 0)
+        return {status: true, data: {stars}}
+      })
+  }
+
+  getSubtopicStar (userId, subtopicId) {
+    return this.read({
+      modelName: 'Exercise', searchClause: {subtopicId}
+    }).then(resp => {
+      return Promise.map(resp.data || [], exercise => {
+        return this.getExerciseStar(userId, exercise.id)
+      }).then(datas => {
+        const stars = datas.reduce((acc, resp) => {
+          return acc + resp.data.stars
+        }, 0) / (parseFloat(datas.length) || 1) // Avoid division by 0
+        return {status: true, data: {stars}}
+      })
     })
   }
 }

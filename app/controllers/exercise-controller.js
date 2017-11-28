@@ -62,6 +62,8 @@ class ExerciseController extends BaseController {
           res.locals.subtopic = resp2.data[0]
           res.locals.topic = resp3.data[0]
 
+          log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
+
           // Check whether previous exercise has been submitted or not. If submitted,
           // we create new question for student otherwise, restore previous exercise.
           return courseService.read({
@@ -73,10 +75,12 @@ class ExerciseController extends BaseController {
             }
           }).then(resp2 => {
             if (resp2.status) {
+              log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
               Object.assign(res.locals, getExerciseData(exerciseSolver, resp2.data[0], exerciseId))
               res.render('exercise')
             } else {
-              return courseService.createGenerateExercise(
+              log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
+              return courseService.generateExercise(
                 exerciseHash,
                 exerciseSolver.generateQuestions(),
                 exerciseId,
@@ -99,74 +103,82 @@ class ExerciseController extends BaseController {
       })
     })
 
-    this.routePost('/checkAnswer', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routePost('/checkAnswer', (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
-
       log.verbose(TAG, `checkAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
-      Promise.join(
-        courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
-        courseService.getSubmittedExercises({userId, exerciseId}),
-        courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}})
-      ).spread((geResp, sgeResp, eResp) => {
-        if (!geResp.status) {
-          log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
-          res.json({status: false, errMessage: 'Current exercise cannot be found'})
-        } else if (!eResp.status) {
-          res.json({status: false, errMessage: 'Exercise information be found'})
-        } else {
-          const generatedExercise = geResp.data[0]
-          const generatedQuestions = JSON.parse(generatedExercise.knowns)
-          const submittedExercises = sgeResp.status ? sgeResp.data : []
-          const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data[0].data)
-          const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
-          log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
-          if (userAnswers.length !== generatedQuestions.length) {
-            res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
+      if (!req.isAuthenticated) {
+        log.verbose(TAG, 'checkAnswer.POST: request is not authenticated!')
+        res.status(500).send('Request not authenticated!')
+      } else {
+        Promise.join(
+          courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
+          courseService.getSubmittedExercises({userId, exerciseId}),
+          courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}})
+        ).spread((geResp, sgeResp, eResp) => {
+          if (!geResp.status) {
+            log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
+            res.json({status: false, errMessage: 'Current exercise cannot be found'})
+          } else if (!eResp.status) {
+            res.json({status: false, errMessage: 'Exercise information be found'})
           } else {
-            // Flag array identifying which user answer is correct/wrong
-            const isAnswerCorrect = []
-            // Compute the score of current exercise
-            const currentScore = generatedQuestions.reduce((numCorrect, knowns, index) => {
-              const unknowns = userAnswers
+            const generatedExercise = geResp.data[0]
+            const generatedQuestions = JSON.parse(generatedExercise.knowns)
+            const submittedExercises = sgeResp.status ? sgeResp.data : []
+            const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data[0].data)
+            const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
-              log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
-              const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
-              isAnswerCorrect.push(isCorrect)
-              return isCorrect ? numCorrect + 1 : numCorrect
-            }, 0) / parseFloat(generatedQuestions.length) * 100
+            log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
+            log.verbose(TAG, `checkAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
+            if (userAnswers.length !== generatedQuestions.length) {
+              res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
+            } else {
+              // Flag array identifying which user answer is correct/wrong
+              const isAnswerCorrect = []
+              // Compute the score of current exercise
+              const currentScore = generatedQuestions.reduce((numCorrect, knowns, index) => {
+                const unknowns = userAnswers
 
-            // Compute the best score
-            const bestScore = submittedExercises.reduce((bestScore, submitedExercise) => {
-              return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
-            }, 0)
+                log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
+                const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
+                isAnswerCorrect.push(isCorrect)
+                return isCorrect ? numCorrect + 1 : numCorrect
+              }, 0) / parseFloat(generatedQuestions.length) * 100
 
-            courseService.update({
-              modelName: 'GeneratedExercise',
-              data: {
-                id: generatedExercise.id,
-                score: currentScore,
-                userAnswer: JSON.stringify(userAnswers),
-                submitted: true}
-            }).then(resp => {
-              if (resp.status) {
-                res.json({
-                  status: true,
-                  data: {
-                    realAnswers: JSON.parse(generatedExercise.unknowns),
-                    isAnswerCorrect,
-                    currentScore,
-                    bestScore
-                  }
-                })
-              } else {
-                res.json({status: false, errMessage: 'Failed to save generated exercise'})
-              }
-            })
+              // Compute the best score
+              const bestScore = submittedExercises.reduce((bestScore, submitedExercise) => {
+                return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
+              }, 0)
+
+              courseService.update({
+                modelName: 'GeneratedExercise',
+                data: {
+                  id: generatedExercise.id,
+                  score: currentScore,
+                  userAnswer: JSON.stringify(userAnswers),
+                  submitted: true}
+              }).then(resp => {
+                if (resp.status) {
+                  res.json({
+                    status: true,
+                    data: {
+                      realAnswers: JSON.parse(generatedExercise.unknowns),
+                      isAnswerCorrect,
+                      currentScore,
+                      bestScore
+                    }
+                  })
+                } else {
+                  res.json({status: false, errMessage: 'Failed to save generated exercise'})
+                }
+              })
+            }
           }
-        }
-      })
+        }).catch(err => {
+          next(err)
+        })
+      }
     })
   }
 }

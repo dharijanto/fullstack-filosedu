@@ -1,34 +1,31 @@
 extends layout/index.pug
+include includes/utils.pug
 
 block contents
-    div.container
-      //- - var subtopic = null
-      //- - var subtopicId = null
-      h1.text-center #{topic.topic} - #{subtopic.subtopic}
-      h4.text-center #{subtopic.description}
-      hr
-      - var content = JSON.parse(subtopic.data)
-        | !{content.detail}
-      #ytPlayerContainer
-        iframe(width="100%", height="100%", src=`//youtube.com/embed/${embedYoutube(content.youtube_url)}`, frameborder="0", allowfullscreen="")
+  div.container
+    h1.text-center #{topic.topic} - #{subtopic.subtopic}
+    h4.text-center #{subtopic.description}
+    h4.text-center 
+      a(href='/') Back to Modules
+    hr
+    - var content = JSON.parse(subtopic.data)
+      | !{content.detail}
+    #ytPlayerContainer
+      iframe(width="100%", height="100%", src=`//youtube.com/embed/${embedYoutube(content.youtube_url)}`, frameborder="0", allowfullscreen="")
 
-      
-      div.text-center(style="margin-top:50px;margin-bottom:50px;")
-        each exercise, index in exercises
-          - var exerciseUrl = `/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}/${exercise.id}/latihan-${index+1}`
-          if (!isAuthenticated)
-            input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
-          else
-            a.btn.btn-primary(type="button" href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
-            - var stars = exercise.stars
-            - var emptyStars = 4 - stars
-            while stars-- > 0
-              span 
-                img(src="/assets/img/star.png" width="30")
-            while emptyStars-- > 0
-              span 
-                img(src="/assets/img/star_empty.png" width="30")
-          br
-        if !isAuthenticated
-          br
-          | Please #[a(href='/login') login] or #[a(href='/register') register] to access exercises.
+    
+    div.text-center(style="margin-top:50px;margin-bottom:50px;")
+      each exercise, index in exercises
+        - var exerciseUrl = `/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}/${exercise.id}/latihan-${index+1}`
+
+        // There's no elegant way of having a button with href. If we use a however, it can't be disabled easily
+        // TODO: Use 'a' with css to disable
+        if (!isAuthenticated)
+          input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
+        else
+          a.btn.btn-primary(type="button" href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
+          + renderExerciseStars(exercise.stars)
+        br
+      if !isAuthenticated
+        br
+        | Please #[a(href='/login') login] or #[a(href='/register') register] to access exercises.

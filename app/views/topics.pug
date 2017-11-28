@@ -1,4 +1,5 @@
 extends layout/index.pug
+include includes/utils.pug
 
 block contents
   div.container
@@ -8,13 +9,14 @@ block contents
       .panel-group
         .panel.panel-default
           .panel-heading
-              h2.panel-title
-                  a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-          .panel-collapse.collapse(id=`collapse_${index}`)
+              h1.panel-title
+                a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
+          .panel-collapse.collapse.in(id=`collapse_${index}`)
             ul.list-group
               - var numbering = 0;
               each subtopic, index2 in subtopics
                 if (subtopic.topicId === topic.id)
-                  li.list-group-item
-                    | #{++numbering}. 
+                  li.list-group-item #{++numbering}. 
                     a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
+                    span.pull-right
+                      + renderExerciseStars(parseInt(subtopic.stars), 20)

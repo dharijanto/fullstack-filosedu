@@ -7,16 +7,16 @@ var Promise = require('bluebird')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
-var UserService = require(path.join(__dirname, '../../services/user-service'))
+// var UserService = require(path.join(__dirname, '../../services/user-service'))
 var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
 
-const TAG = 'CredentialController'
+const TAG = 'CourseController'
 
 class CourseController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
-    const userService = new UserService(this.getDb().sequelize, this.getDb().models)
+    // const userService = new UserService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -34,15 +34,25 @@ class CourseController extends BaseController {
       Promise.join(
         courseService.read({modelName: 'Subtopic', searchClause: {}}),
         courseService.read({modelName: 'Topic', searchClause: {}})
-      ).spread((subtopicContent, topicContent) => {
-        if (topicContent.status && subtopicContent.status) {
-          res.locals.subtopics = subtopicContent.data
-          res.locals.topics = topicContent.data
+      ).spread((subtopicResp, topicResp) => {
+        res.locals.subtopics = subtopicResp.data || []
+        res.locals.topics = topicResp.data || []
+
+        if (req.isAuthenticated()) {
+          return Promise.map(res.locals.subtopics, subtopic => {
+            return courseService.getSubtopicStar(req.user.id, subtopic.id)
+          }).then(datas => {
+            datas.forEach((resp, index) => {
+              res.locals.subtopics[index].stars = resp.data.stars
+            })
+            res.render('topics')
+          })
         } else {
-          res.locals.subtopics = []
-          res.locals.topics = []
+          res.locals.subtopics.forEach((subtopic, index) => {
+            subtopic.stars = 0
+          })
+          res.render('topics')
         }
-        res.render('topics')
       }).catch(err => {
         next(err)
       })
@@ -71,7 +81,7 @@ class CourseController extends BaseController {
                 res.render('subtopic')
               } else {
                 return Promise.map(res.locals.exercises, exercise => {
-                  return userService.getExerciseStar(req.user.id, exercise.id)
+                  return courseService.getExerciseStar(req.user.id, exercise.id)
                 }).then(results => {
                   results.forEach((result, index) => {
                     log.verbose(TAG, 'subtopic.GET(): star=' + result.data.stars)

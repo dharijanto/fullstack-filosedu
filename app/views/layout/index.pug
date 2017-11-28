@@ -16,7 +16,7 @@ body
       #bs-example-navbar-collapse-1.collapse.navbar-collapse
         ul.nav.navbar-nav
           li.active
-            a(href="/") Homepage
+            a(href="/") Modules
           if (!loggedIn)
             li
               a(href="/login") Login
@@ -28,5 +28,8 @@ body
 
   block contents
 
-include footer.pug
-  block scripts
+  block footer
+
+block scripts
+  script(src="https://code.jquery.com/jquery-3.2.1.js")
+  script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
