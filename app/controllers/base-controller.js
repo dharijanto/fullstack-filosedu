@@ -6,7 +6,7 @@ const log = require('npmlog')
 class BaseController {
   constructor ({site, user, socketIO, db, logTag}) {
     this._router = express()
-    this._viewPath = path.join(__dirname, 'views')
+    this._viewPath = path.join(__dirname, '../views')
     this._db = db
     this.getRouter().set('views', this._viewPath)
     this.getRouter().set('view engine', 'pug')
