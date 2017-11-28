@@ -11,7 +11,7 @@ var Promise = require('bluebird')
 
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var createSequelizeModel = require(path.join(__dirname, '../../db-structure'))
-var CourseService = require(path.join(__dirname, '../../course-service'))
+var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var MainController = require(path.join(__dirname, '../../cms/main-controller'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 

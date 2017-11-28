@@ -5,7 +5,7 @@ const Promise = require('bluebird')
 const marked = require('marked')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
-const CourseService = require(path.join(__dirname, '../course-service'))
+const CourseService = require(path.join(__dirname, '../services/course-service'))
 const ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 
 class DynamicHostCMSController extends BaseController {

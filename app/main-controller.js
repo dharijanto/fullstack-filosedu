@@ -8,7 +8,8 @@ var passport = require('passport')
 var marked = require('marked')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
-var CourseService = require(path.join(__dirname, '../course-service'))
+var CourseService = require(path.join(__dirname, '../services/course-service'))
+var UserService = require(path.join(__dirname, '../services/user-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 var Formatter = require(path.join(__dirname, '../lib/utils/formatter.js'))
 
@@ -20,6 +21,7 @@ class Controller extends BaseController {
 
     // const userService = new UserService(this.getDb().sequelize, this.getDb().models)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
+    const userService = new UserService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -38,7 +40,6 @@ class Controller extends BaseController {
         courseService.read({modelName: 'Subtopic', searchClause: {}}),
         courseService.read({modelName: 'Topic', searchClause: {}})
       ).spread((subtopicContent, topicContent) => {
-
         if (topicContent.status && subtopicContent.status) {
           res.locals.subtopics = subtopicContent.data
           res.locals.topics = topicContent.data
@@ -53,34 +54,29 @@ class Controller extends BaseController {
     })
 
     this.routeGet('/login', (req, res, next) => {
+      res.locals.error = req.flash('error')
       res.render('login')
     })
 
     this.routeGet('/register', (req, res, next) => {
       // Used by pre-defined passport 'app_register'
-      res.locals.siteId = req.site.id
+      res.locals.error = req.flash('error')
       res.render('register')
     })
 
     this.routePost('/register', passport.authenticate('app_register', {
-      failureRedirect: '/register'
+      failureRedirect: '/register',
+      failureFlash: true
     }), (req, res, next) => {
-      // Need to wait until user logged state is saved before redirecting to avoid
-      // race condition
-      req.session.save(() => {
-        res.redirect(req.session.returnTo || '/')
-      })
+      res.redirect(req.session.returnTo || '/')
     })
 
-    this.routePost('/submitlogin', passport.authenticate('app_login', {
-      failureRedirect: '/login'
+    this.routePost('/login', passport.authenticate('app_login', {
+      failureRedirect: '/login',
+      failureFlash: true
     }), (req, res, next) => {
       log.verbose(TAG, 'submitlogin.POST(): redirecting to: ' + req.session.returnTo)
-      // Need to wait until user logged state is saved before redirecting to avoid
-      // race condition
-      req.session.save(() => {
-        res.redirect(req.session.returnTo || '/')
-      })
+      res.redirect(req.session.returnTo || '/')
     })
 
     this.routeGet('/logout', PassportHelper.logOut())
@@ -94,7 +90,7 @@ class Controller extends BaseController {
         ).spread((resp, resp2) => {
           if (resp.status) {
             const subtopic = resp.data[0]
-            courseService.read({modelName: 'Topic', searchClause: {id: subtopic.topicId}}).then(resp3 => {
+            return courseService.read({modelName: 'Topic', searchClause: {id: subtopic.topicId}}).then(resp3 => {
               res.locals.topic = resp3.data[0]
               res.locals.subtopic = subtopic
               res.locals.embedYoutube = Formatter.getYoutubeEmbedURL
@@ -105,8 +101,18 @@ class Controller extends BaseController {
               // access exercise. And when they do, we want to redirect here
               if (!req.isAuthenticated()) {
                 req.session.returnTo = req.originalUrl || req.url
+                res.render('subtopic')
+              } else {
+                return Promise.map(res.locals.exercises, exercise => {
+                  return userService.getExerciseStar(req.user.id, exercise.id)
+                }).then(results => {
+                  results.forEach((result, index) => {
+                    log.verbose(TAG, 'subtopic.GET(): star=' + result.data.stars)
+                    res.locals.exercises[index].stars = result.data.stars
+                  })
+                  res.render('subtopic')
+                })
               }
-              res.render('subtopic')
             })
           } else {
             next() // 404

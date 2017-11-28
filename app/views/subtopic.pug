@@ -20,6 +20,14 @@ block contents
             input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
           else
             a.btn.btn-primary(type="button" href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
+            - var stars = exercise.stars
+            - var emptyStars = 4 - stars
+            while stars-- > 0
+              span 
+                img(src="/assets/img/star.png" width="30")
+            while emptyStars-- > 0
+              span 
+                img(src="/assets/img/star_empty.png" width="30")
           br
         if !isAuthenticated
           br
