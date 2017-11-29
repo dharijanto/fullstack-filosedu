@@ -6,11 +6,11 @@ var watchify = require('watchify')
 
 const modules = [
   {
-    input: 'subtopic-cms',
+    input: 'course-management-cms',
     output: 'cms'
   },
   {
-    input: 'course-management-cms',
+    input: 'subtopic-cms',
     output: 'cms'
   },
   {
@@ -19,7 +19,7 @@ const modules = [
   }]
 
 modules.forEach(module => {
-  console.log(`Watching module: ${module}...`)
+  console.log(`Watching module: ${module.input}...`)
   const b = watchify(browserify(path.join(__dirname, module.input, 'main.js'), {cache: {}, packageCache: {}})
     .transform({global: true}, 'browserify-shim')
     .transform('babelify', {presets: ['es2015']})
@@ -39,7 +39,6 @@ function bundle (b, module, outputFolder) {
   .on('error', err => console.error(err.message))
   .pipe(fs.createWriteStream(path.join(__dirname, `../${outputFolder}/views/assets/js/${module}-bundle.js`)))
   .on('finish', () => {
-    console.log('success!')
     console.timeEnd(module)
   })
 }

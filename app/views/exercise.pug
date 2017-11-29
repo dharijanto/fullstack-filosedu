@@ -3,8 +3,9 @@ extends layout/index.pug
 block contents
     div.container
       h1.text-center Latihan Soal
-      h3.text-center 
-        a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) #{topic.topic} - #{subtopic.subtopic}
+      h3.text-center #{topic.topic} - #{subtopic.subtopic}
+      h4.text-center 
+        a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Back to Sub-Module
       hr
       input(type="hidden" name="exerciseId" value=`${exerciseId}`)
       input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
