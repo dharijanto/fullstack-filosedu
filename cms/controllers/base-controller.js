@@ -14,11 +14,12 @@ class BaseController {
     this._router.use(bodyParser.json()) // Required for unit-testing
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
-    this._subRouter.use(express.static(path.join(__dirname, 'views')))
+    const viewPath = path.join(__dirname, '../views')
+    this._subRouter.use(express.static(viewPath))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
 
-    this._subRouter.set('views', path.join(__dirname, 'views'))
+    this._subRouter.set('views', viewPath)
     this._subRouter.set('view engine', 'pug')
     this._interceptors = []
   }
@@ -58,6 +59,11 @@ class BaseController {
 
   routeUse (...fns) {
     this._subRouter.use(this.getMountPath(''), this._extendInterceptors(fns))
+  }
+
+  // Like routeUse, but doesn't prepend the path with hash
+  routeHashlessUse (...fns) {
+    this._router.use(this._extendInterceptors(fns))
   }
 
   // Nusantara-cloud hosting is of format:

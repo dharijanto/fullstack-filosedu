@@ -1,0 +1,3 @@
+[submodule "browser-js-src/nc-input-library"]
+	path = browser-js-src/nc-input-library
+	url = https://github.com/nusantara-cloud/nc-input-library.git

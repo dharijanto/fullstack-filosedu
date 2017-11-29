@@ -4,9 +4,6 @@ function addTables (sequelize, models) {
   // models.User = sequelize.define('User', ...)
 
   models.Subject = sequelize.define('subject', {
-
-  })
-  models.Subject = sequelize.define('subject', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     subject: {type: Sequelize.STRING, unique: true},
     description: {type: Sequelize.STRING}
@@ -41,15 +38,18 @@ function addTables (sequelize, models) {
       references: {
         model: models.Topic,
         key: 'id'
-      }
+      },
+      unique: 'compositeIndex'
     },
     dependencyId: {
       type: Sequelize.INTEGER,
       references: {
         model: models.Topic,
         key: 'id'
-      }
-    }
+      },
+      unique: 'compositeIndex'
+    },
+    description: Sequelize.STRING
   })
 
   models.User = sequelize.define('users', {

@@ -18,15 +18,20 @@ class BaseService {
       return {status: true, data: createdData.get({plain: true})}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
-        return {status: false, errMessage: 'Invalid Input!'}
+        return {status: false, errMessage: 'Unique Constraint Error'}
       } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-        return {status: false, errMessage: 'Constraint Error!'}
+        return {status: false, errMessage: 'Foreign Key Constraint Error!'}
       } else {
         throw err
       }
     })
   }
 
+  // If there's data to be read:
+  // {status: true, data: []}
+  //
+  // If there's no data:
+  // {status: false, errCode: ..., errMessage: ..., errData}
   read ({modelName, searchClause}) {
     if (!searchClause) {
       throw new Error('searchClause has to be specified!')
@@ -50,9 +55,9 @@ class BaseService {
       return {status: true}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
-        return {status: false, errMessage: 'Invalid Input!'}
+        return {status: false, errMessage: 'Unique Constraint Error'}
       } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-        return {status: false, errMessage: 'Constraint Error!'}
+        return {status: false, errMessage: 'Foreign Key Constraint Error!'}
       } else {
         throw err
       }
@@ -66,6 +71,14 @@ class BaseService {
         return {status: true}
       } else {
         return {status: false, errMessage: 'Data Not Found!'}
+      }
+    }).catch(err => {
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        return {status: false, errMessage: 'Unique Constraint Error'}
+      } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+        return {status: false, errMessage: 'Foreign Key Constraint Error!'}
+      } else {
+        throw err
       }
     })
   }

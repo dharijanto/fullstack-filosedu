@@ -9,14 +9,6 @@ var BaseService = require(path.join(__dirname, 'base-service'))
 
 const TAG = 'CourseService'
 class CourseService extends BaseService {
-  getTopicDependencies (courseId, whereClause = null) {
-    whereClause = Object.assign({courseId}, whereClause)
-    log.verbose(TAG, `getTopicDependencies(): courseId=${courseId} whereClause=${JSON.stringify(whereClause)}`)
-    return this._models.TopicDependency.findAll(whereClause).then(dependencies => {
-      return this.read('Courses', {id: dependencies.map(dependency => dependency.topicId)})
-    })
-  }
-
   generateExercise (exerciseHash, questions, exerciseId, userId) {
     // Note: There's a case where exercise has to be generated again
     // because the original question has change. Due to this, we need
@@ -100,6 +92,30 @@ class CourseService extends BaseService {
         }, 0) / (parseFloat(datas.length) || 1) // Avoid division by 0
         return {status: true, data: {stars}}
       })
+    })
+  }
+
+  getTopicDependencies (topicId) {
+    return this._sequelize.query(
+      `SELECT topicDependencies.id, topicDependencies.description, topicDependencies.updatedAt, topics.topic as dependencyName FROM topicDependencies INNER JOIN topics ON topics.id = topicDependencies.dependencyId WHERE topicDependencies.topicId=${topicId}`,
+      { type: Sequelize.QueryTypes.SELECT })
+    .then(data => {
+      return {status: true, data}
+    })
+  }
+
+  addTopicDependency (topicId, dependencyName, description) {
+    return this.read({modelName: 'Topic', searchClause: {topic: dependencyName}}).then(resp => {
+      if (resp.status) {
+        const dependencyTopic = resp.data[0]
+        if (dependencyTopic.id === parseInt(topicId)) {
+          return {status: false, errMessage: 'A topic could not depend on itself!'}
+        } else {
+          return this.create({modelName: 'TopicDependency', data: {topicId, dependencyId: dependencyTopic.id, description}})
+        }
+      } else {
+        return {status: false, errMessage: `Could not find topic with name "${dependencyName}"`}
+      }
     })
   }
 }

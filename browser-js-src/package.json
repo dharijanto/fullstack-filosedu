@@ -25,8 +25,9 @@
     "browserify-shim": "^3.8.14",
     "codemirror": "^5.31.0",
     "lodash": "^4.17.4",
-    "summernote": "^0.8.8",
     "marked": "^0.3.6",
+    "summernote": "^0.8.8",
+    "toastr": "^2.1.2",
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
   },

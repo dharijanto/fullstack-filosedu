@@ -1,5 +1,6 @@
-var rootPath = require('cmsRootPath')
 var $ = require('jquery')
+var rootPath = require('cmsRootPath')
+var toastr = require('toastr')
 
 var selectedIds = {}
 var NCInputs = {}
@@ -20,7 +21,7 @@ function getTopicURL () {
 }
 
 function getTopicDependencyURL () {
-  return rootPath + 'getTopicDendency/' + selectedIds.topic
+  return getModelURL('TopicDependency?topicId=') + selectedIds.topic
 }
 
 function getSubtopicURL () {
@@ -58,13 +59,13 @@ const postTo = {
   },
   topicDependency: {
     add: function () {
-      return rootPath + 'add/Topic?subjectId=' + selectedIds.topic
+      return rootPath + 'add/TopicDependency?topicId=' + selectedIds.topic
     },
     edit: function () {
-      return rootPath + 'edit/Topic'
+      return rootPath + 'edit/TopicDependency?topicId=' + selectedIds.topic
     },
     delete: function () {
-      return rootPath + 'delete/Topic'
+      return rootPath + 'delete/TopicDependency?topicId=' + selectedIds.topic
     }
   },
   subtopic: {
@@ -93,14 +94,23 @@ function onSubjectClicked (data) {
 function onTopicClicked (data) {
   // console.log('onTopicClicked(): ' + JSON.stringify(data))
   selectedIds.topic = data.id
+  NCInputs.topicDependencyInput.reloadTable()
   NCInputs.subtopicNcInput.reloadTable()
 }
 
+function onTopicDependencyClicked (data) {
+  console.warn('NOT IMPLEMENTED!')
+}
+
 function onSubtopicClicked (data) {
+  toastr.info('Click on highlighted row to open topic-management page')
+  // When highlighted row is clicked, open management page
+  if (selectedIds.subtopic === data.id) {
+    // window.location = rootPath + 'subtopic/' + data.id
+    window.open(rootPath + 'subtopic/' + data.id)
+  }
   // console.log('onSubtopicClicked(): ' + JSON.stringify(data))
   selectedIds.subtopic = data.id
-  // window.location.href = rootPath + 'manageSubtopic/' + data.id
-  window.open(rootPath + 'subtopic/' + data.id)
 }
 // -----------------------------------------
 
@@ -118,11 +128,11 @@ const tableConfig = {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false},
-        {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'},
+        {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'}
       ],
       conf: {
-        orderBy: 'lastModified',
+        orderBy: 'updatedAt',
         getURL: getSubjectURL,
         onRowClicked: onSubjectClicked
       }
@@ -144,10 +154,10 @@ const tableConfig = {
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'topic', desc: 'Topic', dataTable: true, input: 'text', disabled: false},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
-        {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'}
       ],
       conf: {
-        orderBy: 'lastModified',
+        orderBy: 'updatedAt',
         getURL: getTopicURL,
         onRowClicked: onTopicClicked
       }
@@ -167,14 +177,14 @@ const tableConfig = {
     table: {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
-        {id: 'topicDependency', desc: 'Topic Dependency', dataTable: true, input: 'text', disabled: false},
+        {id: 'dependencyName', desc: 'Dependency Name', dataTable: true, input: 'text', disabled: false},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
-        {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'}
       ],
       conf: {
-        orderBy: 'lastModified',
+        orderBy: 'updatedAt',
         getURL: getTopicDependencyURL,
-        onRowClicked: onTopicClicked
+        onRowClicked: onTopicDependencyClicked
       }
     },
     buttons: {
@@ -194,10 +204,10 @@ const tableConfig = {
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'subtopic', desc: 'Subtopic', dataTable: true, input: 'text', disabled: false},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
-        {id: 'lastModified', desc: 'Last Modified', dataTable: true, input: 'date'}
+        {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'}
       ],
       conf: {
-        orderBy: 'lastModified',
+        orderBy: 'updatedAt',
         getURL: getSubtopicURL,
         onRowClicked: onSubtopicClicked
       }
