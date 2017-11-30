@@ -12,42 +12,37 @@ const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_gener
 class SubtopicController extends BaseController {
   constructor (initData) {
     super(initData)
-
+    const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     this.addInterceptor((req, res, next) => {
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.marked = marked
-      req.courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
       next()
     })
 
     // Retrieve information about subtopic
     this.routeGet('/subtopic/:id', (req, res, next) => {
       const subtopicId = req.params.id
-      Promise.join(
-        req.courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        req.courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})).spread((sResp, eResp) => {
-          // If subtopic is retrieved, it's a success. Questions are optional
+      return Promise.join(
+        courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})).spread((sResp, eResp) => {
           if (sResp.status) {
-            return {
-              status: true,
-              data: {
-                subtopic: sResp.data[0],
-                exercises: eResp.data || []
+            res.locals.subtopic = sResp.data[0]
+            res.locals.exercises = eResp.data || []
+            res.locals.subtopicData = res.locals.subtopic.data ? JSON.parse(res.locals.subtopic.data) : {}
+            return courseService.read({modelName: 'Topic', searchClause: {id: res.locals.subtopic.topicId}}).then(tResp => {
+              if (tResp.status) {
+                res.locals.topic = tResp.data[0]
+                res.render('subtopic')
+              } else {
+                next() // 404 not found
               }
-            }
-          } else {
-            return {status: false, errMessage: 'Failed to retrieve subtopic with id=' + subtopicId}
-          }
-        }).then(resp => {
-          if (resp.status) {
-            res.locals.subtopic = resp.data.subtopic
-            res.locals.exercises = resp.data.exercises
-            res.locals.subtopicData = resp.data.subtopic.data ? JSON.parse(resp.data.subtopic.data) : {}
-            res.render('subtopic')
+            })
           } else {
             next() // 404 not found
           }
+        }).then(err => {
+          next(err)
         })
     })
 
@@ -76,7 +71,7 @@ class SubtopicController extends BaseController {
         }
       })
 
-      const updateSubtopicPromise = req.courseService.update({modelName: 'Subtopic',
+      const updateSubtopicPromise = courseService.update({modelName: 'Subtopic',
         data: {
           id: subtopicId,
           data: JSON.stringify(req.body.subtopicData)
@@ -84,11 +79,11 @@ class SubtopicController extends BaseController {
       })
 
       const createExercisePromise = Promise.map(newExercises, newExercise => {
-        return req.courseService.create({modelName: 'Exercise', data: newExercise})
+        return courseService.create({modelName: 'Exercise', data: newExercise})
       })
 
       const updateExercisePromises = Promise.map(existingExercises, existingExercise => {
-        return req.courseService.update({modelName: 'Exercise', data: existingExercise})
+        return courseService.update({modelName: 'Exercise', data: existingExercise})
       })
 
       log.verbose(this.getTag(), `newExercises = ${JSON.stringify(newExercises)}`)

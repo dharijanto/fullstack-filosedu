@@ -1,6 +1,6 @@
 extends ../../../../../sites/root/cms/view/v1/layout.pug
 
-include includes/sidebar.pug 
+include includes/sidebar.pug
 
 append links
   link(href="/assets/vendor/summernote/summernote.css" rel="stylesheet")
@@ -9,7 +9,7 @@ append links
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
 
 block content
-    h1 #{subtopic.subtopic}
+    h1 #{topic.topic} - #{subtopic.subtopic}
     form(section="subtopic-detail")
       div.form-group
         label(for='link') 
@@ -40,7 +40,6 @@ block content
       div.text-center
         button.btn.btn-primary(id="btnSave" ic-post-to=rootifyPath(`subtopic/submit/${subtopic.id}`) ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') Save Change
         i#indicator.fa.fa-spinner.fa-spin(style="display:none")
-
 
 append scripts
   script.
