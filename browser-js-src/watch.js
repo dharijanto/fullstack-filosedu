@@ -14,7 +14,7 @@ const modules = [
     output: 'cms'
   },
   {
-    input: 'subtopic-app',
+    input: 'exercise-app',
     output: 'app'
   }]
 

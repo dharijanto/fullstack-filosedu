@@ -43,7 +43,7 @@ $('.btn_submit_answer').on('click', function (e) {
           if (correction[index] === true) {
             answer = $('<p style="color:green">Correct</p>')
           } else {
-            answer = $('<p style="color:red;">Incorrect! Correct answer is ' + correctUnknowns.join(', ') + '</p>')
+            answer = $('<p style="color:red;">Incorrect! Answer is ' + correctUnknowns.join(', ') + '</p>')
           }
           $('.resultAnswer_' + index).append(answer)
         })

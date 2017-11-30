@@ -13,22 +13,23 @@ block contents
       div.text-center#questionSubmit
         each question, index in allQuestion.questions
           form.QuestionSection(method="POST")
-            div.form-group
+            .row
               | !{marked(question)}
+            .row.form-group(style="width: 40%; margin:auto")
               each unknown, index2 in allQuestion.unknowns
-                label
-                  | #{unknown} =
-                // Only allow numbers as input
-                input.form-control(name=`${unknown}` type="text" value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}` onkeypress='return event.charCode >= 48 && event.charCode <= 57' style="display:inline-block; width:10%;")
+                label.col-sm-2.control-label(style="font-size: 150%") #{unknown}
+                .col-sm-10
+                  input.form-control(name=`${unknown}` type="number" value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}`)
               div(class=`resultAnswer_${index}`)
+            .row
               hr
-      div.text-center(style="margin-top:50px;margin-bottom:50px;")
+      div.text-center(style="margin-top:5%;margin-bottom:5%;")
         div.scoreSection.hidden
           p(class='currentScore')
           p(class='bestScore')
-        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") SUBMIT ANSWER
-        a.btn.btn-primary.btn_retry_question.hidden(href="") RETRY
+        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
+        a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
 append scripts
   script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
-  script(src=('/assets/js/subtopic-app-bundle.js'))
+  script(src=('/assets/js/exercise-app-bundle.js'))
