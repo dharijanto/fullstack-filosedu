@@ -38,7 +38,7 @@ const isAnswerFn = ({a, b, c}, {x}) => {
 // Describe how the question will be printed
 const printFn = ({a, b, c}) => {
   var plusOrMinus = val => val >= 0 ? '+' : '-'
-  return _.sample([`${a}x ${plusOrMinus(b)} ${Math.abs(b)} = ${c}`])
+  return `${a}x ${plusOrMinus(b)} ${Math.abs(b)} = ${c}`
 }
 
 // In addition to exact matches, this describe the other matches
@@ -50,7 +50,7 @@ const isEqualFn = (unknowns1, unknowns2) => {
 }
 
 module.exports = {
-  quantity: 20, // The number of questions to be generated
+  quantity: 5, // The number of questions to be generated
   solver: {
     type: 'bruteforce_solver', // The questions are generated using bruteforce
     randomGeneratorFn, // 'bruteforce_solver' uses random generator to generate each of the variables

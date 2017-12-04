@@ -30,20 +30,22 @@ class ExerciseController extends BaseController {
     })
 
     // Helper function: data that are used for exercise view
-    function getExerciseData (exercise, generatedExercise, exerciseId) {
+    function getExerciseData (exerciseSolver, generatedExercise, exerciseId) {
       const data = {}
       var knowns = JSON.parse(generatedExercise.knowns)
 
-      data.allQuestion = {
-        unknowns: exercise._question.unknowns,
-        questions: knowns.map(known => exercise.formatQuestion(known)),
-        userAnswers: generatedExercise.userAnswer
-      }
-
-      data.generateExerciseId = generatedExercise.id
-      data.exerciseId = exerciseId
-
-      return data
+      return Promise.map(knowns, known => {
+        return exerciseSolver.formatQuestion(known)
+      }).then(formattedQuestions => {
+        data.allQuestion = {
+          unknowns: exerciseSolver._question.unknowns,
+          questions: formattedQuestions,
+          userAnswers: generatedExercise.userAnswer
+        }
+        data.generateExerciseId = generatedExercise.id
+        data.exerciseId = exerciseId
+        return data
+      })
     }
 
     // route to get exercise table
@@ -76,8 +78,10 @@ class ExerciseController extends BaseController {
           }).then(resp2 => {
             if (resp2.status) {
               log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
-              Object.assign(res.locals, getExerciseData(exerciseSolver, resp2.data[0], exerciseId))
-              res.render('exercise')
+              return getExerciseData(exerciseSolver, resp2.data[0], exerciseId).then(data => {
+                Object.assign(res.locals, data)
+                res.render('exercise')
+              })
             } else {
               log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
               return courseService.generateExercise(
@@ -87,8 +91,10 @@ class ExerciseController extends BaseController {
                 req.user.id
               ).then(resp3 => {
                 if (resp3.status) {
-                  Object.assign(res.locals, getExerciseData(exerciseSolver, resp3.data, exerciseId))
-                  res.render('exercise')
+                  return getExerciseData(exerciseSolver, resp3.data, exerciseId).then(data => {
+                    Object.assign(res.locals, data)
+                    res.render('exercise')
+                  })
                 } else {
                   throw new Error('Cannot create exercise!')
                 }

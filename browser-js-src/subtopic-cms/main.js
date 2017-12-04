@@ -94,6 +94,7 @@ function generateExercise (generateBtnElement) {
     if (resp.status) {
       resp.data.forEach((e, index) => {
         $(resultCode).append(`${marked(e.question)}`)
+        $(resultCode).append(`<br>`)
         $(resultCode).append(`Answer: ${JSON.stringify(e.answer)}`)
         $(resultCode).append($(`<hr>`))
       })

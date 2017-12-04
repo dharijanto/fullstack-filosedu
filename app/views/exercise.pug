@@ -15,6 +15,8 @@ block contents
           form.QuestionSection(method="POST")
             .row
               | !{marked(question)}
+            .row
+              br
             .row.form-group(style="width: 40%; margin:auto")
               each unknown, index2 in allQuestion.unknowns
                 label.col-sm-2.control-label(style="font-size: 150%") #{unknown}

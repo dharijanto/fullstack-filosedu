@@ -1,5 +1,5 @@
 module.exports = {
-  bruteforceQuestionPositiveQuestions: [
+  bruteforcePositiveQuestions: [
     'bruteforce-question-1',
     'bruteforce-question-2',
     'bruteforce-question-3',
@@ -7,7 +7,7 @@ module.exports = {
     'bruteforce-question-5'
   ],
   // This question is exepected to fail
-  bruteforceQuestionNegativeQuestions: [
+  bruteforceNegativeQuestions: [
     'bruteforce-question-1-false'
   ]
 }

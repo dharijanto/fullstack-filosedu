@@ -126,18 +126,17 @@ class SubtopicController extends BaseController {
     })
 
     this.routePost('/generateExercise', (req, res, next) => {
-      var valueTextCodeTobeCheck = req.body.text
+      var code = req.body.text
       try {
-        var exerciseSolver = ExerciseGenerator.getExerciseSolver(valueTextCodeTobeCheck)
+        var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         var questions = exerciseSolver.generateQuestions()
-        var temporaryQuestion = []
-        questions.forEach(question => {
-          temporaryQuestion.push({
-            question: exerciseSolver.formatQuestion(question.knowns),
-            answer: question.unknowns
+        return Promise.map(questions, question => {
+          return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
+            return {question: formattedQuestion, answer: question.unknowns}
           })
+        }).then(data => {
+          res.json({status: true, data})
         })
-        res.json({status: true, data: temporaryQuestion})
       } catch (err) {
         res.json({status: false, errMessage: err.message})
       }
