@@ -86,22 +86,34 @@ function generateExercise (generateBtnElement) {
   // TODO: Disable the button while request is being processed (i.e. slow internet)
   resultCode.empty() // Clear generated exercise
   $(generateBtnElement).attr('disabled', 'disabled')
-  $.post(url, {
-    text: exerciseCode
-  },
-  function (resp, status) {
-    $(generateBtnElement).removeAttr('disabled')
-    if (resp.status) {
-      resp.data.forEach((e, index) => {
-        $(resultCode).append(`${marked(e.question)}`)
-        $(resultCode).append(`<br>`)
-        $(resultCode).append(`Answer: ${JSON.stringify(e.answer)}`)
-        $(resultCode).append($(`<hr>`))
-      })
-    } else {
-      var errMessage = $('<p style="color:red">' + resp.errMessage + '</p>')
+
+  $.ajax({
+    type: 'POST',
+    url,
+    data: {
+      code: exerciseCode
+    },
+    success: function (resp, status) {
+      $(generateBtnElement).removeAttr('disabled')
+      if (resp.status) {
+        resp.data.forEach((e, index) => {
+          $(resultCode).append(`${marked(e.question)}`)
+          $(resultCode).append(`<br>`)
+          $(resultCode).append(`Answer: ${JSON.stringify(e.answer)}`)
+          $(resultCode).append($(`<hr>`))
+        })
+      } else {
+        var errMessage = $('<p style="color:red">' + resp.errMessage + '</p>')
+        $(resultCode).append(errMessage)
+      }
+    },
+    error: function (jqXHR, textStatus, err) {
+      $(generateBtnElement).removeAttr('disabled')
+      var errMessage = $('<p style="color:red"> Error: ' + textStatus + '</p>')
       $(resultCode).append(errMessage)
-    }
+    },
+    timeout: 3000
+
   })
 }
 

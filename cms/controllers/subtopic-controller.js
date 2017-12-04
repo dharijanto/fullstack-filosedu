@@ -126,7 +126,7 @@ class SubtopicController extends BaseController {
     })
 
     this.routePost('/generateExercise', (req, res, next) => {
-      var code = req.body.text
+      var code = req.body.code
       try {
         var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         var questions = exerciseSolver.generateQuestions()
@@ -136,9 +136,11 @@ class SubtopicController extends BaseController {
           })
         }).then(data => {
           res.json({status: true, data})
+        }).catch(err => {
+          res.json({status: false, errMessage: err.message || err})
         })
       } catch (err) {
-        res.json({status: false, errMessage: err.message})
+        res.json({status: false, errMessage: err.message || err})
       }
     })
   }
