@@ -23,12 +23,13 @@ $('.btn_submit_answer').on('click', function (e) {
         var realAnswers = resp.data.realAnswers
         var currentScore = resp.data.currentScore
         var bestScore = resp.data.bestScore
+        var starsHTML = resp.data.starsHTML
 
-        $('.scoreSection').removeClass('hidden')
+        $('.currentScore').removeClass('hidden')
         $('.currentScore').text(`Your score is ${currentScore}`)
 
         if (bestScore !== 0) {
-          $('.bestScore').text(`Your best score is ${bestScore}`)
+          $('.bestScore').html(starsHTML)
         }
 
         realAnswers.forEach((realAnswer, index) => {

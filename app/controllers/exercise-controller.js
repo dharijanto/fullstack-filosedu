@@ -4,6 +4,7 @@ var log = require('npmlog')
 var marked = require('marked')
 var getSlug = require('speakingurl')
 var Promise = require('bluebird')
+var pug = require('pug')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
@@ -56,11 +57,17 @@ class ExerciseController extends BaseController {
       Promise.join(
         courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        courseService.read({modelName: 'Topic', searchClause: {id: topicId}})
-      ).spread((resp, resp2, resp3) => {
+        courseService.read({modelName: 'Topic', searchClause: {id: topicId}}),
+        getExerciseStars(req.user.id, exerciseId)
+      ).spread((resp, resp2, resp3, resp4) => {
         if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
           var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data[0].data)
+          if (resp4.status) {
+            res.locals.starsHTML = resp4.data
+          } else {
+            res.locals.starsHTML = '<p style="color:red;"> Unable to retrieve stars... </p>'
+          }
           res.locals.subtopic = resp2.data[0]
           res.locals.topic = resp3.data[0]
 
@@ -107,6 +114,33 @@ class ExerciseController extends BaseController {
       }).catch(err => {
         next(err)
       })
+    })
+
+    function getExerciseStars (userId, exerciseId) {
+      return courseService.getExerciseStar(userId, exerciseId).then(resp => {
+        if (resp.status) {
+          const stars = resp.data.stars
+          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/stars.pug'), {stars})
+          return {status: true, data: html}
+        } else {
+          return (resp)
+        }
+      })
+    }
+
+    this.routeGet('/getExerciseStars', (req, res, next) => {
+      const exerciseId = parseInt(req.query.exerciseId)
+      if (exerciseId === undefined) {
+        res.json({status: false, errMessage: `exerciseId is needed`})
+      } else if (!req.isAuthenticated) {
+        res.json({status: false, errMessage: `Unauthorized`})
+      } else {
+        getExerciseStars(req.user.id, exerciseId).then(resp => {
+          res.json(resp)
+        }).catch(err => {
+          next(err)
+        })
+      }
     })
 
     this.routePost('/checkAnswer', (req, res, next) => {
@@ -157,7 +191,7 @@ class ExerciseController extends BaseController {
                 return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
               }, 0)
 
-              courseService.update({
+              return courseService.update({
                 modelName: 'GeneratedExercise',
                 data: {
                   id: generatedExercise.id,
@@ -166,14 +200,17 @@ class ExerciseController extends BaseController {
                   submitted: true}
               }).then(resp => {
                 if (resp.status) {
-                  res.json({
-                    status: true,
-                    data: {
-                      realAnswers: JSON.parse(generatedExercise.unknowns),
-                      isAnswerCorrect,
-                      currentScore,
-                      bestScore
-                    }
+                  return getExerciseStars(userId, exerciseId).then(resp2 => {
+                    res.json({
+                      status: true,
+                      data: {
+                        realAnswers: JSON.parse(generatedExercise.unknowns),
+                        isAnswerCorrect,
+                        currentScore,
+                        bestScore,
+                        starsHTML: resp2.data
+                      }
+                    })
                   })
                 } else {
                   res.json({status: false, errMessage: 'Failed to save generated exercise'})

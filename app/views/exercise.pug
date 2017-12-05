@@ -25,10 +25,11 @@ block contents
               div(class=`resultAnswer_${index}`)
             .row
               hr
-      div.text-center(style="margin-top:5%;margin-bottom:5%;")
-        div.scoreSection.hidden
-          p(class='currentScore')
+      div.text-center(style="margin-bottom:5%;")
+        div.scoreSection
+          p.hidden(class='currentScore')
           p(class='bestScore')
+            | !{starsHTML}
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
