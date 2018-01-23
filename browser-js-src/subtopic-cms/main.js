@@ -1,6 +1,7 @@
-var rootPath = require('cmsRootPath')
 var $ = require('jquery')
 var _ = require('lodash')
+var axios = require('axios')
+var rootPath = require('cmsRootPath')
 
 var codeMirror = require('codemirror')
 require('jquery-simple-upload')
@@ -12,15 +13,6 @@ require('codemirror/mode/javascript/javascript')
 var Formatter = require('../libs/formatter')
 
 var unsaved = false
-
-// Initialize each of exercises CodeMirror
-if ($('#exerciseContainer').children().length > 0) {
-  var numExercises = $('#exerciseContainer').children().length
-  for (var i = 0; i < numExercises; i++) {
-    var exerciseId = 'exercise-' + i
-    initCodeMirror(exerciseId)
-  }
-}
 
 $('.addNewExercise').on('click', function () {
   var divTextRight = $('<div class="text-right"></div>')
@@ -149,6 +141,12 @@ $(document).ready(function () {
     embedId = currentEmbedId
   }, 500)
 
+  axios.get('video').then(resp => {
+    console.log(JSON.stringify(resp.data))
+  }).catch(err => {
+    console.error(err)
+  })
+
   $('#ytInput').keyup(function () {
     tryEmbedYoutube()
   })
@@ -229,6 +227,15 @@ $(document).ready(function () {
       }
     })
   })
+
+  // Initialize each of exercises CodeMirror
+  if ($('#exerciseContainer').children().length > 0) {
+    var numExercises = $('#exerciseContainer').children().length
+    for (var i = 0; i < numExercises; i++) {
+      var exerciseId = 'exercise-' + i
+      initCodeMirror(exerciseId)
+    }
+  }
 })
 
 // Buffered input change listener

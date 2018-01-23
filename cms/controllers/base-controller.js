@@ -57,8 +57,8 @@ class BaseController {
     this._subRouter.post(this.getMountPath(path), this._extendInterceptors(fns))
   }
 
-  routeUse (...fns) {
-    this._subRouter.use(this.getMountPath(''), this._extendInterceptors(fns))
+  routeUse (path, ...fns) {
+    this._subRouter.use(this.getMountPath(path), this._extendInterceptors(fns))
   }
 
   // Like routeUse, but doesn't prepend the path with hash

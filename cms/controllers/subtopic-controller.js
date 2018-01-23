@@ -171,6 +171,15 @@ class SubtopicController extends BaseController {
         }
       })
     })
+
+    this.routeGet('/subtopic/:id/video', (req, res, next) => {
+      const subtopicId = req.params.id
+      videoService.getVideo(subtopicId).then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        next(err)
+      })
+    })
   }
   getRouter () {
     return this._router

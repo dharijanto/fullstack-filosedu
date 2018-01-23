@@ -33,7 +33,18 @@ class VideoService extends CRUDService {
   }
 
   getVideo (subtopicId) {
-    return this.models['Videos'].findOne({where: {subtopicId}, order: ['createdAt', 'DESC']})
+    return this._models['Videos'].findOne({where: {subtopicId}, order: [['createdAt', 'DESC']]}).then(data => {
+      if (data) {
+        return {
+          status: true,
+          data: {
+            videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename)
+          }
+        }
+      } else {
+        return {status: false, errCode: 0, errMessage: 'Data not found'}
+      }
+    })
   }
 
   static getUploadMiddleware () {
