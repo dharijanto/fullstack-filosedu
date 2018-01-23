@@ -5,7 +5,8 @@
   "main": "main.js",
   "browserify-shim": {
     "jquery": "global:$",
-    "cmsRootPath": "global:rootPath"
+    "cmsRootPath": "global:rootPath",
+    "video.js": "videojs"
   },
   "browserify": {
     "transform": [
@@ -21,7 +22,7 @@
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
-    "browserify": "^14.4.0",
+    "browserify": "^14.5.0",
     "browserify-shim": "^3.8.14",
     "codemirror": "^5.31.0",
     "lodash": "^4.17.4",
@@ -33,6 +34,12 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
-    "jquery-simple-upload": "^1.0.0"
+    "jquery-simple-upload": "^1.0.0",
+    "videojs-youtube": "^2.4.1",
+    "watchify": "^3.9.0",
+    "datatables.net": "^1.10.16",
+    "nprogress": "^0.2.0",
+    "select2": "^4.0.6-rc.1",
+    "moment": "^2.20.1"
   }
 }

@@ -1,13 +1,11 @@
 var path = require('path')
-
 var log = require('npmlog')
+var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
-var Promise = require('bluebird')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
-// var UserService = require(path.join(__dirname, '../../services/user-service'))
 var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
 
 const TAG = 'CourseController'
@@ -16,7 +14,6 @@ class CourseController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
-    // const userService = new UserService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)

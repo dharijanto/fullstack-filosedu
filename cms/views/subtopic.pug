@@ -7,6 +7,7 @@ append links
   link(href=rootifyPath('/assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
   link(href=rootifyPath('/assets/css/style.css') rel="stylesheet")
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/video.js/dist/video-js.min.css') rel="stylesheet")
 
 block content
     h1 #{topic.topic} - #{subtopic.subtopic}
@@ -51,4 +52,5 @@ block content
 append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
+
   script(src=rootifyPath('assets/js/subtopic-cms-bundle.js'))

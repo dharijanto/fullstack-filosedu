@@ -1,0 +1,79 @@
+{
+  "_from": "videojs-youtube",
+  "_id": "videojs-youtube@2.4.1",
+  "_inBundle": false,
+  "_integrity": "sha1-Tr1nNqCcY295/MMkvv2dsjB4C/w=",
+  "_location": "/videojs-youtube",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "videojs-youtube",
+    "name": "videojs-youtube",
+    "escapedName": "videojs-youtube",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/videojs-youtube/-/videojs-youtube-2.4.1.tgz",
+  "_shasum": "4ebd6736a09c636f79fcc324befd9db230780bfc",
+  "_spec": "videojs-youtube",
+  "_where": "/home/ncloud/Programming/Projects/ncloud-server/dropbox/dynamichost/app_filosedu",
+  "author": {
+    "name": "Benoit Tremblay"
+  },
+  "bugs": {
+    "url": "https://github.com/videojs/videojs-youtube/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "video.js": "^5.6.0 || ^6.2.8"
+  },
+  "deprecated": false,
+  "description": "YouTube playback technology for Video.js",
+  "devDependencies": {
+    "http-server": "^0.10.0",
+    "jasmine-core": "^2.3.4",
+    "jshint": "^2.8.0",
+    "karma": "^1.3.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-jasmine": "^1.0.2",
+    "mkdirp": "^0.5.1",
+    "precommit-hook": "^3.0.0",
+    "uglify-js": "^2.4.23"
+  },
+  "homepage": "https://github.com/videojs/videojs-youtube#readme",
+  "keywords": [
+    "video",
+    "videojs",
+    "video.js",
+    "vjs",
+    "YouTube",
+    "tech"
+  ],
+  "license": "MIT",
+  "main": "dist/Youtube.js",
+  "name": "videojs-youtube",
+  "peerDependencies": {
+    "video.js": "5.x || 6.x"
+  },
+  "pre-commit": [
+    "lint"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/videojs/videojs-youtube.git"
+  },
+  "scripts": {
+    "build": "mkdirp dist && cp src/Youtube.js dist/Youtube.js && uglifyjs src/Youtube.js -o dist/Youtube.min.js",
+    "lint": "jshint .",
+    "test": "karma start --single-run",
+    "validate": "npm ls",
+    "version": "npm run build && git add -f dist"
+  },
+  "version": "2.4.1"
+}

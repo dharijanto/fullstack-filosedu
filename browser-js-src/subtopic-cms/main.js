@@ -10,8 +10,17 @@ require('summernote')
 
 // Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
-var Formatter = require('../libs/formatter')
 
+// require('../nc-image-picker/main')
+
+
+/*
+  Setup video for youtube with videojs integrated
+*/
+var videojs = require('video.js')
+require('videojs-youtube')
+
+var Formatter = require('../libs/formatter')
 var unsaved = false
 
 $('.addNewExercise').on('click', function () {
@@ -124,21 +133,19 @@ function initCodeMirror (elementId) {
 }
 
 $(document).ready(function () {
-  // Debounce this to prevent spamming request to Youtube that can cause 'This Video is Unavailable'
-  var embedId = null
   const tryEmbedYoutube = _.debounce(() => {
-    const currentEmbedId = Formatter.getYoutubeEmbedURL($('#ytInput').val())
-    // Handle keyUp that doesn't change the input (e.g. arrow key)
-    if (currentEmbedId && currentEmbedId !== embedId) {
-      $('#ytPlayer').attr('src', `https://www.youtube.com/embed/${currentEmbedId}?autoplay=0&origin=http://www.nusantara-cloud.com`)
-      $('#ytPlayer').css('display', 'block')
-      $('#ytError').css('display', 'none')
-    } else if (!currentEmbedId) { // Hide video if current embedId is invalid
-      $('#ytPlayer').css('display', 'none')
-      $('#ytPlayer').attr('src', ``)
-      $('#ytError').css('display', 'block')
+    const videoURL = $('#ytInput').val()
+
+    /*
+      To check, if there's element already exist, we destroy them
+      and recreate them with initialize videojs again
+    */
+    if ($('#ytPlayer').length) {
+      videojs('#ytPlayer').dispose()
     }
-    embedId = currentEmbedId
+    var appendYoutube = $('<video class="video-js vjs-fluid" id="ytPlayer" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + videoURL + '"}]}\'></video>')
+    $('#ytPlayerContainer').append(appendYoutube)
+    videojs('#ytPlayer')
   }, 500)
 
   axios.get('video').then(resp => {
