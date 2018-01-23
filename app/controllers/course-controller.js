@@ -4,6 +4,9 @@ var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
 
+var videojs = require('video.js')
+require('videojs-youtube')
+
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
@@ -51,7 +54,7 @@ class CourseController extends BaseController {
           res.locals.subtopics.forEach((subtopic, index) => {
             subtopic.stars = 0
           })
-          res.render('topics')
+          res.redirect('login')
         }
       }).catch(err => {
         next(err)
