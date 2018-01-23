@@ -4,9 +4,6 @@ var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
 
-var videojs = require('video.js')
-require('videojs-youtube')
-
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
@@ -51,7 +48,7 @@ class CourseController extends BaseController {
           res.locals.subtopics.forEach((subtopic, index) => {
             subtopic.stars = 0
           })
-          res.redirect('login')
+          res.render('topics')
         }
       }).catch(err => {
         next(err)
@@ -78,7 +75,7 @@ class CourseController extends BaseController {
               // access exercise. And when they do, we want to redirect here
               if (!req.isAuthenticated()) {
                 req.session.returnTo = req.originalUrl || req.url
-                res.redirect('/login')
+                res.render('subtopic')
               } else {
                 return Promise.map(res.locals.exercises, exercise => {
                   return courseService.getExerciseStar(req.user.id, exercise.id)

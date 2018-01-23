@@ -41,7 +41,7 @@ class SubtopicController extends BaseController {
           } else {
             next() // 404 not found
           }
-        }).then(err => {
+        }).catch(err => {
           next(err)
         })
     })

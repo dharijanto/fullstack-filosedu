@@ -9,6 +9,9 @@ var marked = require('marked')
 // Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
 
+// require('../nc-image-picker/main')
+
+
 /*
   Setup video for youtube with videojs integrated
 */
@@ -138,8 +141,18 @@ function initCodeMirror (elementId) {
 
 $(document).ready(function () {
   const tryEmbedYoutube = _.debounce(() => {
-    const currentEmbedId = $('#ytInput').val()
-    $('#ytPlayerContainer').append($('<video class="video-js" id="ytPlayer" style="width:100%; height:500px;" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "'+currentEmbedId+'"}]}\'></video>'))
+    const videoURL = $('#ytInput').val()
+
+    /*
+      To check, if there's element already exist, we destroy them
+      and recreate them with initialize videojs again
+    */
+    if ($('#ytPlayer').length) {
+      videojs('#ytPlayer').dispose()
+    }
+    var appendYoutube = $('<video class="video-js vjs-fluid" id="ytPlayer" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + videoURL + '"}]}\'></video>')
+    $('#ytPlayerContainer').append(appendYoutube)
+    videojs('#ytPlayer')
   }, 500)
 
   $('#ytInput').keyup(function () {

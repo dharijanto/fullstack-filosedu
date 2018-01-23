@@ -37,7 +37,7 @@ block footer
   script.
     $(document).ready(function() {
       var youtubeURL = `#{content.youtube_url}`
-      var playerYoutube = $('<video class="video-js" id="ytPlayer" style="width:100%; height:500px;" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + youtubeURL + '"}]}\'></video>')
+      var playerYoutube = $('<video class="video-js vjs-fluid" id="ytPlayer" style="width:100%; height:auto!important" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + youtubeURL + '"}]}\'></video>')
       $('#ytPlayerContainer').append(playerYoutube)
 
       videojs('#ytPlayer').ready(function(e) {
