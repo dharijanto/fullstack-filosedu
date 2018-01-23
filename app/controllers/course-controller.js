@@ -54,7 +54,7 @@ class CourseController extends BaseController {
           res.locals.subtopics.forEach((subtopic, index) => {
             subtopic.stars = 0
           })
-          res.redirect('login')
+          res.render('topics')
         }
       }).catch(err => {
         next(err)
