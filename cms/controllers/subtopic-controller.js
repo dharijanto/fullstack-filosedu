@@ -7,13 +7,18 @@ const marked = require('marked')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
 const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+const VideoService = require(path.join(__dirname, '../../services/video-service'))
+
+const TAG = 'SubtopicController'
 
 // const TAG = 'SubtopicController'
 class SubtopicController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
+    const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
     this.addInterceptor((req, res, next) => {
+      log.verbose(TAG, 'SubtopicController: req.path=' + req.path)
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.marked = marked
@@ -22,6 +27,7 @@ class SubtopicController extends BaseController {
 
     // Retrieve information about subtopic
     this.routeGet('/subtopic/:id', (req, res, next) => {
+      log.verbose(TAG, 'subtopic/[id]/GET')
       const subtopicId = req.params.id
       return Promise.join(
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
@@ -41,7 +47,7 @@ class SubtopicController extends BaseController {
           } else {
             next() // 404 not found
           }
-        }).then(err => {
+        }).catch(err => {
           next(err)
         })
     })
@@ -50,7 +56,7 @@ class SubtopicController extends BaseController {
     // 1. Updated subtopic detail: req.body.subtopicData
     // 2. New exercises: req.body.new-exercise-*
     // 3. Updated exercises: req.body.exercise-*
-    this.routePost('/subtopic/submit/:id', (req, res, next) => {
+    this.routePost('/subtopic/:id/submit', (req, res, next) => {
       log.verbose(this.getTag(), 'req.body=' + JSON.stringify(req.body))
       const subtopicId = req.params.id
       var reqBodyKeys = Object.keys(req.body || {})
@@ -142,6 +148,28 @@ class SubtopicController extends BaseController {
       } catch (err) {
         res.json({status: false, errMessage: err.message || err})
       }
+    })
+
+    // Because uploading videos can take sometime
+    function extendTimeout (req, res, next) {
+      res.setTimeout(480000)
+      next()
+    }
+
+    this.routePost('/subtopic/:id/videoUpload', extendTimeout, (req, res, next) => {
+      log.verbose(TAG, 'videoUpload.POST(): req.path=' + req.path)
+      const subtopicId = req.params.id
+      VideoService.getUploadMiddleware()(req, res, err => {
+        if (err) {
+          res.json({status: false, errMessage: err.message})
+        } else {
+          return videoService.addVideo(req.file.filename, subtopicId).then(resp => {
+            res.json(resp)
+          }).catch(err => {
+            next(err)
+          })
+        }
+      })
     })
   }
   getRouter () {

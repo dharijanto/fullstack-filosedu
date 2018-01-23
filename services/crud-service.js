@@ -1,8 +1,8 @@
 var log = require('npmlog')
 
-const TAG = 'BaseService'
+const TAG = 'CRUDService'
 
-class BaseService {
+class CRUDService {
   constructor (sequelize, models) {
     this._sequelize = sequelize
     this._models = models
@@ -84,4 +84,4 @@ class BaseService {
   }
 }
 
-module.exports = BaseService
+module.exports = CRUDService

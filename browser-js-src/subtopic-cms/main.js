@@ -3,8 +3,9 @@ var $ = require('jquery')
 var _ = require('lodash')
 
 var codeMirror = require('codemirror')
-require('summernote')
+require('jquery-simple-upload')
 var marked = require('marked')
+require('summernote')
 
 // Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
@@ -190,9 +191,43 @@ $(document).ready(function () {
       $('#btnSave').text('Failed to Save...')
     }
   })
+
   $('#btnSave').on('error.ic', function (evt, elt, status, str, xhr) {
     alert('Error ' + str)
     $('#btnSave').text('Error')
+  })
+
+  $('#videoUpload').change(function () {
+    $('#videoUpload').simpleUpload(`videoUpload`, {
+      start: function (file) {
+        $('#videoFilename').css('color', 'black')
+        console.log('upload started')
+        $('#videoFilename').html(file.name)
+        $('#videoProgress').html('')
+        $('#videoProgressBar').width(0)
+      },
+      progress: function (progress) {
+        console.log('upload progressing')
+        $('#videoProgress').html(`Progress: ${Math.round(progress)} %`)
+        $('#videoProgressBar').width(progress + '%')
+      },
+      success: function (resp) {
+        console.log('success: ' + JSON.stringify(resp))
+        // console.log(JSON.stringify(data))
+        if (resp.status) {
+          $('#videoFilename').html('Success')
+          $('#videoFilename').css('color', 'green')
+        } else {
+          $('#videoFilename').html('Failed' + resp.errMessage ? `: ${resp.errMessage}` : '')
+          $('#videoFilename').css('color', 'red')
+        }
+      },
+      error: function (err) {
+        console.log('error: ' + JSON.stringify(err))
+        $('#videoFilename').html('Failed')
+        $('#videoFilename').css('color', 'red')
+      }
+    })
   })
 })
 

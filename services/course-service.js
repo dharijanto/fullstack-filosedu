@@ -5,10 +5,10 @@ var log = require('npmlog')
 var Promise = require('bluebird')
 var Sequelize = require('sequelize')
 
-var BaseService = require(path.join(__dirname, 'base-service'))
+var CRUDService = require(path.join(__dirname, 'crud-service'))
 
 const TAG = 'CourseService'
-class CourseService extends BaseService {
+class CourseService extends CRUDService {
   generateExercise (exerciseHash, questions, exerciseId, userId) {
     // Note: There's a case where exercise has to be generated again
     // because the original question has change. Due to this, we need

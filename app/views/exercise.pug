@@ -17,12 +17,13 @@ block contents
               | !{marked(question)}
             .row
               br
-            .row.form-group(style="width: 40%; margin:auto")
-              each unknown, index2 in allQuestion.unknowns
-                label.col-sm-2.control-label(style="font-size: 150%") #{unknown}
-                .col-sm-10
+            each unknown, index2 in allQuestion.unknowns
+              .row.form-group(style="width: 40%; margin:auto")
+                .col-md-2
+                  label.control-label(style="font-size: 150%") #{unknown}
+                .col-md-10
                   input.form-control(name=`${unknown}` type="number" value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}`)
-              div(class=`resultAnswer_${index}`)
+            div(class=`resultAnswer_${index}`)
             .row
               hr
       div.text-center(style="margin-bottom:5%;")

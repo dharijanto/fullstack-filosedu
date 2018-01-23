@@ -107,7 +107,7 @@ function onSubtopicClicked (data) {
   // When highlighted row is clicked, open management page
   if (selectedIds.subtopic === data.id) {
     // window.location = rootPath + 'subtopic/' + data.id
-    window.open(rootPath + 'subtopic/' + data.id)
+    window.open(rootPath + 'subtopic/' + data.id + '/')
   }
   // console.log('onSubtopicClicked(): ' + JSON.stringify(data))
   selectedIds.subtopic = data.id

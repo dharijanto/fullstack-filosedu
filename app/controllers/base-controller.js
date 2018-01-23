@@ -96,8 +96,8 @@ class BaseController {
     this._router.post(this.getMountPath(path), this._extendInterceptors(fns))
   }
 
-  routeUse (...fns) {
-    this._router.use(this.getMountPath(''), this._extendInterceptors(fns))
+  routeUse (path, ...fns) {
+    this._router.use(this.getMountPath(path), this._extendInterceptors(fns))
   }
 
   getMountPath (strPath) {

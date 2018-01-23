@@ -31,5 +31,7 @@
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "jquery-simple-upload": "^1.0.0"
+  }
 }

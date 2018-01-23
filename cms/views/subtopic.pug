@@ -18,7 +18,14 @@ block content
         div#ytPlayerContainer
           iframe#ytPlayer(style='display: none' type='text/html' src='' frameborder='0')
           span#ytError.required-content(style='display: none') Invalid Youtube URL
-
+      div.form-group
+        label(for='link')
+          | Offline Video #[span.required-content *] :
+        //- input(type='button' id='get_file' value='Grab File')
+        div#videoFilename
+        div#videoProgress
+        div#videoProgressBar
+        input(type='file' id='videoUpload' name='video' accept='.mp4')
       div.form-group
         label(for='description') 
           | Description #[span.required-content *] :
@@ -38,7 +45,7 @@ block content
         div.text-right(style="margin-bottom:10px;")
           a.btn.btn-success.addNewExercise Add Exercise
       div.text-center
-        button.btn.btn-primary(id="btnSave" ic-post-to=rootifyPath(`subtopic/submit/${subtopic.id}`) ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') Save Change
+        button.btn.btn-primary(id="btnSave" ic-post-to=rootifyPath(`subtopic/${subtopic.id}/submit`) ic-on-error='status' ic-target='#dummy' ic-indicator='#indicator') Save Change
         i#indicator.fa.fa-spinner.fa-spin(style="display:none")
 
 append scripts
