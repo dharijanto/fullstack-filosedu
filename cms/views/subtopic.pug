@@ -7,6 +7,8 @@ append links
   link(href=rootifyPath('/assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
   link(href=rootifyPath('/assets/css/style.css') rel="stylesheet")
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/video.js/dist/video-js.min.css') rel="stylesheet")
 
 block content
     h1 #{topic.topic} - #{subtopic.subtopic}
@@ -16,8 +18,6 @@ block content
           | Youtube Video #[span.required-content *] :
         input#ytInput.form-control.subtopicInput(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData[youtube_url]' required value=subtopicData.youtube_url)
         div#ytPlayerContainer
-          iframe#ytPlayer(style='display: none' type='text/html' src='' frameborder='0')
-          span#ytError.required-content(style='display: none') Invalid Youtube URL
 
       div.form-group
         label(for='description') 
@@ -44,4 +44,5 @@ block content
 append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
+
   script(src=rootifyPath('assets/js/subtopic-cms-bundle.js'))

@@ -1,19 +1,20 @@
 extends layout/index.pug
+append head
+  link(href='/assets/vendor/video.js/dist/video-js.min.css' rel="stylesheet")
+
 include includes/utils.pug
 
 block contents
   div.container
     h1.text-center #{topic.topic} - #{subtopic.subtopic}
     h4.text-center #{subtopic.description}
-    h4.text-center 
+    h4.text-center
       a(href='/') Back to Modules
     hr
     - var content = JSON.parse(subtopic.data)
       | !{content.detail}
     #ytPlayerContainer
-      iframe(width="100%", height="100%", src=`//youtube.com/embed/${embedYoutube(content.youtube_url)}`, frameborder="0", allowfullscreen="")
 
-    
     div.text-center(style="margin-top:50px;margin-bottom:50px;")
       each exercise, index in exercises
         - var exerciseUrl = `/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}/${exercise.id}/latihan-${index+1}`
@@ -29,3 +30,35 @@ block contents
       if !isAuthenticated
         br
         | Please #[a(href='/login') login] or #[a(href='/register') register] to access exercises.
+
+block footer
+  script(src="/assets/vendor/video.js/dist/video.min.js")
+  script(src="/assets/vendor/videojs-youtube/dist/Youtube.min.js")
+  script.
+    $(document).ready(function() {
+      var youtubeURL = `#{content.youtube_url}`
+      var playerYoutube = $('<video class="video-js" id="ytPlayer" style="width:100%; height:500px;" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + youtubeURL + '"}]}\'></video>')
+      $('#ytPlayerContainer').append(playerYoutube)
+
+      videojs('#ytPlayer').ready(function(e) {
+        var player = this
+
+        /*
+          Do something when you play player
+        */
+        player.on('play', function() {
+        })
+
+        /*
+          Do something when you pause player
+        */
+        player.on('pause', function() {
+        })
+
+        /*
+          Do something when you changing timer of player
+        */
+        player.on('seeking', function() {
+        })
+      })
+    })

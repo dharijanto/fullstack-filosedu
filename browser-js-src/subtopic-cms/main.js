@@ -8,8 +8,14 @@ var marked = require('marked')
 
 // Needed to highlight codeMirror editor
 require('codemirror/mode/javascript/javascript')
-var Formatter = require('../libs/formatter')
 
+/*
+  Setup video for youtube with videojs integrated
+*/
+var videojs = require('video.js')
+require('videojs-youtube')
+
+var Formatter = require('../libs/formatter')
 var unsaved = false
 
 // Initialize each of exercises CodeMirror
@@ -131,21 +137,9 @@ function initCodeMirror (elementId) {
 }
 
 $(document).ready(function () {
-  // Debounce this to prevent spamming request to Youtube that can cause 'This Video is Unavailable'
-  var embedId = null
   const tryEmbedYoutube = _.debounce(() => {
-    const currentEmbedId = Formatter.getYoutubeEmbedURL($('#ytInput').val())
-    // Handle keyUp that doesn't change the input (e.g. arrow key)
-    if (currentEmbedId && currentEmbedId !== embedId) {
-      $('#ytPlayer').attr('src', `https://www.youtube.com/embed/${currentEmbedId}?autoplay=0&origin=http://www.nusantara-cloud.com`)
-      $('#ytPlayer').css('display', 'block')
-      $('#ytError').css('display', 'none')
-    } else if (!currentEmbedId) { // Hide video if current embedId is invalid
-      $('#ytPlayer').css('display', 'none')
-      $('#ytPlayer').attr('src', ``)
-      $('#ytError').css('display', 'block')
-    }
-    embedId = currentEmbedId
+    const currentEmbedId = $('#ytInput').val()
+    $('#ytPlayerContainer').append($('<video class="video-js" id="ytPlayer" style="width:100%; height:500px;" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "'+currentEmbedId+'"}]}\'></video>'))
   }, 500)
 
   $('#ytInput').keyup(function () {

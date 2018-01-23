@@ -1,13 +1,14 @@
 var path = require('path')
-
 var log = require('npmlog')
+var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
-var Promise = require('bluebird')
+
+var videojs = require('video.js')
+require('videojs-youtube')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
-// var UserService = require(path.join(__dirname, '../../services/user-service'))
 var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
 
 const TAG = 'CourseController'
@@ -16,7 +17,6 @@ class CourseController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
-    // const userService = new UserService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -51,7 +51,7 @@ class CourseController extends BaseController {
           res.locals.subtopics.forEach((subtopic, index) => {
             subtopic.stars = 0
           })
-          res.render('topics')
+          res.redirect('login')
         }
       }).catch(err => {
         next(err)
@@ -78,7 +78,7 @@ class CourseController extends BaseController {
               // access exercise. And when they do, we want to redirect here
               if (!req.isAuthenticated()) {
                 req.session.returnTo = req.originalUrl || req.url
-                res.render('subtopic')
+                res.redirect('/login')
               } else {
                 return Promise.map(res.locals.exercises, exercise => {
                   return courseService.getExerciseStar(req.user.id, exercise.id)

@@ -7,9 +7,8 @@
   clear: both;
   width: 100%;
   position: relative;
-  padding-bottom: 56.25%;
+  padding-bottom: 25px;
   padding-top: 25px;
-  height: 0;
 }
 #ytPlayerContainer iframe {
   position: absolute;
