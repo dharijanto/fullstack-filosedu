@@ -140,6 +140,7 @@ class SubtopicController extends BaseController {
         var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         var questions = exerciseSolver.generateQuestions()
         return Promise.map(questions, question => {
+          console.log(question)
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
             return {question: formattedQuestion, answer: question.unknowns}
           })

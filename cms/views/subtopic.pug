@@ -11,6 +11,7 @@ append links
   link(href=rootifyPath('assets/css/toastr.min.css') rel="stylesheet" type="text/css")
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
   link(href=rootifyPath('assets/vendor/video.js/dist/video-js.min.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/toastr.min.css') rel="stylesheet" type="text/css")
 
 block content
     h1 #{topic.topic} - #{subtopic.subtopic}
@@ -40,9 +41,6 @@ block content
               div#videoProgressBar
               input(type='file' id='videoUpload' name='video' accept='.mp4')
               div#localPlayerContainer
-
-      //- div.form-group
-      //-   button.btn.btn-primary#imagePicker Upload Button
 
       div.form-group
         label(for='description') 
