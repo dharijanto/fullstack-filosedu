@@ -7,16 +7,19 @@ const marked = require('marked')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
 const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+const ImageService = require(path.join(__dirname, '../../services/image-service'))
 const VideoService = require(path.join(__dirname, '../../services/video-service'))
+
+const AppConfig = require(path.join(__dirname, '../../app-config'))
 
 const TAG = 'SubtopicController'
 
-// const TAG = 'SubtopicController'
 class SubtopicController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
+    const imageService = new ImageService(this.getDb().sequelize, this.getDb().models)
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'SubtopicController: req.path=' + req.path)
       res.locals.site = req.site
@@ -175,6 +178,55 @@ class SubtopicController extends BaseController {
     this.routeGet('/subtopic/:id/video', (req, res, next) => {
       const subtopicId = req.params.id
       videoService.getVideo(subtopicId).then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routeGet('/subtopic/images', (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}`)
+      imageService.getImages().then(resp => {
+        if (resp.status) {
+          resp.data.resources = resp.data.resources.map(data => {
+            return {
+              url: super.rootifyPath(data.url), // output: '/hash_url/images/meme.jpg'
+              public_id: AppConfig.IMAGE_MOUNT_PATH + data.public_id
+            }
+          })
+          return res.json(resp.data)
+        } else {
+          return res.json({status: false})
+        }
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routePost('/subtopic/add', extendTimeout, (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}`)
+      ImageService.uploadImageMiddleware()(req, res, err => {
+        if (err) {
+          res.json({status: false, errMessage: err.message})
+        } else {
+          res.json({
+            status: true,
+            data: {
+              url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + req.file.filename),
+              public_id: AppConfig.IMAGE_MOUNT_PATH + req.file.filename,
+              originalName: req.file.filename,
+              created_at: req.file.filename.split('_')[0]
+            }
+          })
+        }
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routeGet('/subtopic/delete', (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}`)
+      imageService.deleteImage(req.query.publicId).then(resp => {
         res.json(resp)
       }).catch(err => {
         next(err)
