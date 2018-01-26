@@ -10,6 +10,8 @@ const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_gener
 const ImageService = require(path.join(__dirname, '../../services/image-service'))
 const VideoService = require(path.join(__dirname, '../../services/video-service'))
 
+const AppConfig = require(path.join(__dirname, '../../app-config'))
+
 const TAG = 'SubtopicController'
 
 class SubtopicController extends BaseController {
@@ -138,7 +140,6 @@ class SubtopicController extends BaseController {
         var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         var questions = exerciseSolver.generateQuestions()
         return Promise.map(questions, question => {
-          console.log(question)
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
             return {question: formattedQuestion, answer: question.unknowns}
           })
@@ -189,8 +190,8 @@ class SubtopicController extends BaseController {
         if (resp.status) {
           resp.data.resources = resp.data.resources.map(data => {
             return {
-              url: super.rootifyPath(data.url), // '/hash_url/images/meme.jpg'
-              public_id: '/images/' + data.public_id
+              url: super.rootifyPath(data.url), // output: '/hash_url/images/meme.jpg'
+              public_id: AppConfig.IMAGE_MOUNT_PATH + data.public_id
             }
           })
           return res.json(resp.data)
@@ -203,26 +204,32 @@ class SubtopicController extends BaseController {
     })
 
     this.routePost('/subtopic/add', extendTimeout, (req, res, next) => {
-      log.verbose(TAG, `req.path = ${req.path}` )
+      log.verbose(TAG, `req.path = ${req.path}`)
       ImageService.uploadImageMiddleware()(req, res, err => {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-            res.json({status: true, data: {
-              url: super.rootifyPath('/images/' + req.file.filename),
-              public_id: '/images/'+req.file.filename,
+          res.json({
+            status: true,
+            data: {
+              url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + req.file.filename),
+              public_id: AppConfig.IMAGE_MOUNT_PATH + req.file.filename,
               originalName: req.file.filename,
               created_at: req.file.filename.split('_')[0]
             }
           })
         }
+      }).catch(err => {
+        next(err)
       })
     })
 
     this.routeGet('/subtopic/delete', (req, res, next) => {
-      log.verbose(TAG, `req.path = ${req.path}` )
+      log.verbose(TAG, `req.path = ${req.path}`)
       imageService.deleteImage(req.query.publicId).then(resp => {
         res.json(resp)
+      }).catch(err => {
+        next(err)
       })
     })
   }

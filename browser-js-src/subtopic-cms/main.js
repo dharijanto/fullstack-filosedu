@@ -247,12 +247,12 @@ $(document).ready(function () {
   }
 
   function imageSelected (param) {
-    var inp =document.createElement('input');
+    var inp = document.createElement('input')
     document.body.appendChild(inp)
     inp.value = param
-    inp.select();
-    document.execCommand('copy');
-    inp.remove();
+    inp.select()
+    document.execCommand('copy')
+    inp.remove()
     toastr.info('Copied to clipboard')
   }
 

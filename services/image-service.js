@@ -4,8 +4,6 @@ var fs = require('fs')
 var log = require('npmlog')
 var multer = require('multer')
 var Promise = require('bluebird')
-var Sequelize = require('sequelize')
-var url = require('url')
 
 var CRUDService = require(path.join(__dirname, 'crud-service'))
 var AppConfig = require(path.join(__dirname, '../app-config.js'))
@@ -17,24 +15,20 @@ class ImageService extends CRUDService {
   }
 
   getImages () {
-    log.verbose(TAG, `Cloud Server Status = ${AppConfig.CLOUD_SERVER}` )
-    return new Promise ((resolve, reject) => {
-      if (AppConfig.CLOUD_SERVER) {
-
-      } else {
-        fs.readdir(AppConfig.IMAGE_PATH, (err, files) => {
-          if (err) {
-            return err
+    log.verbose(TAG, `Cloud Server Status = ${AppConfig.CLOUD_SERVER}`)
+    return new Promise((resolve, reject) => {
+      fs.readdir(AppConfig.IMAGE_PATH, (err, files) => {
+        if (err) {
+          reject(err)
+        }
+        files = files.map(data => {
+          return {
+            url: AppConfig.IMAGE_MOUNT_PATH + data, // output: '/images/timestamp_filename.jpg'
+            public_id: data
           }
-          files = files.map(data => {
-            return {
-              url: AppConfig.IMAGE_MOUNT_PATH + data, // 'meme.jpg'
-              public_id: data
-            }
-          })
-          resolve({status: true, data: {resources: files}})
         })
-      }
+        resolve({status: true, data: {resources: files}})
+      })
     })
   }
 
@@ -55,24 +49,21 @@ class ImageService extends CRUDService {
   }
 
   deleteImage (fileName) {
-    return new Promise ((resolve, reject) => {
-      if (AppConfig.CLOUD_SERVER) {
-
-      } else {
-        var path = AppConfig.IMAGE_PATH + '/' + fileName
-        fs.exists(path, (exists) => {
-          if (exists) {
-            fs.unlink(path, (err) => {
-              if (err) {
-                reject(err)
-              }
-            })
-            resolve({status: true})
-          } else {
-            resolve({status: false, errMessage: 'File tidak ada / sudah dihapus'})
-          }
-        })
-      }
+    return new Promise((resolve, reject) => {
+      var path = AppConfig.IMAGE_PATH + '/' + fileName
+      fs.exists(path, (exists) => {
+        if (exists) {
+          // Unlink is used for remove file
+          fs.unlink(path, (err) => {
+            if (err) {
+              reject(err)
+            }
+          })
+          resolve({status: true})
+        } else {
+          resolve({status: false, errMessage: 'File tidak ada / sudah dihapus'})
+        }
+      })
     })
   }
 }
