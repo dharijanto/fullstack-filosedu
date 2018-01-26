@@ -7,16 +7,17 @@ const marked = require('marked')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
 const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+const ImageService = require(path.join(__dirname, '../../services/image-service'))
 const VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'SubtopicController'
 
-// const TAG = 'SubtopicController'
 class SubtopicController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
+    const imageService = new ImageService(this.getDb().sequelize, this.getDb().models)
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'SubtopicController: req.path=' + req.path)
       res.locals.site = req.site
@@ -137,6 +138,7 @@ class SubtopicController extends BaseController {
         var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         var questions = exerciseSolver.generateQuestions()
         return Promise.map(questions, question => {
+          console.log(question)
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
             return {question: formattedQuestion, answer: question.unknowns}
           })
@@ -178,6 +180,49 @@ class SubtopicController extends BaseController {
         res.json(resp)
       }).catch(err => {
         next(err)
+      })
+    })
+
+    this.routeGet('/subtopic/images', (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}`)
+      imageService.getImages().then(resp => {
+        if (resp.status) {
+          resp.data.resources = resp.data.resources.map(data => {
+            return {
+              url: super.rootifyPath(data.url), // '/hash_url/images/meme.jpg'
+              public_id: '/images/' + data.public_id
+            }
+          })
+          return res.json(resp.data)
+        } else {
+          return res.json({status: false})
+        }
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routePost('/subtopic/add', extendTimeout, (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}` )
+      ImageService.uploadImageMiddleware()(req, res, err => {
+        if (err) {
+          res.json({status: false, errMessage: err.message})
+        } else {
+            res.json({status: true, data: {
+              url: super.rootifyPath('/images/' + req.file.filename),
+              public_id: '/images/'+req.file.filename,
+              originalName: req.file.filename,
+              created_at: req.file.filename.split('_')[0]
+            }
+          })
+        }
+      })
+    })
+
+    this.routeGet('/subtopic/delete', (req, res, next) => {
+      log.verbose(TAG, `req.path = ${req.path}` )
+      imageService.deleteImage(req.query.publicId).then(resp => {
+        res.json(resp)
       })
     })
   }

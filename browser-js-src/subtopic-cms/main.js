@@ -1,18 +1,20 @@
 var $ = require('jquery')
 var _ = require('lodash')
-var axios = require('axios')
-var rootPath = require('cmsRootPath')
 
+var axios = require('axios')
 var codeMirror = require('codemirror')
-require('jquery-simple-upload')
+var Formatter = require('../libs/formatter')
 var marked = require('marked')
-require('summernote')
+var rootPath = require('cmsRootPath')
+var toastr = require('toastr')
+var videojs = require('video.js')
+require('videojs-youtube')
 
 // Needed to highlight codeMirror editor
+require('../nc-image-picker/main')
 require('codemirror/mode/javascript/javascript')
-
-// require('../nc-image-picker/main')
-
+require('jquery-simple-upload')
+require('summernote')
 
 /*
   Setup video for youtube with videojs integrated
@@ -243,6 +245,25 @@ $(document).ready(function () {
       initCodeMirror(exerciseId)
     }
   }
+
+  function imageSelected (param) {
+    var inp =document.createElement('input');
+    document.body.appendChild(inp)
+    inp.value = param
+    inp.select();
+    document.execCommand('copy');
+    inp.remove();
+    toastr.info('Copied to clipboard')
+  }
+
+  $('#imagePicker').NCImagePicker({
+    callbackFn: imageSelected,
+    postURL: rootPath + 'subtopic/add',
+    getURL: rootPath + 'subtopic/images',
+    deleteURL: rootPath + 'subtopic/delete',
+    useMockModel: false,
+    customView: false
+  })
 })
 
 // Buffered input change listener

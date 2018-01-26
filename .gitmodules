@@ -1,3 +1,7 @@
 [submodule "browser-js-src/nc-input-library"]
 	path = browser-js-src/nc-input-library
 	url = https://github.com/nusantara-cloud/nc-input-library.git
+
+[submodule "browser-js-src/nc-image-picker"]
+	path = browser-js-src/nc-image-picker
+	url = https://github.com/nusantara-cloud/nc-image-picker.git

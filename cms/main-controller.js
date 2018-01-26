@@ -19,6 +19,7 @@ class MainController extends BaseController {
     })
 
     this.routeUse('/videos', express.static(AppConfig.VIDEO_PATH))
+    this.routeUse('/images', express.static(AppConfig.IMAGE_PATH))
     this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
     this.routeHashlessUse((new SubtopicController(initData)).getRouter())
   }

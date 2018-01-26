@@ -8,6 +8,7 @@ append links
   link(href=rootifyPath('/assets/css/style.css') rel="stylesheet")
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
   link(href=rootifyPath('assets/vendor/video.js/dist/video-js.min.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/toastr.min.css') rel="stylesheet" type="text/css")
 
 block content
     h1 #{topic.topic} - #{subtopic.subtopic}
@@ -17,8 +18,6 @@ block content
           | Youtube Video #[span.required-content *] :
         input#ytInput.form-control.subtopicInput(type='text' placeholder='https://www.youtube.com/watch?v=GBu2jofRJtk' name='subtopicData[youtube_url]' required value=subtopicData.youtube_url)
         div#ytPlayerContainer
-          iframe#ytPlayer(style='display: none' type='text/html' src='' frameborder='0')
-          span#ytError.required-content(style='display: none') Invalid Youtube URL
       div.form-group
         label(for='link')
           | Offline Video #[span.required-content *] :
@@ -27,10 +26,15 @@ block content
         div#videoProgress
         div#videoProgressBar
         input(type='file' id='videoUpload' name='video' accept='.mp4')
+
       div.form-group
         label(for='description') 
           | Description #[span.required-content *] :
         textarea#subtopicDescription.form-control(rows="10" name='subtopicData[detail]' required)= subtopicData.detail
+
+      div.form-group
+        button.btn.btn-primary#imagePicker(type="button") Upload Button
+
       div(section="exercise-section" style="border-bottom:1px solid black; margin-bottom:15px;")
         h2 Excercise
         div#exerciseContainer
