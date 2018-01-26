@@ -46,6 +46,16 @@ class CRUDService {
     })
   }
 
+  readOne ({modelName, searchClause}) {
+    return this.read({modelName, searchClause}).then(resp => {
+      if (resp.status) {
+        return {status: true, data: resp.data[0]}
+      } else {
+        return resp
+      }
+    })
+  }
+
   update ({modelName, data}) {
     if (!('id' in data)) {
       throw new Error('data needs to have id!')

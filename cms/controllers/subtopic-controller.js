@@ -203,7 +203,7 @@ class SubtopicController extends BaseController {
       })
     })
 
-    this.routePost('/subtopic/add', extendTimeout, (req, res, next) => {
+    this.routePost('/subtopic/images/add', extendTimeout, (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
       ImageService.uploadImageMiddleware()(req, res, err => {
         if (err) {
@@ -219,12 +219,10 @@ class SubtopicController extends BaseController {
             }
           })
         }
-      }).catch(err => {
-        next(err)
       })
     })
 
-    this.routeGet('/subtopic/delete', (req, res, next) => {
+    this.routeGet('/subtopic/images/delete', (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
       imageService.deleteImage(req.query.publicId).then(resp => {
         res.json(resp)

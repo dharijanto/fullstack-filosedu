@@ -138,29 +138,81 @@ $(document).ready(function () {
   const tryEmbedYoutube = _.debounce(() => {
     const videoURL = $('#ytInput').val()
 
-    /*
-      To check, if there's element already exist, we destroy them
-      and recreate them with initialize videojs again
-    */
+    // If there's element already exist, we destroy them
+    // and recreate
     if ($('#ytPlayer').length) {
       videojs('#ytPlayer').dispose()
     }
-    var appendYoutube = $('<video class="video-js vjs-fluid" id="ytPlayer" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + videoURL + '"}]}\'></video>')
-    $('#ytPlayerContainer').append(appendYoutube)
+    var youtubePlayer = $('<video class="video-js vjs-fluid" id="ytPlayer" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + videoURL + '"}]}\'></video>')
+    $('#ytPlayerContainer').append(youtubePlayer)
     videojs('#ytPlayer')
   }, 500)
-
-  axios.get('video').then(resp => {
-    console.log(JSON.stringify(resp.data))
-  }).catch(err => {
-    console.error(err)
-  })
 
   $('#ytInput').keyup(function () {
     tryEmbedYoutube()
   })
   // Embed when page first load
   tryEmbedYoutube()
+
+  // Initialize VideoJS when the page loads
+  axios.get('video').then(resp => {
+    console.log(JSON.stringify(resp.data))
+    const data = resp.data.data
+    if (resp.status) {
+      $('#videoFilename').html(data.filename)
+      initLocalVideo(data.videoURL)
+    } else {
+      console.error(resp)
+    }
+  }).catch(err => {
+    console.error(err)
+  })
+
+  function initLocalVideo (videoURL) {
+    // If there's element already exist, we destroy them
+    // and recreate
+    if ($('#localPlayer').length) {
+      videojs('#localPlayer').dispose()
+    }
+    var localPlayer = $(`<video class="video-js vjs-fluid" id="localPlayer" controls><source src="${rootPath}${videoURL}"></video>`)
+    $('#localPlayerContainer').append(localPlayer)
+    videojs('#localPlayer')
+  }
+
+  $('#videoUpload').change(function () {
+    $('#videoUpload').simpleUpload(`videoUpload`, {
+      start: function (file) {
+        $('#videoFilename').css('color', 'black')
+        console.log('upload started')
+        $('#videoFilename').html(file.name)
+        $('#videoProgress').html('')
+        $('#videoProgressBar').width(0)
+      },
+      progress: function (progress) {
+        console.log('upload progressing')
+        $('#videoProgress').html(`Progress: ${Math.round(progress)} %`)
+        $('#videoProgressBar').width(progress + '%')
+      },
+      success: function (resp) {
+        console.log('success: ' + JSON.stringify(resp))
+        // console.log(JSON.stringify(data))
+        if (resp.status) {
+          $('#videoFilename').html('Success')
+          const videoURL = resp.data.videoURL
+          initLocalVideo(videoURL)
+          $('#videoFilename').css('color', 'green')
+        } else {
+          $('#videoFilename').html('Failed' + resp.errMessage ? `: ${resp.errMessage}` : '')
+          $('#videoFilename').css('color', 'red')
+        }
+      },
+      error: function (err) {
+        console.log('error: ' + JSON.stringify(err))
+        $('#videoFilename').html('Failed')
+        $('#videoFilename').css('color', 'red')
+      }
+    })
+  })
 
   $('.deleteExercise').on('click', function () {
     deleteExercise(this)
@@ -204,39 +256,6 @@ $(document).ready(function () {
     $('#btnSave').text('Error')
   })
 
-  $('#videoUpload').change(function () {
-    $('#videoUpload').simpleUpload(`videoUpload`, {
-      start: function (file) {
-        $('#videoFilename').css('color', 'black')
-        console.log('upload started')
-        $('#videoFilename').html(file.name)
-        $('#videoProgress').html('')
-        $('#videoProgressBar').width(0)
-      },
-      progress: function (progress) {
-        console.log('upload progressing')
-        $('#videoProgress').html(`Progress: ${Math.round(progress)} %`)
-        $('#videoProgressBar').width(progress + '%')
-      },
-      success: function (resp) {
-        console.log('success: ' + JSON.stringify(resp))
-        // console.log(JSON.stringify(data))
-        if (resp.status) {
-          $('#videoFilename').html('Success')
-          $('#videoFilename').css('color', 'green')
-        } else {
-          $('#videoFilename').html('Failed' + resp.errMessage ? `: ${resp.errMessage}` : '')
-          $('#videoFilename').css('color', 'red')
-        }
-      },
-      error: function (err) {
-        console.log('error: ' + JSON.stringify(err))
-        $('#videoFilename').html('Failed')
-        $('#videoFilename').css('color', 'red')
-      }
-    })
-  })
-
   // Initialize each of exercises CodeMirror
   if ($('#exerciseContainer').children().length > 0) {
     var numExercises = $('#exerciseContainer').children().length
@@ -258,9 +277,9 @@ $(document).ready(function () {
 
   $('#imagePicker').NCImagePicker({
     callbackFn: imageSelected,
-    postURL: rootPath + 'subtopic/add',
+    postURL: rootPath + 'subtopic/images/add',
     getURL: rootPath + 'subtopic/images',
-    deleteURL: rootPath + 'subtopic/delete',
+    deleteURL: rootPath + 'subtopic/images/delete',
     useMockModel: false,
     customView: false
   })

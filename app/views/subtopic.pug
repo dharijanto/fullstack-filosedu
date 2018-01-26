@@ -11,14 +11,14 @@ block contents
     h4.text-center
       a(href='/') Back to Modules
     hr
-    - var content = JSON.parse(subtopic.data)
-      | !{content.detail}
-    #ytPlayerContainer
-
+    p !{subtopicData.detail}
+    //- #ytPlayerContainer
+    //- video.video-js.vjs-fluid#video-player(controls)
+      //- source(src=videoSource)
+    | !{videoSource}
     div.text-center(style="margin-top:50px;margin-bottom:50px;")
       each exercise, index in exercises
         - var exerciseUrl = `/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}/${exercise.id}/latihan-${index+1}`
-
         // There's no elegant way of having a button with href. If we use a however, it can't be disabled easily
         // TODO: Use 'a' with css to disable
         if (!isAuthenticated)
@@ -36,11 +36,7 @@ block footer
   script(src="/assets/vendor/videojs-youtube/dist/Youtube.min.js")
   script.
     $(document).ready(function() {
-      var youtubeURL = `#{content.youtube_url}`
-      var playerYoutube = $('<video class="video-js vjs-fluid" id="ytPlayer" style="width:100%; height:auto!important" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + youtubeURL + '"}]}\'></video>')
-      $('#ytPlayerContainer').append(playerYoutube)
-
-      videojs('#ytPlayer').ready(function(e) {
+      videojs('#video-player').ready(function(e) {
         var player = this
 
         /*

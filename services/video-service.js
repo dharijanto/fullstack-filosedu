@@ -25,7 +25,7 @@ class VideoService extends CRUDService {
       }
     }).then(resp => {
       if (resp.status) {
-        return {status: true, data: {videoUrl: url.resolve(AppConfig.VIDEO_MOUNT_PATH, filename)}}
+        return {status: true, data: {videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, filename)}}
       } else {
         return resp
       }
@@ -38,7 +38,8 @@ class VideoService extends CRUDService {
         return {
           status: true,
           data: {
-            videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename)
+            videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename),
+            filename: data.filename
           }
         }
       } else {
