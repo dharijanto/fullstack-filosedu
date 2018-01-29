@@ -32,12 +32,27 @@ class VideoService extends CRUDService {
     })
   }
 
+  addFeedback (videoId, userId, value) {
+    return this.create({
+      modelName: 'Feedbacks',
+      data: {
+        videoId,
+        userId,
+        value
+      }
+    })
+  }
+
   getVideo (subtopicId) {
     return this._models['Videos'].findOne({where: {subtopicId}, order: [['createdAt', 'DESC']]}).then(data => {
       if (data) {
         return {
           status: true,
           data: {
+<<<<<<< HEAD
+=======
+            id: data.id,
+>>>>>>> Adding Video Feedback Feature
             videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename),
             filename: data.filename
           }

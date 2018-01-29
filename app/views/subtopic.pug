@@ -1,6 +1,7 @@
 extends layout/index.pug
 append head
   link(href='/assets/vendor/video.js/dist/video-js.min.css' rel="stylesheet")
+  link(href='/assets/css/videojs.endcapCTA.css' rel="stylesheet")
 
 include includes/utils.pug
 
@@ -34,27 +35,52 @@ block contents
 block footer
   script(src="/assets/vendor/video.js/dist/video.min.js")
   script(src="/assets/vendor/videojs-youtube/dist/Youtube.min.js")
+  script(src="/assets/js/videojs.endcapCTA.js")
   script.
     $(document).ready(function() {
-      videojs('#video-player').ready(function(e) {
-        var player = this
 
-        /*
-          Do something when you play player
-        */
-        player.on('play', function() {
-        })
+      var video = videojs('#video-player')
+      video.on('pause', function() {
+      })
 
-        /*
-          Do something when you pause player
-        */
-        player.on('pause', function() {
-        })
+      //- // Add a the endcap content
+      video.endcapCTA({
+        html: '<section class="endcapCallToActionContent" style="top:33%; left:35%; position: absolute;"><button id="cta_good"><img src="https://s.kaskus.id/images/2016/12/09/5312572_20161209103634.jpg" width="100px;" height="100px"/></button><button id="cta_bad"><img src="https://catatanharianherik.files.wordpress.com/2014/11/sad-emoticon-300x250.jpg" width="100px;" height="100px"/></button></section>',
+        run: function() {
+          // This runs upon creation of endcapCTA, just after video starts playing
 
-        /*
-          Do something when you changing timer of player
-        */
-        player.on('seeking', function() {
-        })
+          // Remember to remove attachment of hook property before apply this new,
+          // else it will clone many hook
+          $('#cta_good').off('click')
+          $('#cta_bad').off('click')
+
+          var videoId = $('#video-player').data('id')
+          $('#cta_good').on('click', function(e) {
+            var self = this
+            $.ajax({
+              method: 'POST',
+              url: '/video/feedback',
+              data: {
+                videoId,
+                value: 1
+              }
+             }).done(function(e) {
+              $(self).parent().parent().removeClass('is-active')
+            })
+          })
+          $('#cta_bad').on('click', function(e) {
+            var self = this
+            $.ajax({
+              method: 'POST',
+              url: '/video/feedback',
+              data: {
+                videoId,
+                value: 0
+              }
+            }).done(function(e) {
+              $(self).parent().parent().removeClass('is-active')
+            })
+          })
+        }
       })
     })

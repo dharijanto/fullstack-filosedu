@@ -85,6 +85,13 @@ function addTables (sequelize, models) {
   })
   models.Videos.belongsTo(models.Subtopic)
 
+  models.Feedbacks = sequelize.define('feedbacks', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    videoId: {type: Sequelize.INTEGER},
+    userId: {type: Sequelize.INTEGER},
+    value: {type: Sequelize.INTEGER}
+  })
+
   return models
 }
 

@@ -11,6 +11,7 @@ var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var VideoService = require(path.join(__dirname, '../../services/video-service'))
+
 var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
 
 const TAG = 'CourseController'
@@ -61,6 +62,26 @@ class CourseController extends BaseController {
       })
     })
 
+    this.routePost('/video/feedback', (req, res, next) => {
+      /*
+        We are using number to identifying status
+        1 = good
+        0 = bad
+      */
+      var inputValue = parseInt(req.body.value)
+      var videoId = parseInt(req.body.videoId)
+      var userId = null
+      if (req.user) {
+        userId = req.user.id
+      }
+
+      videoService.addFeedback(videoId, userId, inputValue).then(resp => {
+        res.json(resp.status)
+      }).then(err => {
+        next(err)
+      })
+    })
+
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', (req, res, next) => {
       var topicId = req.params.topicId
       var subtopicId = req.params.subtopicId
@@ -82,6 +103,10 @@ class CourseController extends BaseController {
 
             // When Filos is cloud-hosted, we use Youtube as video source
             if (AppConfig.CLOUD_SERVER) {
+<<<<<<< HEAD
+=======
+              // url aws
+>>>>>>> Adding Video Feedback Feature
               const src = res.locals.subtopicData.youtube_url
               if (src) {
                 res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-setup='{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "${src}"}]}'></video>`
@@ -92,7 +117,11 @@ class CourseController extends BaseController {
               // Otherwise, we use local copy
               const src = resp4.status && resp4.data.videoURL
               if (src) {
+<<<<<<< HEAD
                 res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls> <source src=${src}> </video>`
+=======
+                res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-id="${resp4.data.id}"> <source src=${src} type="video/mp4"> </video>`
+>>>>>>> Adding Video Feedback Feature
               } else {
                 res.locals.videoSource = `<div class='text-center text-danger'>Video does not exist</div>`
               }
