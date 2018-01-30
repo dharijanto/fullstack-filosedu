@@ -103,10 +103,6 @@ class CourseController extends BaseController {
 
             // When Filos is cloud-hosted, we use Youtube as video source
             if (AppConfig.CLOUD_SERVER) {
-<<<<<<< HEAD
-=======
-              // url aws
->>>>>>> Adding Video Feedback Feature
               const src = res.locals.subtopicData.youtube_url
               if (src) {
                 res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-setup='{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "${src}"}]}'></video>`
@@ -117,11 +113,7 @@ class CourseController extends BaseController {
               // Otherwise, we use local copy
               const src = resp4.status && resp4.data.videoURL
               if (src) {
-<<<<<<< HEAD
-                res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls> <source src=${src}> </video>`
-=======
-                res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-id="${resp4.data.id}"> <source src=${src} type="video/mp4"> </video>`
->>>>>>> Adding Video Feedback Feature
+                res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-id="${resp4.data.id}"> <source src=${src}> </video>`
               } else {
                 res.locals.videoSource = `<div class='text-center text-danger'>Video does not exist</div>`
               }

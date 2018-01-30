@@ -49,10 +49,7 @@ class VideoService extends CRUDService {
         return {
           status: true,
           data: {
-<<<<<<< HEAD
-=======
             id: data.id,
->>>>>>> Adding Video Feedback Feature
             videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename),
             filename: data.filename
           }

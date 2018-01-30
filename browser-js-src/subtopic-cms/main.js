@@ -16,13 +16,6 @@ require('codemirror/mode/javascript/javascript')
 require('jquery-simple-upload')
 require('summernote')
 
-/*
-  Setup video for youtube with videojs integrated
-*/
-var videojs = require('video.js')
-require('videojs-youtube')
-
-var Formatter = require('../libs/formatter')
 var unsaved = false
 
 $('.addNewExercise').on('click', function () {
