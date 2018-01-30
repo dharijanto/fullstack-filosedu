@@ -4,15 +4,10 @@ var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
 
-var videojs = require('video.js')
-require('videojs-youtube')
-
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var VideoService = require(path.join(__dirname, '../../services/video-service'))
-
-var Formatter = require(path.join(__dirname, '../../lib/utils/formatter.js'))
 
 const TAG = 'CourseController'
 
@@ -76,8 +71,8 @@ class CourseController extends BaseController {
       }
 
       videoService.addFeedback(videoId, userId, inputValue).then(resp => {
-        res.json(resp.status)
-      }).then(err => {
+        res.json(resp)
+      }).catch(err => {
         next(err)
       })
     })

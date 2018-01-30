@@ -87,10 +87,10 @@ function addTables (sequelize, models) {
 
   models.Feedbacks = sequelize.define('feedbacks', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    videoId: {type: Sequelize.INTEGER},
-    userId: {type: Sequelize.INTEGER},
     value: {type: Sequelize.INTEGER}
   })
+  models.Feedbacks.belongsTo(models.Videos)
+  models.Feedbacks.belongsTo(models.User)
 
   return models
 }

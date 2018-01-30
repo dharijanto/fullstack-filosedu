@@ -3,7 +3,6 @@ var _ = require('lodash')
 
 var axios = require('axios')
 var codeMirror = require('codemirror')
-var Formatter = require('../libs/formatter')
 var marked = require('marked')
 var rootPath = require('cmsRootPath')
 var toastr = require('toastr')
