@@ -32,6 +32,25 @@ class ImageService extends CRUDService {
     })
   }
 
+  getAll () {
+    return this._models['Images'].all({order: [['createdAt', 'DESC']]}).then(data => {
+      if (data) {
+        var queryResult = data.map(result => {
+          return {
+            id: result.id,
+            filename: result.filename
+          }
+        })
+        return {
+          status: true,
+          data: queryResult
+        }
+      } else {
+        return {status: false, errCode: 0, errMessage: 'Data not found'}
+      }
+    })
+  }
+
   static uploadImageMiddleware () {
     var fileName = null
     const upload = multer({

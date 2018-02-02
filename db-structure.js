@@ -86,6 +86,13 @@ function addTables (sequelize, models) {
   })
   models.Videos.belongsTo(models.Subtopic)
 
+  models.Images = sequelize.define('images', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    filename: {type: Sequelize.STRING, unique: true},
+    sourceLink: {type: Sequelize.TEXT}
+  })
+  models.Images.belongsTo(models.Subtopic)
+
   models.Feedbacks = sequelize.define('feedbacks', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     value: {type: Sequelize.INTEGER}

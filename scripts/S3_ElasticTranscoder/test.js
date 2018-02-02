@@ -67,30 +67,3 @@ fs.readFile('601_Arti_Pecahan.mp4', function (err, data) {
    }
   })
 })
-
-
-    
-
-
-// fs.readFile('601_Arti_Pecahan.mp4', function (err, data) {
-// 	if (err) {throw err;}
-
-// 	var base64data = new Buffer(data, 'binary')
-
-// 	var s3 = new AWS.S3()
-
-// 	var params = {
-// 		Bucket: 'ncloud-testing',
-// 		Key: 'arti_pecahan_s3_upload_v2.mp4',
-// 		Body: base64data,
-//     ACL: 'public-read'
-// 	}
-
-// 	s3.putObject(params, function (err, data) {
-// 		if (err) {
-// 			console.log(err)
-// 		} else {
-// 			console.log(data)
-// 		}
-// 	})
-// })
