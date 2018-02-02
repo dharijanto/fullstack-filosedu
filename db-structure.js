@@ -81,7 +81,8 @@ function addTables (sequelize, models) {
   // Locally hosted videos
   models.Videos = sequelize.define('videos', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    filename: {type: Sequelize.STRING, unique: true}
+    filename: {type: Sequelize.STRING, unique: true},
+    sourceLink: {type: Sequelize.TEXT}
   })
   models.Videos.belongsTo(models.Subtopic)
 

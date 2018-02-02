@@ -166,11 +166,33 @@ class SubtopicController extends BaseController {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-          return videoService.addVideo(req.file.filename, subtopicId).then(resp => {
-            res.json(resp)
-          }).catch(err => {
-            next(err)
-          })
+          if (AppConfig.CLOUD_SERVER) {
+            videoService.uploadVideoToS3(req.file.filename).then(resp => {
+              if (resp.status) {
+                return videoService.addVideo(req.file.filename, resp.data.URL, subtopicId).then(resp2 => {
+                  if (resp2.status) {
+                    res.json(resp2)
+                  } else {
+                    res.json({status: false})
+                  }
+                })
+              } else {
+                res.json({status: false})
+              }
+            }).catch(err => {
+              next(err)
+            })
+          } else {
+            videoService.addVideo(fileName, linkVideo, subtopicId).then(resp2 => {
+              if (resp2.status) {
+                res.json(resp2)
+              } else {
+                res.json({status: false})
+              }
+            }).catch(err => {
+              next(err)
+            })
+          }
         }
       })
     })

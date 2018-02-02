@@ -2,6 +2,7 @@ extends layout/index.pug
 append head
   link(href='/assets/vendor/video.js/css/video-js.min.css' rel="stylesheet")
   link(href='/assets/vendor/video.js/css/videojs.endcapCTA.css' rel="stylesheet")
+  link(href='/assets/vendor/videojs-resolution-switcher/videojs-resolution-switcher.css' rel="stylesheet")
 
 include includes/utils.pug
 
@@ -34,14 +35,16 @@ block contents
 
 block footer
   script(src="/assets/vendor/video.js/js/video.min.js")
-  script(src="/assets/vendor/videojs-youtube/Youtube.min.js")
+  script(src="/assets/vendor/videojs-resolution-switcher/videojs-resolution-switcher.js")
   script(src="/assets/vendor/video.js/js/videojs.endcapCTA.js")
   script.
     $(document).ready(function() {
 
       var video = videojs('#video-player')
-      video.on('pause', function() {
-      })
+      video.videoJsResolutionSwitcher({default: 'SD'})
+
+      //- video.on('pause', function(e) {
+      //- })
 
       // Add Feedback After Video Ends
       // TODO: Change width and height to use @media in CSS
