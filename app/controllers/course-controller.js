@@ -98,15 +98,15 @@ class CourseController extends BaseController {
 
             // When Filos is cloud-hosted, we use AWS as video source
             if (AppConfig.CLOUD_SERVER) {
-              const src = resp4.status && resp4.data.sourceLink
+              const src = resp4.status && resp4.data.remoteHostedURL
               if (src) {
-                res.locals.videoSource = `<video class="video-js vjs-fluid vjs-default-skin" id="video-player" controls><source src="${resp4.data.sourceLink.nonHD}" type="video/mp4" label="SD" /><source src="${resp4.data.sourceLink.HD}" type="video/mp4" label="HD" /></video>`
+                res.locals.videoSource = `<video class="video-js vjs-fluid vjs-default-skin" id="video-player" controls><source src="${resp4.data.remoteHostedURL.HD}" type="video/mp4" label="HD" res="720"/><source src="${resp4.data.remoteHostedURL.nonHD}" type="video/mp4" label="SD" res="360"/></video>`
               } else {
                 res.locals.videoSource = `<div class='text-center text-danger'>Video does not exist</div>`
               }
             } else {
               // Otherwise, we use local copy
-              const src = resp4.status && resp4.data.videoURL
+              const src = resp4.status && resp4.data.selfHostedURL
               if (src) {
                 res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-id="${resp4.data.id}"> <source src=${src}> </video>`
               } else {

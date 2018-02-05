@@ -5,7 +5,6 @@ var fs = require('fs')
 var log = require('npmlog')
 var multer = require('multer')
 var Promise = require('bluebird')
-var Sequelize = require('sequelize')
 var url = require('url')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
@@ -18,17 +17,22 @@ class VideoService extends CRUDService {
     super(sequelize, models)
   }
 
-  addVideo (filename, sourceLink=null, subtopicId) {
+  addVideo (filename, sourceLink = null, subtopicId) {
     return this.create({
       modelName: 'Videos',
       data: {
         filename,
-        sourceLink: JSON.stringify(sourceLink),
+        sourceLink,
         subtopicId
       }
     }).then(resp => {
       if (resp.status) {
-        return {status: true, data: {videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, filename)}}
+        return {
+          status: true,
+          data: {
+            selfHostedURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, filename)
+          }
+        }
       } else {
         return resp
       }
@@ -53,29 +57,10 @@ class VideoService extends CRUDService {
           status: true,
           data: {
             id: data.id,
-            videoURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename),
+            selfHostedURL: url.resolve(AppConfig.VIDEO_MOUNT_PATH, data.filename),
             filename: data.filename,
-            sourceLink: JSON.parse(data.sourceLink)
+            remoteHostedURL: JSON.parse(data.sourceLink)
           }
-        }
-      } else {
-        return {status: false, errCode: 0, errMessage: 'Data not found'}
-      }
-    })
-  }
-
-  getAll () {
-    return this._models['Videos'].all({order: [['createdAt', 'DESC']]}).then(data => {
-      if (data) {
-        var queryResult = data.map(result => {
-          return {
-            id: result.id,
-            filename: result.filename
-          }
-        })
-        return {
-          status: true,
-          data: queryResult
         }
       } else {
         return {status: false, errCode: 0, errMessage: 'Data not found'}
@@ -105,16 +90,17 @@ class VideoService extends CRUDService {
 
   uploadVideoToS3 (fileName) {
     // example content fileName : 1517392398808_601_Arti_Pecahan.mp4
-    return new Promise ((resolve, reject) => {
-      fs.readFile(AppConfig.VIDEO_PATH + '/' + fileName, (err, data) => {
+    return new Promise((resolve, reject) => {
+      fs.readFile(path.join(AppConfig.VIDEO_PATH, fileName), (err, data) => {
         if (err) {
           reject(err)
         }
         var s3 = new AWS.S3()
-        AWS.config.update({region: 'ap-southeast-1'})
-        var base64data = new Buffer(data, 'binary')
+        AWS.config.update({region: AppConfig.AWS_REGION})
+        // Changing from new Buffer to Buffer.from because it's deprecated in node v6
+        var base64data = Buffer.from(data, 'binary')
         var params = {
-          Bucket: 'ncloud-testing',
+          Bucket: AppConfig.AWS_BUCKET_NAME,
           Key: fileName,
           Body: base64data,
           ACL: 'public-read'
@@ -123,44 +109,48 @@ class VideoService extends CRUDService {
         s3.putObject(params, function (err1, data1) {
           if (err1) {
             /* when error, we delete local file, its either success or fail */
-            fs.unlink(AppConfig.VIDEO_PATH + '/' + fileName, (err2, data2) => {
+            fs.unlink(path.join(AppConfig.VIDEO_PATH, fileName), (err2, data2) => {
               reject(err1)
             })
           } else {
-              var elastictranscoder = new AWS.ElasticTranscoder()
-              var paramElastic = {
-              PipelineId: '1517283530132-1wj56s', /* required */
+            var elastictranscoder = new AWS.ElasticTranscoder()
+            var paramElastic = {
+              PipelineId: AppConfig.AWS_PIPELINE_ID, /* required */
               Input: {
-                Key: fileName,
+                Key: fileName
               },
               // OutputKeyPrefix mean folder tujuan di S3
               // If not exist, it will create new
-              OutputKeyPrefix: 'videos_v1/',
+              OutputKeyPrefix: AppConfig.AWS_PREFIX_FOLDER_VIDEO_NAME,
               Outputs: [
                 {
-                  Key: '360p_'+ fileName,
-                  PresetId: '1517305976374-exb5fa',
+                  Key: AppConfig.PREFIX_360P + fileName,
+                  PresetId: AppConfig.AWS_360P_PRESET_ID
                 },
                 {
-                  Key: '720p_' + fileName,
-                  PresetId: '1351620000001-000010'
+                  Key: AppConfig.PREFIX_720P + fileName,
+                  PresetId: AppConfig.AWS_720P_PRESET_ID
                 }
-              ],
+              ]
             }
 
-            elastictranscoder.createJob(paramElastic, function(err3, data3) {
+            elastictranscoder.createJob(paramElastic, function (err3, data3) {
               if (err3) {
-                fs.unlink(AppConfig.VIDEO_PATH + '/' + fileName, (err2, data2) => {
+                fs.unlink(path.join(AppConfig.VIDEO_PATH, fileName), (err2, data2) => {
                   reject(err1)
                 })
                 reject(err3)
               } else {
-                const awsURLPath = 'https://s3-ap-southeast-1.amazonaws.com/ncloud-testing/videos_v1/'
+                // this aws link cannot insert inside path.join, because it will edit from http:// to http:/
+                // thus make video not playable from videojs
+                const awsURLPath = AppConfig.AWS_LINK + '/' + path.join(AppConfig.AWS_BUCKET_NAME, AppConfig.AWS_PREFIX_FOLDER_VIDEO_NAME)
+                const aws360pURL = awsURLPath + AppConfig.PREFIX_360P + fileName
+                const aws720pURL = awsURLPath + AppConfig.PREFIX_720P + fileName
                 resolve({status: true,
                   data: {
                     URL: {
-                      'nonHD': awsURLPath + '360p_'+ fileName,
-                      'HD': awsURLPath + '720p_'+ fileName
+                      'nonHD': aws360pURL,
+                      'HD': aws720pURL
                     }
                   }
                 })
@@ -169,6 +159,38 @@ class VideoService extends CRUDService {
           }
         })
       })
+    })
+  }
+
+  uploadAndSaveVideoToDB (fileName, subtopicId) {
+    return new Promise((resolve, reject) => {
+      if (AppConfig.CLOUD_SERVER) {
+        this.uploadVideoToS3(fileName).then(resp => {
+          if (resp.status) {
+            return this.addVideo(fileName, JSON.stringify(resp.data.URL), subtopicId).then(resp2 => {
+              if (resp2.status) {
+                resolve(resp2)
+              } else {
+                resolve({status: false})
+              }
+            })
+          } else {
+            resolve({status: false})
+          }
+        }).catch(err => {
+          reject(err)
+        })
+      } else {
+        return this.addVideo(fileName, null, subtopicId).then(resp2 => {
+          if (resp2.status) {
+            resolve(resp2)
+          } else {
+            resolve({status: false})
+          }
+        }).catch(err => {
+          reject(err)
+        })
+      }
     })
   }
 }

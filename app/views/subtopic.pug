@@ -39,12 +39,14 @@ block footer
   script(src="/assets/vendor/video.js/js/videojs.endcapCTA.js")
   script.
     $(document).ready(function() {
-
       var video = videojs('#video-player')
-      video.videoJsResolutionSwitcher({default: 'SD'})
+      video.videoJsResolutionSwitcher({
+        default: 'low',
+        dynamicLabel: true
+      })
 
-      //- video.on('pause', function(e) {
-      //- })
+      video.on('pause', function(e) {
+      })
 
       // Add Feedback After Video Ends
       // TODO: Change width and height to use @media in CSS

@@ -166,33 +166,11 @@ class SubtopicController extends BaseController {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-          if (AppConfig.CLOUD_SERVER) {
-            videoService.uploadVideoToS3(req.file.filename).then(resp => {
-              if (resp.status) {
-                return videoService.addVideo(req.file.filename, resp.data.URL, subtopicId).then(resp2 => {
-                  if (resp2.status) {
-                    res.json(resp2)
-                  } else {
-                    res.json({status: false})
-                  }
-                })
-              } else {
-                res.json({status: false})
-              }
-            }).catch(err => {
-              next(err)
-            })
-          } else {
-            videoService.addVideo(fileName, linkVideo, subtopicId).then(resp2 => {
-              if (resp2.status) {
-                res.json(resp2)
-              } else {
-                res.json({status: false})
-              }
-            }).catch(err => {
-              next(err)
-            })
-          }
+          videoService.uploadAndSaveVideoToDB(req.file.filename, subtopicId).then(resp => {
+            res.json(resp)
+          }).catch(err => {
+            next(err)
+          })
         }
       })
     })
@@ -208,14 +186,14 @@ class SubtopicController extends BaseController {
 
     this.routeGet('/subtopic/images', (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
-      imageService.getImages().then(resp => {
+      imageService.getAll().then(resp => {
         if (resp.status) {
-          resp.data.resources = resp.data.resources.map(data => {
-            return {
-              url: super.rootifyPath(data.url), // output: '/hash_url/images/meme.jpg'
-              public_id: AppConfig.IMAGE_MOUNT_PATH + data.public_id
-            }
-          })
+          // resp.data.resources = resp.data.resources.map(data => {
+          //   return {
+          //     url: super.rootifyPath(data.url), // output: '/hash_url/images/meme.jpg'
+          //     public_id: AppConfig.IMAGE_MOUNT_PATH + data.public_id
+          //   }
+          // })
           return res.json(resp.data)
         } else {
           return res.json({status: false})
@@ -231,21 +209,44 @@ class SubtopicController extends BaseController {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-          res.json({
-            status: true,
-            data: {
-              url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + req.file.filename),
-              public_id: AppConfig.IMAGE_MOUNT_PATH + req.file.filename,
-              originalName: req.file.filename,
-              created_at: req.file.filename.split('_')[0]
+          imageService.uploadAndSaveImageToDB(req.file.filename, super.rootifyPath).then(resp => {
+            res.json(resp)
+            if (resp.status) {
+              res.json({
+                status: true,
+                data: {
+                  url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + resp.data.filename),
+                  public_id: resp.data.filename,
+                  originalName: resp.data.filename,
+                  created_at: resp.data.filename.split('_')[0]
+                }
+              })
+            } else {
+              res.json({
+                status: true,
+                data: {}
+              })
             }
+          }).catch(err => {
+            console.error(err)
+            next(err)
           })
+          // res.json({
+          //   status: true,
+          //   data: {
+          //     url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + req.file.filename),
+          //     public_id: AppConfig.IMAGE_MOUNT_PATH + req.file.filename,
+          //     originalName: req.file.filename,
+          //     created_at: req.file.filename.split('_')[0]
+          //   }
+          // })
         }
       })
     })
 
     this.routeGet('/subtopic/images/delete', (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
+      console.log(req.query.publicId)
       imageService.deleteImage(req.query.publicId).then(resp => {
         res.json(resp)
       }).catch(err => {
