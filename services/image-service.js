@@ -23,53 +23,42 @@ class ImageService extends CRUDService {
   getImages () {
     log.verbose(TAG, `Cloud Server Status = ${AppConfig.CLOUD_SERVER}`)
     return new Promise((resolve, reject) => {
-      var params = {
-        Bucket: 'examplebucket',
-        Key: 'images_v1/'
-      }
-
-      s3.getObject(params, (err, data) => {
-        if (err) {
-          reject(err)
-        } else {
-          console.log(data)
-          fs.readdir(AppConfig.IMAGE_PATH, (err, files) => {
-            if (err) {
-              reject(err)
-            }
-            files = files.map(data => {
+      return this._models['Images'].findAll({order: [['createdAt', 'DESC']]}).then(datas => {
+        if (datas.length > 0) {
+          if (AppConfig.CLOUD_SERVER) {
+            datas = datas.map(data => {
               return {
-                url: AppConfig.IMAGE_MOUNT_PATH + data, // output: '/images/timestamp_filename.jpg'
-                public_id: data
+                url: data.sourceLink,
+                public_id: data.filename
               }
             })
-            resolve({status: true, data: {resources: files}})
+          } else {
+            datas = datas.map(data => {
+              var localURL = AppConfig.BASE_URL + path.join(AppConfig.IMAGE_MOUNT_PATH, data.filename)
+              return {
+                url: localURL,
+                public_id: data.filename
+              }
+            })
+          }
+          resolve({
+            status: true,
+            data: {
+              resources: datas
+            }
+          })
+        } else {
+          resolve({
+            status: true,
+            data: {
+              resources: []
+            }
           })
         }
+      }).catch(err => {
+        log.verbose(`ImageService GetImages Error Message = ${JSON.stringify(err)}`)
+        reject(err)
       })
-    })
-  }
-
-  getAll () {
-    return this._models['Images'].all({order: [['createdAt', 'DESC']]}).then(data => {
-      if (data.length > 0) {
-        var queryResult = data.map(result => {
-          return {
-            id: result.id,
-            selfHostedURL: result.filename,
-            remoteHostedURL: JSON.parse(result.sourceLink)
-          }
-        })
-        return {
-          status: true,
-          data: queryResult
-        }
-      } else {
-        return {status: true, data: {resources: []}}
-      }
-    }).catch(err => {
-      console.error(err)
-      return {status: false, errCode: 0, errMessage: 'Data not found'}
     })
   }
 
@@ -89,37 +78,65 @@ class ImageService extends CRUDService {
     return upload
   }
 
-  deleteImage (fileName) {
+  _deleteImageLocal (fileName) {
     return new Promise((resolve, reject) => {
-      // var imageLocation = path.join(AppConfig.IMAGE_PATH, fileName)
-      var imageLocation = AppConfig.IMAGE_PATH + fileName
-      fs.access(imageLocation, fs.constants.F_OK, (err) => {
+      fs.unlink(path.join(AppConfig.IMAGE_PATH, fileName), (err) => {
         if (err) {
-          console.log(err)
-          reject(err)
+          resolve(err)
         } else {
-          console.log('is exists')
+          resolve({status: true})
         }
-        console.log('kdkdkdkdkdk')
       })
     })
-    //   fs.exists(imageLocation, (exists) => {
-    //     if (exists) {
-    //       // Unlink is used for remove file
-    //       fs.unlink(imageLocation, (err) => {
-    //         if (err) {
-    //           reject(err)
-    //         }
-    //       })
-    //       resolve({status: true})
-    //     } else {
-    //       resolve({status: false, errMessage: 'File tidak ada / sudah dihapus'})
-    //     }
-    //   })
-    // })
   }
 
-  addImage (filename, sourceLink = null) {
+  _deleteImageDB (fileName) {
+    return new Promise((resolve, reject) => {
+      this._models['Images'].destroy({where: {filename: fileName}}).then(numRows => {
+        resolve({status: true})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  deleteImage (fileName) {
+    return Promise.map(
+      this._deleteImageLocal(fileName),
+      this._deleteImageDB(fileName),
+      function (resp1, resp2) {
+        if (AppConfig.CLOUD_SERVER) {
+          var params = {
+            Bucket: AppConfig.AWS_BUCKET_NAME,
+            Key: AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME + fileName
+          }
+
+          // TODO: my account aws not allowed to delete
+          s3.deleteObject(params, function (err, data) {
+            if (err) {
+              log.verbose(`s3 delete object = ${JSON.stringify(err)}`)
+              return err
+            } else {
+              return {status: true}
+            }
+          })
+        } else {
+          if (resp1.status && resp2.status) {
+            return {status: true}
+          } else {
+            return {status: false}
+          }
+        }
+      }
+    ).then(result => {
+      return result
+    }).catch(err => {
+      log.verbose(`Delete Image = ${JSON.stringify(err)}`)
+      return (err)
+    })
+  }
+
+  _addImage (filename, sourceLink = null) {
     return this.create({
       modelName: 'Images',
       data: {
@@ -127,7 +144,6 @@ class ImageService extends CRUDService {
         sourceLink
       }
     }).then(resp => {
-      console.log(resp)
       if (resp.status) {
         return {
           status: true,
@@ -141,7 +157,7 @@ class ImageService extends CRUDService {
     })
   }
 
-  uploadImageToS3 (fileName) {
+  _uploadImageToS3 (fileName) {
     // example content fileName : 1517392398808_601_Arti_Pecahan.mp4
     return new Promise((resolve, reject) => {
       fs.readFile(path.join(AppConfig.IMAGE_PATH, fileName), (err, data) => {
@@ -179,9 +195,9 @@ class ImageService extends CRUDService {
   uploadAndSaveImageToDB (fileName) {
     return new Promise((resolve, reject) => {
       if (AppConfig.CLOUD_SERVER) {
-        this.uploadImageToS3(fileName).then(resp => {
+        this._uploadImageToS3(fileName).then(resp => {
           if (resp.status) {
-            return this.addImage(fileName, JSON.stringify(resp.data.URL)).then(resp2 => {
+            return this._addImage(fileName, resp.data.URL).then(resp2 => {
               if (resp2.status) {
                 resolve(resp2)
               } else {
@@ -195,7 +211,7 @@ class ImageService extends CRUDService {
           reject(err)
         })
       } else {
-        return this.addImage(fileName, null).then(resp2 => {
+        return this._addImage(fileName, null).then(resp2 => {
           if (resp2.status) {
             resolve(resp2)
           } else {
