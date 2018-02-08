@@ -137,9 +137,8 @@ class VideoService extends CRUDService {
             elastictranscoder.createJob(paramElastic, function (err3, data3) {
               if (err3) {
                 fs.unlink(path.join(AppConfig.VIDEO_PATH, fileName), (err2, data2) => {
-                  reject(err1)
+                  reject(err3)
                 })
-                reject(err3)
               } else {
                 // this aws link cannot insert inside path.join, because it will edit from http:// to http:/
                 // thus make video not playable from videojs

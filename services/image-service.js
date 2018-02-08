@@ -34,7 +34,7 @@ class ImageService extends CRUDService {
             })
           } else {
             datas = datas.map(data => {
-              var localURL = AppConfig.BASE_URL + path.join(AppConfig.IMAGE_MOUNT_PATH, data.filename)
+              var localURL = url.resolve('/', path.join(AppConfig.IMAGE_MOUNT_PATH, data.filename))
               return {
                 url: localURL,
                 public_id: data.filename
@@ -101,7 +101,7 @@ class ImageService extends CRUDService {
   }
 
   deleteImage (fileName) {
-    return Promise.map(
+    return Promise.join(
       this._deleteImageLocal(fileName),
       this._deleteImageDB(fileName),
       function (resp1, resp2) {
@@ -130,9 +130,6 @@ class ImageService extends CRUDService {
       }
     ).then(result => {
       return result
-    }).catch(err => {
-      log.verbose(`Delete Image = ${JSON.stringify(err)}`)
-      return (err)
     })
   }
 
@@ -175,7 +172,7 @@ class ImageService extends CRUDService {
 
         s3.putObject(params, function (err1, data1) {
           if (err1) {
-            /* when error, we delete local file, its either success or fail */
+            // when error, we delete local file, its either success or fail
             fs.unlink(path.join(AppConfig.IMAGE_PATH, fileName), (err2, data2) => {
               reject(err1)
             })
@@ -183,7 +180,7 @@ class ImageService extends CRUDService {
             resolve({
               status: true,
               data: {
-                URL: AppConfig.AWS_LINK + '/' + path.join(AppConfig.AWS_BUCKET_NAME, AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME, fileName)
+                URL: url.resolve(AppConfig.AWS_LINK, path.join(AppConfig.AWS_BUCKET_NAME, AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME, fileName))
               }
             })
           }
