@@ -96,17 +96,17 @@ class CourseController extends BaseController {
             res.locals.exercises = resp2.data || []
             res.locals.isAuthenticated = req.isAuthenticated()
 
-            // When Filos is cloud-hosted, we use Youtube as video source
+            // When Filos is cloud-hosted, we use AWS as video source
             if (AppConfig.CLOUD_SERVER) {
-              const src = res.locals.subtopicData.youtube_url
+              const src = resp4.status && resp4.data.remoteHostedURL
               if (src) {
-                res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-setup='{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "${src}"}]}'></video>`
+                res.locals.videoSource = `<video class="video-js vjs-fluid vjs-default-skin" id="video-player" controls><source src="${resp4.data.remoteHostedURL.HD}" type="video/mp4" label="HD" res="720"/><source src="${resp4.data.remoteHostedURL.nonHD}" type="video/mp4" label="SD" res="360"/></video>`
               } else {
                 res.locals.videoSource = `<div class='text-center text-danger'>Video does not exist</div>`
               }
             } else {
               // Otherwise, we use local copy
-              const src = resp4.status && resp4.data.videoURL
+              const src = resp4.status && resp4.data.selfHostedURL
               if (src) {
                 res.locals.videoSource = `<video class="video-js vjs-fluid" id="video-player" controls data-id="${resp4.data.id}"> <source src=${src}> </video>`
               } else {

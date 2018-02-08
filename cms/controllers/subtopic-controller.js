@@ -166,7 +166,7 @@ class SubtopicController extends BaseController {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-          return videoService.addVideo(req.file.filename, subtopicId).then(resp => {
+          videoService.uploadAndSaveVideoToDB(req.file.filename, subtopicId).then(resp => {
             res.json(resp)
           }).catch(err => {
             next(err)
@@ -188,12 +188,6 @@ class SubtopicController extends BaseController {
       log.verbose(TAG, `req.path = ${req.path}`)
       imageService.getImages().then(resp => {
         if (resp.status) {
-          resp.data.resources = resp.data.resources.map(data => {
-            return {
-              url: super.rootifyPath(data.url), // output: '/hash_url/images/meme.jpg'
-              public_id: AppConfig.IMAGE_MOUNT_PATH + data.public_id
-            }
-          })
           return res.json(resp.data)
         } else {
           return res.json({status: false})
@@ -209,14 +203,26 @@ class SubtopicController extends BaseController {
         if (err) {
           res.json({status: false, errMessage: err.message})
         } else {
-          res.json({
-            status: true,
-            data: {
-              url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + req.file.filename),
-              public_id: AppConfig.IMAGE_MOUNT_PATH + req.file.filename,
-              originalName: req.file.filename,
-              created_at: req.file.filename.split('_')[0]
+          imageService.uploadAndSaveImageToDB(req.file.filename).then(resp => {
+            if (resp.status) {
+              res.json({
+                status: true,
+                data: {
+                  url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + resp.data.filename),
+                  public_id: resp.data.filename,
+                  originalName: resp.data.filename,
+                  created_at: resp.data.filename.split('_')[0]
+                }
+              })
+            } else {
+              res.json({
+                status: true,
+                data: {}
+              })
             }
+          }).catch(err => {
+            console.error(err)
+            next(err)
           })
         }
       })
@@ -224,6 +230,7 @@ class SubtopicController extends BaseController {
 
     this.routeGet('/subtopic/images/delete', (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
+      // publicId here means filename
       imageService.deleteImage(req.query.publicId).then(resp => {
         res.json(resp)
       }).catch(err => {

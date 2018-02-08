@@ -127,32 +127,12 @@ function initCodeMirror (elementId) {
 }
 
 $(document).ready(function () {
-  const tryEmbedYoutube = _.debounce(() => {
-    const videoURL = $('#ytInput').val()
-
-    // If there's element already exist, we destroy them
-    // and recreate
-    if ($('#ytPlayer').length) {
-      videojs('#ytPlayer').dispose()
-    }
-    var youtubePlayer = $('<video class="video-js vjs-fluid" id="ytPlayer" controls data-setup=\'{"techOrder": ["youtube"],"sources": [{"type": "video/youtube","src": "' + videoURL + '"}]}\'></video>')
-    $('#ytPlayerContainer').append(youtubePlayer)
-    videojs('#ytPlayer')
-  }, 500)
-
-  $('#ytInput').keyup(function () {
-    tryEmbedYoutube()
-  })
-  // Embed when page first load
-  tryEmbedYoutube()
-
   // Initialize VideoJS when the page loads
   axios.get('video').then(resp => {
-    console.log(JSON.stringify(resp.data))
     const data = resp.data.data
     if (resp.status) {
       $('#videoFilename').html(data.filename)
-      initLocalVideo(data.videoURL)
+      initLocalVideo(data.selfHostedURL)
     } else {
       console.error(resp)
     }
@@ -190,8 +170,8 @@ $(document).ready(function () {
         // console.log(JSON.stringify(data))
         if (resp.status) {
           $('#videoFilename').html('Success')
-          const videoURL = resp.data.videoURL
-          initLocalVideo(videoURL)
+          const selfHostedURL = resp.data.selfHostedURL
+          initLocalVideo(selfHostedURL)
           $('#videoFilename').css('color', 'green')
         } else {
           $('#videoFilename').html('Failed' + resp.errMessage ? `: ${resp.errMessage}` : '')
