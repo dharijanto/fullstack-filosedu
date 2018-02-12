@@ -8,6 +8,7 @@ var BaseController = require(path.join(__dirname, 'controllers/base-controller')
 var CourseController = require(path.join(__dirname, 'controllers/course-controller'))
 var CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 var ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
+var SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 
 const TAG = 'FiloseduAppController'
 
@@ -28,6 +29,7 @@ class Controller extends BaseController {
     this.routeUse((new CredentialController(initData)).getRouter())
     this.routeUse((new ExerciseController(initData)).getRouter())
     this.routeUse((new CourseController(initData)).getRouter())
+    this.routeUse((new SubtopicController(initData)).getRouter())
   }
 }
 

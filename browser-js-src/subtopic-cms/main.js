@@ -131,7 +131,7 @@ $(document).ready(function () {
     const data = resp.data.data
     if (resp.status) {
       $('#videoFilename').html(data.filename)
-      initLocalVideo(data.selfHostedURL)
+      initVideo(data.selfHostedURL)
     } else {
       console.error(resp)
     }
@@ -139,13 +139,13 @@ $(document).ready(function () {
     console.error(err)
   })
 
-  function initLocalVideo (videoURL) {
+  function initVideo (videoURL) {
     // If there's element already exist, we destroy them
     // and recreate
     if ($('#localPlayer').length) {
       videojs('#localPlayer').dispose()
     }
-    var localPlayer = $(`<video class="video-js vjs-fluid" id="localPlayer" controls><source src="${rootPath}${videoURL}"></video>`)
+    var localPlayer = $(`<video class="video-js vjs-fluid vjs-big-play-centered" id="localPlayer" controls><source src="${rootPath}${videoURL}"></video>`)
     $('#localPlayerContainer').append(localPlayer)
     videojs('#localPlayer')
   }
@@ -170,7 +170,7 @@ $(document).ready(function () {
         if (resp.status) {
           $('#videoFilename').html('Success')
           const selfHostedURL = resp.data.selfHostedURL
-          initLocalVideo(selfHostedURL)
+          initVideo(selfHostedURL)
           $('#videoFilename').css('color', 'green')
         } else {
           $('#videoFilename').html('Failed' + resp.errMessage ? `: ${resp.errMessage}` : '')
