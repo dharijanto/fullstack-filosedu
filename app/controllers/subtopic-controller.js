@@ -4,6 +4,7 @@ var Promise = require('bluebird')
 var marked = require('marked')
 var getSlug = require('speakingurl')
 
+var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
@@ -16,6 +17,7 @@ class SubtopicController extends BaseController {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
+    const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -29,17 +31,13 @@ class SubtopicController extends BaseController {
       next()
     })
 
-    this.routePost('/video/feedback', (req, res, next) => {
-      /*
-        We are using number to identifying status
-        1 = good
-        0 = bad
-      */
-      var inputValue = parseInt(req.body.value)
-      var videoId = parseInt(req.body.videoId)
-      var userId = req.user && req.user.id
-
-      videoService.addFeedback(videoId, userId, inputValue).then(resp => {
+    this.routePost('/video/analytics', (req, res, next) => {
+      // Event type
+      const key = req.body.key
+      const videoId = req.body.videoId
+      const userId = (req.user && req.user.id) || -1
+      const value = req.body.value
+      analyticsService.addVideoData(key, value, videoId, userId).then(resp => {
         res.json(resp)
       }).catch(err => {
         next(err)

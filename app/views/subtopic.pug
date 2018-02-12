@@ -26,7 +26,7 @@ block contents
         if (!isAuthenticated)
           input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
         else
-          a.btn.btn-primary(type="button" href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
+          a.btn.btn-primary.exerciseButton(type="button" onclick='return false' href='#' data-href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
           + renderExerciseStars(exercise.stars)
         br
       if !isAuthenticated

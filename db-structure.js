@@ -92,12 +92,19 @@ function addTables (sequelize, models) {
     sourceLink: {type: Sequelize.TEXT}
   })
 
-  models.Feedbacks = sequelize.define('feedbacks', {
+  models.Analytics = sequelize.define('analytics', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    value: {type: Sequelize.INTEGER}
+    type: {type: Sequelize.Sequelize.ENUM(['video', 'exercise'])},
+    key: {type: Sequelize.STRING},
+    value: {type: Sequelize.INTEGER},
+    userId: Sequelize.INTEGER,
+    videoId: Sequelize.INTEGER,
+    exerciseId: Sequelize.INTEGER
   })
-  models.Feedbacks.belongsTo(models.Videos)
-  models.Feedbacks.belongsTo(models.User)
+
+  // models.Analytics.belongsTo(models.User)
+  // models.Analytics.belongsTo(models.Video)
+  // models.Analytics.belongsTo(models.Exercise)
 
   return models
 }
