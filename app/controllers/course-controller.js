@@ -100,7 +100,11 @@ class CourseController extends BaseController {
             if (AppConfig.CLOUD_SERVER) {
               const src = resp4.status && resp4.data.remoteHostedURL
               if (src) {
-                res.locals.videoSource = `<video class="video-js vjs-fluid vjs-default-skin" id="video-player" controls><source src="${resp4.data.remoteHostedURL.HD}" type="video/mp4" label="HD" res="720"/><source src="${resp4.data.remoteHostedURL.nonHD}" type="video/mp4" label="SD" res="360"/></video>`
+                res.locals.videoSource =
+`<video class="video-js vjs-fluid vjs-default-skin" id="video-player" controls data-setup='{}'>
+  <source src="${resp4.data.remoteHostedURL.HD}" type="video/mp4" label="HD" res="720"/>
+  <source src="${resp4.data.remoteHostedURL.nonHD}" type="video/mp4" label="SD" res="360"/>
+</video>`
               } else {
                 res.locals.videoSource = `<div class='text-center text-danger'>Video does not exist</div>`
               }

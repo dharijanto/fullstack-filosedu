@@ -34,7 +34,7 @@ class ImageService extends CRUDService {
             })
           } else {
             datas = datas.map(data => {
-              var localURL = url.resolve('/', path.join(AppConfig.IMAGE_MOUNT_PATH, data.filename))
+              var localURL = url.resolve(AppConfig.BASE_URL, path.join(AppConfig.IMAGE_MOUNT_PATH, data.filename))
               return {
                 url: localURL,
                 public_id: data.filename

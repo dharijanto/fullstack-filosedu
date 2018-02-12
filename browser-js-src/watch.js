@@ -16,6 +16,10 @@ const modules = [
   {
     input: 'exercise-app',
     output: 'app'
+  },
+  {
+    input: 'subtopic-app',
+    output: 'app'
   }]
 
 modules.forEach(module => {

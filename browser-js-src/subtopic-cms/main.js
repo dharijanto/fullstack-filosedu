@@ -7,7 +7,6 @@ var marked = require('marked')
 var rootPath = require('cmsRootPath')
 var toastr = require('toastr')
 var videojs = require('video.js')
-require('videojs-youtube')
 
 // Needed to highlight codeMirror editor
 require('../nc-image-picker/main')
@@ -237,10 +236,10 @@ $(document).ready(function () {
     }
   }
 
-  function imageSelected (param) {
+  function imageSelected (imageURL, imagePublicId) {
     var inp = document.createElement('input')
     document.body.appendChild(inp)
-    inp.value = param
+    inp.value = imagePublicId
     inp.select()
     document.execCommand('copy')
     inp.remove()

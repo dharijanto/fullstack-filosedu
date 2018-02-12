@@ -6,7 +6,7 @@
   "browserify-shim": {
     "jquery": "global:$",
     "cmsRootPath": "global:rootPath",
-    "video.js": "videojs"
+    "video.js": "global:videojs"
   },
   "browserify": {
     "transform": [
@@ -34,12 +34,11 @@
     "marked": "^0.3.6",
     "moment": "^2.20.1",
     "nprogress": "^0.2.0",
-    "summernote": "^0.8.8",
     "select2": "^4.0.6-rc.1",
+    "summernote": "^0.8.8",
     "toastr": "^2.1.2",
     "uglifyify": "^4.0.4",
-    "video.js": "^6.6.0",
-    "videojs-youtube": "^2.4.1",
     "watchify": "^3.9.0"
-  }
+  },
+  "dependencies": {}
 }

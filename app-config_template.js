@@ -1,4 +1,5 @@
 var path = require('path')
+
 const MYSQL_CONF = {
   username: 'root',
   password: 'password',
@@ -7,7 +8,7 @@ const MYSQL_CONF = {
 
 module.exports = {
   testDbPath: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@127.0.0.1:3306/${MYSQL_CONF.dbName}`,
-  BASE_URL: '(BASE URL LOCAL)',
+  BASE_URL: 'http://app-filosedu.nusantara-local.com',
   CLOUD_SERVER: true,
   IMAGE_PATH: path.join(__dirname, 'images'),
   VIDEO_PATH: path.join(__dirname, 'videos'),
