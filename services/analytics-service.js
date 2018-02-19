@@ -50,15 +50,48 @@ class AnalyticsService extends CRUDService {
     })
   }
 
+  /*
+    type: 'backToVideo':
+      User goes back to Timevideo from exercise, by clicking 'Back to Video'
+      Value: 1
+
+    type: 'questionTime':
+      Time spend between questions
+      Value: time in second
+
+    type: 'setTime':
+      Time spend between a set
+      Value: time in second
+
+    type: 'correctAnswers':
+      Correct answer in a set submission
+      Value: percentage over all questions
+
+    type: 'attemptedAnswers':
+      Non-empty answers in a set submission
+      Value: percentage over all questions
+
+  */
   addExerciseData (key, value, exerciseId, userId = null) {
-    return this.create({
-      modelName: 'Analytics',
-      data: {
-        key,
-        value,
-        type: 'exercise',
-        userId,
-        exerciseId
+    return new Promise((resolve, reject) => {
+      if (key !== 'backToVideo' && key !== 'questionTime' &&
+          key !== 'setTime' && key !== 'correctAnswers' && key !== 'attemptedAnswers') {
+        resolve({status: false, errMessage: 'Invalid analytics key!'})
+      } else {
+        this.create({
+          modelName: 'Analytics',
+          data: {
+            key,
+            value,
+            type: 'exercise',
+            userId,
+            exerciseId
+          }
+        }).then(resp => {
+          resolve(resp)
+        }).catch(err => {
+          reject(err)
+        })
       }
     })
   }

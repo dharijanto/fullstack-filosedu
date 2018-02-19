@@ -6,6 +6,7 @@ var getSlug = require('speakingurl')
 var Promise = require('bluebird')
 var pug = require('pug')
 
+var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
@@ -17,6 +18,7 @@ class ExerciseController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
+    const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -174,22 +176,54 @@ class ExerciseController extends BaseController {
             if (userAnswers.length !== generatedQuestions.length) {
               res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
             } else {
+              // Get the number of non-empty answer. (i.e. the student tries to answer eventhough it's wrong)
+              const attemptedAnswers = userAnswers.reduce((attemptedAnswers, answer) => {
+                const keys = Object.keys(answer)
+                var attempted = false
+                keys.forEach(key => {
+                  if (answer[key].length > 0) {
+                    attempted = true
+                  }
+                })
+                if (attempted) {
+                  return attemptedAnswers + 1
+                } else {
+                  return attemptedAnswers
+                }
+              }, 0) / parseFloat(generatedQuestions.length) * 100
+
+              log.verbose(TAG, 'checkAnswer.POST(): attemptedAnswers= ' + attemptedAnswers)
+
               // Flag array identifying which user answer is correct/wrong
               const isAnswerCorrect = []
               // Compute the score of current exercise
-              const currentScore = generatedQuestions.reduce((numCorrect, knowns, index) => {
+              const correctAnswers = generatedQuestions.reduce((numCorrect, knowns, index) => {
                 const unknowns = userAnswers
-
                 log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
                 const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
                 isAnswerCorrect.push(isCorrect)
                 return isCorrect ? numCorrect + 1 : numCorrect
-              }, 0) / parseFloat(generatedQuestions.length) * 100
-
+              }, 0)
+              const currentScore = correctAnswers / parseFloat(generatedQuestions.length) * 100
               // Compute the best score
               const bestScore = submittedExercises.reduce((bestScore, submitedExercise) => {
                 return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
               }, 0)
+
+              // Keep track of the number of correct and attempted answers
+              Promise.join(
+                analyticsService.addExerciseData('correctAnswers', currentScore, exerciseId, userId),
+                analyticsService.addExerciseData('attemptedAnswers', attemptedAnswers, exerciseId, userId)
+              ).spread((resp, resp2) => {
+                if (!resp.status) {
+                  log.error(TAG, 'checkAnswer.POST(): addExerciseData.resp=' + JSON.stringify(resp))
+                }
+                if (!resp2.status) {
+                  log.error(TAG, 'checkAnswer.POST(): addExerciseData.resp2=' + JSON.stringify(resp2))
+                }
+              }).catch(err => {
+                log.error(TAG, err)
+              })
 
               return courseService.update({
                 modelName: 'GeneratedExercise',
@@ -222,6 +256,19 @@ class ExerciseController extends BaseController {
           next(err)
         })
       }
+    })
+
+    this.routePost('/exercise/analytics', (req, res, next) => {
+      // Event type
+      const key = req.body.key
+      const exerciseId = req.body.exerciseId
+      const userId = (req.user && req.user.id) || -1
+      const value = req.body.value
+      analyticsService.addExerciseData(key, value, exerciseId, userId).then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        next(err)
+      })
     })
   }
 }

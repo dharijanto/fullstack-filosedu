@@ -54,7 +54,7 @@ class SubtopicController extends BaseController {
           courseService.readOne({modelName: 'Topic', searchClause: {id: topicId}}),
           videoService.getVideo(subtopicId)
         ).spread((resp, resp2, resp3, resp4) => {
-          if (resp.status && resp3.status) {
+          if (resp.status && resp3.status && resp4.status) {
             const subtopic = resp.data
             res.locals.topic = resp3.data
             res.locals.subtopic = subtopic
@@ -63,6 +63,7 @@ class SubtopicController extends BaseController {
             res.locals.exercises = resp2.data || []
             res.locals.isAuthenticated = req.isAuthenticated()
 
+            log.verbose(TAG, 'subtopic.GET(): resp4=' + JSON.stringify(resp4))
             const videoTag = `<video class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered" id="video-player" data-id=${resp4.data.id} controls data-setup='{}'>`
             const missingVideo = `<div class='text-center text-danger'>Video does not exist</div>`
             // When Filos is cloud-hosted, we use AWS as video source

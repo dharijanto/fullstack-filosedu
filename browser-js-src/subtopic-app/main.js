@@ -1,6 +1,9 @@
 var videojs = require('video.js')
 var $ = require('jquery')
 
+const TAG = 'Subtopic-App'
+var log = require('../libs/logger')
+
 $(document).ready(function () {
   var video = videojs('#video-player')
   video.videoJsResolutionSwitcher({
@@ -9,32 +12,31 @@ $(document).ready(function () {
   })
 
   video.on('pause', function (e) {
-    console.log('onVideoPaused()')
+    log.verbose(TAG, 'onVideoPaused()')
     clearInterval(viewTimer)
     viewTimer = null
   })
 
   // Used to keep track video duration
   var viewTimer = null
-  const TIMER_INTERVAL = 30 // seconds
-
+  const VIEW_TIMER_INTERVAL = 10 // seconds
   video.on('play', function (e) {
-    console.log('onVideoPlay()')
+    log.verbose(TAG, 'onVideoPlay()')
     if (viewTimer) {
       clearInterval(viewTimer)
     }
     const videoId = $('#video-player').data('id')
     viewTimer = setInterval(() => {
-      console.log('onVideoBeingViewed()')
+      log.verbose(TAG, 'onVideoBeingViewed()')
       addViewDuration(videoId)
-    }, TIMER_INTERVAL * 1000)
+    }, VIEW_TIMER_INTERVAL * 1000)
   })
 
   // Used to keep track of skipped video
   var videoPlayed = false
   video.one('play', function () {
     videoPlayed = true
-    console.log('onVideoViewed()')
+    log.verbosa(TAG, 'onVideoViewedOnce()')
     const videoId = $('#video-player').data('id')
     addView(videoId)
   })
@@ -42,8 +44,9 @@ $(document).ready(function () {
   $('.exerciseButton').click(function () {
     var hrefData = $(this).data('href')
     var videoId = $('#video-player').data('id')
-    console.log('onExerciseClicked(): hrefData=' + hrefData)
+    log.verbose(TAG, 'onExerciseClicked(): hrefData=' + hrefData)
     if (!videoPlayed) {
+      log.verbose(TAG, 'onVideoSkipped()')
       addSkippedVideo(videoId, () => {
         window.location.href = hrefData
       })
@@ -120,14 +123,14 @@ $(document).ready(function () {
     })
   }
 
-  // Triggers every 'TIMER_INTERVAL' when video is playing
+  // Triggers every 'VIEW_TIMER_INTERVAL' when video is playing
   function addViewDuration (videoId) {
     $.ajax({
       method: 'POST',
       url: '/video/analytics',
       data: {
         videoId,
-        value: TIMER_INTERVAL,
+        value: VIEW_TIMER_INTERVAL,
         key: 'viewDuration'
       }
     }).done(function (resp) {
