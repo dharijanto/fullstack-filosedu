@@ -115,20 +115,20 @@ class VideoService extends CRUDService {
               Input: {
                 Key: fileName
               },
-              // OutputKeyPrefix mean folder tujuan di S3
-              // If not exist, it will create new
               OutputKeyPrefix: AppConfig.AWS_VIDEO_CONF.AWS_PREFIX_FOLDER_VIDEO_NAME,
               Outputs: [
                 {
-                  Key: AppConfig.AWS_VIDEO_CONF.PREFIX_360P + fileName,
+                  Key: url.resolve(AppConfig.AWS_VIDEO_CONF.AWS_360P_FOLDER, fileName),
                   PresetId: AppConfig.AWS_VIDEO_CONF.AWS_360P_PRESET_ID
                 },
                 {
-                  Key: AppConfig.AWS_VIDEO_CONF.PREFIX_720P + fileName,
+                  Key: url.resolve(AppConfig.AWS_VIDEO_CONF.AWS_720P_FOLDER, fileName),
                   PresetId: AppConfig.AWS_VIDEO_CONF.AWS_720P_PRESET_ID
                 }
               ]
             }
+
+            log.verbose(TAG, 'uploadVideoToS3(): paramElastic=' + JSON.stringify(paramElastic))
 
             elastictranscoder.createJob(paramElastic, function (err3, data3) {
               if (err3) {
@@ -149,7 +149,7 @@ class VideoService extends CRUDService {
                     AppConfig.AWS_VIDEO_CONF.AWS_LINK,
                     path.join(
                       AppConfig.AWS_VIDEO_CONF.AWS_BUCKET_NAME,
-                      data3.Job.OutputKeyPrefix))
+                      data3.Job.OutputKeyPrefix || ''))
                   const aws360pURL = url.resolve(awsURLPath, results[0].Key)
                   const aws720pURL = url.resolve(awsURLPath, results[1].Key)
                   resolve({status: true,
@@ -161,23 +161,6 @@ class VideoService extends CRUDService {
                     }
                   })
                 }
-                // this aws link cannot insert inside path.join, because it will edit from http:// to http:/
-                // thus make video not playable from videojs
-                const awsURLPath = url.resolve(
-                  AppConfig.AWS_VIDEO_CONF.AWS_LINK,
-                  path.join(
-                    AppConfig.AWS_VIDEO_CONF.AWS_BUCKET_NAME,
-                    AppConfig.AWS_VIDEO_CONF.AWS_PREFIX_FOLDER_VIDEO_NAME))
-                const aws360pURL = url.resolve(awsURLPath, AppConfig.AWS_VIDEO_CONF.PREFIX_360P + fileName)
-                const aws720pURL = url.resolve(awsURLPath, AppConfig.AWS_VIDEO_CONF.PREFIX_720P + fileName)
-                resolve({status: true,
-                  data: {
-                    URL: {
-                      'nonHD': aws360pURL,
-                      'HD': aws720pURL
-                    }
-                  }
-                })
               }
             })
           }

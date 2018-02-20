@@ -12,7 +12,10 @@ const AWS_VIDEO_CONF = {
   AWS_BUCKET_NAME: 'ncloud-testing',
   AWS_PIPELINE_ID: '',
   AWS_360P_PRESET_ID: '',
-  AWS_720P_PRESET_ID: ''
+  AWS_720P_PRESET_ID: '',
+  AWS_PREFIX_FOLDER_VIDEO_NAME: 'videos_v1/',
+  AWS_360P_FOLDER: '360p/',
+  AWS_720P_FOLDER: '720p/'
 }
 
 const AWS_IMAGE_CONF = {
