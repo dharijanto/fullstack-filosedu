@@ -24,8 +24,8 @@ class Controller extends BaseController {
     })
 
     // Mount video path
-    this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH))
-    this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH))
+    this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, {maxAge: '1h'}))
+    this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, {maxAge: '1h'}))
     this.routeUse((new CredentialController(initData)).getRouter())
     this.routeUse((new ExerciseController(initData)).getRouter())
     this.routeUse((new CourseController(initData)).getRouter())
