@@ -36,7 +36,7 @@ $(document).ready(function () {
   var videoPlayed = false
   video.one('play', function () {
     videoPlayed = true
-    log.verbosa(TAG, 'onVideoViewedOnce()')
+    log.verbose(TAG, 'onVideoViewedOnce()')
     const videoId = $('#video-player').data('id')
     addView(videoId)
   })
@@ -58,20 +58,30 @@ $(document).ready(function () {
   // Show smiley/sad face at the end of video
   // TODO: Change width and height to use @media in CSS
   video.endcapCTA({
-    html: `<section class="endcapCallToActionContent" style="top:33%; left:35%; position: absolute;"><button id="cta_good"><img src="/assets/img/good_smiley.jpg" width="100" height="100"/></button><button id="cta_bad"><img src="/assets/img/bad_smiley.jpg" width="100" height="100"/></button></section>`,
+    html:
+`<section class="endcapCallToActionContent" id="video-feedback-cta">
+  <h2> Rate this video: </h2>
+  </br>
+  <button id="video-feedback-good">
+    <img class="video-feedback-image" src="/assets/img/good_smiley.jpg"/>
+  </button>
+  <button id="video-feedback-bad">
+    <img class="video-feedback-image" src="/assets/img/bad_smiley.jpg"/>
+  </button>
+</section>`,
     run: function () {
       // This runs upon creation of endcapCTA, just after video starts playing
 
       // Avoid the callback from getting hook multiple time
-      $('#cta_good').off('click')
-      $('#cta_bad').off('click')
+      $('#video-feedback-good').off('click')
+      $('#video-feedback-bad').off('click')
 
       const videoId = $('#video-player').data('id')
-      $('#cta_good').on('click', function (e) {
+      $('#video-feedback-good').on('click', function (e) {
         addFeedback(1, videoId)
         $(this).parent().parent().removeClass('is-active')
       })
-      $('#cta_bad').on('click', function (e) {
+      $('#video-feedback-bad').on('click', function (e) {
         addFeedback(-1, videoId)
         $(this).parent().parent().removeClass('is-active')
       })
