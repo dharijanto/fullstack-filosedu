@@ -10,7 +10,7 @@ class BaseController {
     this._db = db
     this.getRouter().set('views', this._viewPath)
     this.getRouter().set('view engine', 'pug')
-    this.getRouter().use(express.static(this._viewPath))
+    this.getRouter().use(express.static(this._viewPath, {maxAge: '1h'}))
     this._interceptors = []
   }
 
