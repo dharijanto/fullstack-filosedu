@@ -13,10 +13,6 @@ var CRUDService = require(path.join(__dirname, 'crud-service'))
 const TAG = 'VideoService'
 
 class VideoService extends CRUDService {
-  constructor (sequelize, models) {
-    super(sequelize, models)
-  }
-
   addVideo (filename, sourceLink = null, subtopicId) {
     return this.create({
       modelName: 'Videos',
@@ -100,7 +96,7 @@ class VideoService extends CRUDService {
         // Changing from new Buffer to Buffer.from because it's deprecated in node v6
         var base64data = Buffer.from(data, 'binary')
         var params = {
-          Bucket: AppConfig.AWS_BUCKET_NAME,
+          Bucket: AppConfig.AWS_VIDEO_CONF.AWS_BUCKET_NAME,
           Key: fileName,
           Body: base64data,
           ACL: 'public-read'
@@ -115,21 +111,21 @@ class VideoService extends CRUDService {
           } else {
             var elastictranscoder = new AWS.ElasticTranscoder()
             var paramElastic = {
-              PipelineId: AppConfig.AWS_PIPELINE_ID, /* required */
+              PipelineId: AppConfig.AWS_VIDEO_CONF.AWS_PIPELINE_ID, /* required */
               Input: {
                 Key: fileName
               },
               // OutputKeyPrefix mean folder tujuan di S3
               // If not exist, it will create new
-              OutputKeyPrefix: AppConfig.AWS_PREFIX_FOLDER_VIDEO_NAME,
+              OutputKeyPrefix: AppConfig.AWS_VIDEO_CONF.AWS_PREFIX_FOLDER_VIDEO_NAME,
               Outputs: [
                 {
-                  Key: AppConfig.PREFIX_360P + fileName,
-                  PresetId: AppConfig.AWS_360P_PRESET_ID
+                  Key: AppConfig.AWS_VIDEO_CONF.PREFIX_360P + fileName,
+                  PresetId: AppConfig.AWS_VIDEO_CONF.AWS_360P_PRESET_ID
                 },
                 {
-                  Key: AppConfig.PREFIX_720P + fileName,
-                  PresetId: AppConfig.AWS_720P_PRESET_ID
+                  Key: AppConfig.AWS_VIDEO_CONF.PREFIX_720P + fileName,
+                  PresetId: AppConfig.AWS_VIDEO_CONF.AWS_720P_PRESET_ID
                 }
               ]
             }
@@ -140,11 +136,40 @@ class VideoService extends CRUDService {
                   reject(err3)
                 })
               } else {
+                log.verbose(TAG, 'uploadVideoToS3(): data3=' + JSON.stringify(data3))
+                const results = data3.Job.Outputs
+                if (!results || results.length < 2) {
+                  log.error(TAG, 'uploadVideoToS3(): ElasticTranscoder result is less than expected!')
+                  resolve({
+                    status: false,
+                    errMessage: 'ElasticTranscoder returns unexpected response'
+                  })
+                } else {
+                  const awsURLPath = url.resolve(
+                    AppConfig.AWS_VIDEO_CONF.AWS_LINK,
+                    path.join(
+                      AppConfig.AWS_VIDEO_CONF.AWS_BUCKET_NAME,
+                      data3.Job.OutputKeyPrefix))
+                  const aws360pURL = url.resolve(awsURLPath, results[0].Key)
+                  const aws720pURL = url.resolve(awsURLPath, results[1].Key)
+                  resolve({status: true,
+                    data: {
+                      URL: {
+                        'nonHD': aws360pURL,
+                        'HD': aws720pURL
+                      }
+                    }
+                  })
+                }
                 // this aws link cannot insert inside path.join, because it will edit from http:// to http:/
                 // thus make video not playable from videojs
-                const awsURLPath = AppConfig.AWS_LINK + '/' + path.join(AppConfig.AWS_BUCKET_NAME, AppConfig.AWS_PREFIX_FOLDER_VIDEO_NAME)
-                const aws360pURL = awsURLPath + AppConfig.PREFIX_360P + fileName
-                const aws720pURL = awsURLPath + AppConfig.PREFIX_720P + fileName
+                const awsURLPath = url.resolve(
+                  AppConfig.AWS_VIDEO_CONF.AWS_LINK,
+                  path.join(
+                    AppConfig.AWS_VIDEO_CONF.AWS_BUCKET_NAME,
+                    AppConfig.AWS_VIDEO_CONF.AWS_PREFIX_FOLDER_VIDEO_NAME))
+                const aws360pURL = url.resolve(awsURLPath, AppConfig.AWS_VIDEO_CONF.PREFIX_360P + fileName)
+                const aws720pURL = url.resolve(awsURLPath, AppConfig.AWS_VIDEO_CONF.PREFIX_720P + fileName)
                 resolve({status: true,
                   data: {
                     URL: {

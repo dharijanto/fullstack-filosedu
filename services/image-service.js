@@ -13,13 +13,8 @@ var AppConfig = require(path.join(__dirname, '../app-config.js'))
 const TAG = 'ImageService'
 
 var s3 = new AWS.S3()
-AWS.config.update({region: AppConfig.AWS_REGION})
 
 class ImageService extends CRUDService {
-  constructor (sequelize, models) {
-    super(sequelize, models)
-  }
-
   getImages () {
     log.verbose(TAG, `Cloud Server Status = ${AppConfig.CLOUD_SERVER}`)
     return new Promise((resolve, reject) => {
@@ -56,7 +51,6 @@ class ImageService extends CRUDService {
           })
         }
       }).catch(err => {
-        log.verbose(`ImageService GetImages Error Message = ${JSON.stringify(err)}`)
         reject(err)
       })
     })
@@ -103,18 +97,17 @@ class ImageService extends CRUDService {
   deleteImage (fileName) {
     return Promise.join(
       this._deleteImageLocal(fileName),
-      this._deleteImageDB(fileName),
-      function (resp1, resp2) {
+      this._deleteImageDB(fileName)).spread((resp1, resp2) => {
         if (AppConfig.CLOUD_SERVER) {
           var params = {
-            Bucket: AppConfig.AWS_BUCKET_NAME,
-            Key: AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME + fileName
+            Bucket: AppConfig.AWS_IMAGE_CONF.AWS_BUCKET_NAME,
+            Key: AppConfig.AWS_IMAGE_CONF.AWS_PREFIX_FOLDER_IMAGE_NAME + fileName
           }
 
           // TODO: my account aws not allowed to delete
           s3.deleteObject(params, function (err, data) {
             if (err) {
-              log.verbose(`s3 delete object = ${JSON.stringify(err)}`)
+              log.error(TAG, `deleteImage(): s3.deleteObject err=${JSON.stringify(err)}`)
               return err
             } else {
               return {status: true}
@@ -127,10 +120,7 @@ class ImageService extends CRUDService {
             return {status: false}
           }
         }
-      }
-    ).then(result => {
-      return result
-    })
+      })
   }
 
   _addImage (filename, sourceLink = null) {
@@ -163,24 +153,28 @@ class ImageService extends CRUDService {
         }
         // Changing from new Buffer to Buffer.from because it's deprecated in node v6
         var base64data = Buffer.from(data, 'binary')
+        const filePath = path.join(AppConfig.AWS_IMAGE_CONF.AWS_PREFIX_FOLDER_IMAGE_NAME, fileName)
         var params = {
-          Bucket: AppConfig.AWS_BUCKET_NAME,
-          Key: path.join(AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME, fileName),
+          Bucket: AppConfig.AWS_IMAGE_CONF.AWS_BUCKET_NAME,
+          Key: filePath,
           Body: base64data,
           ACL: 'public-read'
         }
 
         s3.putObject(params, function (err1, data1) {
           if (err1) {
-            // when error, we delete local file, its either success or fail
+            // On error, delete local file
             fs.unlink(path.join(AppConfig.IMAGE_PATH, fileName), (err2, data2) => {
               reject(err1)
             })
           } else {
+            log.verbose(TAG, '_uploadImageToS3(): data1=' + JSON.stringify(data1))
             resolve({
               status: true,
               data: {
-                URL: url.resolve(AppConfig.AWS_LINK, path.join(AppConfig.AWS_BUCKET_NAME, AppConfig.AWS_PREFIX_FOLDER_IMAGE_NAME, fileName))
+                URL: url.resolve(
+                  AppConfig.AWS_IMAGE_CONF.AWS_LINK,
+                  path.join(AppConfig.AWS_IMAGE_CONF.AWS_BUCKET_NAME, filePath))
               }
             })
           }

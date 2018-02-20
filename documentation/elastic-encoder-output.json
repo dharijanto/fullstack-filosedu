@@ -1,0 +1,63 @@
+{
+   "Job":{
+      "Id":"1519106198821-1id8su",
+      "Arn":"arn:aws:elastictranscoder:ap-southeast-1:196483807383:job/1519106198821-1id8su",
+      "PipelineId":"1517283530132-1wj56s",
+      "Input":{
+         "Key":"1519106197923_output.mp4",
+         "FrameRate":null,
+         "Resolution":null,
+         "AspectRatio":null,
+         "Interlaced":null,
+         "Container":null
+      },
+      "Inputs":[ ],
+      "Output":{ },
+      "Outputs":[
+         {
+            "Id":"1",
+            "Key":"360p_1519106197923_output.mp4",
+            "ThumbnailPattern":null,
+            "Rotate":null,
+            "PresetId":"1517305976374-exb5fa",
+            "SegmentDuration":null,
+            "Status":"Submitted",
+            "StatusDetail":null,
+            "Duration":null,
+            "Width":null,
+            "Height":null,
+            "FrameRate":null,
+            "FileSize":null,
+            "DurationMillis":null,
+            "Watermarks":[
+
+            ],
+            "AppliedColorSpaceConversion":null
+         },
+         {
+            "Id":"2",
+            "Key":"720P_1519106197923_output.mp4",
+            "ThumbnailPattern":null,
+            "Rotate":null,
+            "PresetId":"1351620000001-000010",
+            "SegmentDuration":null,
+            "Status":"Submitted",
+            "StatusDetail":null,
+            "Duration":null,
+            "Width":null,
+            "Height":null,
+            "FrameRate":null,
+            "FileSize":null,
+            "DurationMillis":null,
+            "Watermarks":[
+
+            ],
+            "AppliedColorSpaceConversion":null
+         }
+      ],
+      "OutputKeyPrefix":"videos_v1/",
+      "Playlists":[ ],
+      "Status":"Submitted",
+      "Timing":{ }
+   }
+}
