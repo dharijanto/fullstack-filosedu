@@ -117,7 +117,14 @@ function initCodeMirror (elementId) {
     lineNumbers: true,
     styleActiveLine: true,
     matchBrackets: true,
-    theme: 'material'
+    theme: 'material',
+    extraKeys: {
+      // Ctrl + Enter => 'Generate Exercise'
+      'Ctrl-Enter': () => {
+        const generateButton = $(document.getElementById(elementId)).parent().find('.btnGenerate')
+        generateExercise(generateButton.get(0))
+      }
+    }
   })
 
   // TODO: Better than this, we should call save only when 'Generate' or 'Submit' is called

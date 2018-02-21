@@ -35,7 +35,7 @@ block content
         div#exerciseContainer
           each exercise, index in exercises
             div.form-group
-              label(for="code") Exercise Code:
+              label(for="code") Exercise Code (Ctrl + Enter to generate sample questions):
               textarea.form-control(id=`exercise-${index}` rows="10" name=`exercise-${exercise.id}` required) #{exercise.data}
               div.resultCode
               div.text-right
