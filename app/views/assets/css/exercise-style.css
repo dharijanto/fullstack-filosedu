@@ -1,0 +1,8 @@
+
+/*
+  Repeated Image (ref: image-helper.js) are done using table and by
+  default doesn't center on the exercise page.
+*/
+table.image-repeat {
+  margin: auto;
+}
