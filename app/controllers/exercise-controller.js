@@ -145,13 +145,13 @@ class ExerciseController extends BaseController {
       }
     })
 
-    this.routePost('/checkAnswer', (req, res, next) => {
+    this.routePost('/submitAnswer', (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
-      log.verbose(TAG, `checkAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
+      log.verbose(TAG, `submitAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
 
       if (!req.isAuthenticated) {
-        log.verbose(TAG, 'checkAnswer.POST: request is not authenticated!')
+        log.verbose(TAG, 'submitAnswer.POST: request is not authenticated!')
         res.status(500).send('Request not authenticated!')
       } else {
         Promise.join(
@@ -171,8 +171,8 @@ class ExerciseController extends BaseController {
             const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data[0].data)
             const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
-            log.verbose(TAG, `checkAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
-            log.verbose(TAG, `checkAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
+            log.verbose(TAG, `submitAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
+            log.verbose(TAG, `submitAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
             if (userAnswers.length !== generatedQuestions.length) {
               res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
             } else {
@@ -192,14 +192,14 @@ class ExerciseController extends BaseController {
                 }
               }, 0) / parseFloat(generatedQuestions.length) * 100
 
-              log.verbose(TAG, 'checkAnswer.POST(): attemptedAnswers= ' + attemptedAnswers)
+              log.verbose(TAG, 'submitAnswer.POST(): attemptedAnswers= ' + attemptedAnswers)
 
               // Flag array identifying which user answer is correct/wrong
               const isAnswerCorrect = []
               // Compute the score of current exercise
               const correctAnswers = generatedQuestions.reduce((numCorrect, knowns, index) => {
                 const unknowns = userAnswers
-                log.verbose(TAG, `checkAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
+                log.verbose(TAG, `submitAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
                 const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
                 isAnswerCorrect.push(isCorrect)
                 return isCorrect ? numCorrect + 1 : numCorrect
@@ -216,10 +216,10 @@ class ExerciseController extends BaseController {
                 analyticsService.addExerciseData('attemptedAnswers', attemptedAnswers, exerciseId, userId)
               ).spread((resp, resp2) => {
                 if (!resp.status) {
-                  log.error(TAG, 'checkAnswer.POST(): addExerciseData.resp=' + JSON.stringify(resp))
+                  log.error(TAG, 'submitAnswer.POST(): addExerciseData.resp=' + JSON.stringify(resp))
                 }
                 if (!resp2.status) {
-                  log.error(TAG, 'checkAnswer.POST(): addExerciseData.resp2=' + JSON.stringify(resp2))
+                  log.error(TAG, 'submitAnswer.POST(): addExerciseData.resp2=' + JSON.stringify(resp2))
                 }
               }).catch(err => {
                 log.error(TAG, err)

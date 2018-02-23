@@ -50,7 +50,7 @@ $('.btn_submit_answer').on('click', function (e) {
       userAnswers.push($(value).serializeObject())
     })
 
-    $.post('/checkAnswer', {
+    $.post('/submitAnswer', {
       userAnswers,
       generatedExerciseId: $('input[name=generatedExerciseId]').val(),
       exerciseId: $('input[name=exerciseId]').val()
@@ -68,9 +68,7 @@ $('.btn_submit_answer').on('click', function (e) {
         $('.currentScore').removeClass('hidden')
         $('.currentScore').text(`Your score is ${currentScore}`)
 
-        if (bestScore !== 0) {
-          $('.bestScore').html(starsHTML)
-        }
+        $('.bestScore').html(starsHTML)
 
         realAnswers.forEach((realAnswer, index) => {
           // var collectAnswer = ''
