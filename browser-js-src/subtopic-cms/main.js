@@ -129,7 +129,7 @@ function initCodeMirror (elementId) {
 
   // TODO: Better than this, we should call save only when 'Generate' or 'Submit' is called
   editor.on('change', function (codeMirror) { codeMirror.save() })
-  editor.on('keyup', onInputChange)
+  editor.on('inputRead', onInputChange)
 }
 
 $(document).ready(function () {
