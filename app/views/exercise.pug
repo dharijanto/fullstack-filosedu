@@ -25,7 +25,7 @@ block contents
                 .col-md-2
                   label.control-label(style="font-size: 150%") #{unknown}
                 .col-md-10
-                  input.form-control.answerInput(name=`${unknown}` type="number" value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}`)
+                  input.form-control.answerInput(name=`${unknown}` value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}`)
             div(class=`resultAnswer_${index}`)
             .row
               hr
