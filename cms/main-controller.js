@@ -7,6 +7,7 @@ const log = require('npmlog')
 const AppConfig = require(path.join(__dirname, '../app-config'))
 const BaseController = require(path.join(__dirname, 'controllers/base-controller'))
 const CourseManagementController = require(path.join(__dirname, 'controllers/course-management-controller'))
+const AccountManagementController = require(path.join(__dirname, 'controllers/account-management-controller'))
 const SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 
 class MainController extends BaseController {
@@ -23,6 +24,7 @@ class MainController extends BaseController {
     this.routeUse('/videos', express.static(AppConfig.VIDEO_PATH))
     this.routeUse('/images', express.static(AppConfig.IMAGE_PATH))
     this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
+    this.routeHashlessUse((new AccountManagementController(initData)).getRouter())
     this.routeHashlessUse((new SubtopicController(initData)).getRouter())
   }
 

@@ -9,12 +9,14 @@ var CourseController = require(path.join(__dirname, 'controllers/course-controll
 var CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 var ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
 var SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
+var PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
 
 const TAG = 'FiloseduAppController'
 
 class Controller extends BaseController {
   constructor (initData) {
     super(initData)
+    PassportManager.initialize()
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)

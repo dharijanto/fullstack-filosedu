@@ -138,6 +138,9 @@ const tableConfig = {
       }
     },
     buttons: {
+      conf: {
+        networkTimeOut: 2000
+      },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.subject.add},
         {id: 'edit', desc: 'Edit', postTo: postTo.subject.edit},
@@ -153,16 +156,21 @@ const tableConfig = {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'topic', desc: 'Topic', dataTable: true, input: 'text', disabled: false},
+        {id: 'topicNo', desc: 'Topic No', dataTable: true, input: 'text', disabled: false},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
         {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'}
       ],
       conf: {
-        orderBy: 'updatedAt',
+        orderType: 'asc',
+        orderBy: 'topicNo',
         getURL: getTopicURL,
         onRowClicked: onTopicClicked
       }
     },
     buttons: {
+      conf: {
+        networkTimeOut: 2000
+      },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.topic.add},
         {id: 'edit', desc: 'Edit', postTo: postTo.topic.edit},
@@ -188,6 +196,9 @@ const tableConfig = {
       }
     },
     buttons: {
+      conf: {
+        networkTimeOut: 2000
+      },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.topicDependency.add},
         {id: 'edit', desc: 'Edit', postTo: postTo.topicDependency.edit},
@@ -203,16 +214,21 @@ const tableConfig = {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'subtopic', desc: 'Subtopic', dataTable: true, input: 'text', disabled: false},
+        {id: 'subtopicNo', desc: 'Subtopic No', dataTable: true, input: 'text', disabled: false},
         {id: 'description', desc: 'Description', dataTable: true, input: 'textArea'},
         {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'}
       ],
       conf: {
-        orderBy: 'updatedAt',
+        orderType: 'asc',
+        orderBy: 'subtopicNo',
         getURL: getSubtopicURL,
         onRowClicked: onSubtopicClicked
       }
     },
     buttons: {
+      conf: {
+        networkTimeOut: 2000
+      },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.subtopic.add},
         {id: 'edit', desc: 'Edit', postTo: postTo.subtopic.edit},
