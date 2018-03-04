@@ -38,7 +38,9 @@
     "summernote": "^0.8.8",
     "toastr": "^2.1.2",
     "uglifyify": "^4.0.4",
-    "watchify": "^3.9.0"
+    "watchify": "^3.9.0",
+    "copy-to-clipboard": "^3.0.8"
   },
-  "dependencies": {}
+  "dependencies": {
+  }
 }

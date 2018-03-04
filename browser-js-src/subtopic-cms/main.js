@@ -3,6 +3,7 @@ var _ = require('lodash')
 
 var axios = require('axios')
 var codeMirror = require('codemirror')
+var copy = require('copy-to-clipboard')
 var marked = require('marked')
 var rootPath = require('cmsRootPath')
 var toastr = require('toastr')
@@ -244,12 +245,7 @@ $(document).ready(function () {
   }
 
   function imageSelected (imageURL, imagePublicId) {
-    var inp = document.createElement('input')
-    document.body.appendChild(inp)
-    inp.value = imagePublicId
-    inp.select()
-    document.execCommand('copy')
-    inp.remove()
+    copy(imagePublicId)
     toastr.info('Copied to clipboard')
   }
 
