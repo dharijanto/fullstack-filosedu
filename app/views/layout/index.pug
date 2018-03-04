@@ -14,13 +14,25 @@ body
       // Collect the nav links, forms, and other content for toggling
       #bs-example-navbar-collapse-1.collapse.navbar-collapse
         ul.nav.navbar-nav
-          li.active
-            a(href="/") Modules
+          if (activeClass === 'modules')
+            li.active
+              a(href="/") Modules
+          else
+            li
+              a(href="/") Modules
           if (!loggedIn)
-            li
-              a(href="/login") Login
-            li
-              a(href="/register") Register
+            if (activeClass === 'login')
+              li.active
+                a(href="/login") Login
+            else
+              li
+                a(href="/login") Login
+            if (activeClass === 'register')
+              li.active
+                a(href="/register") Register
+            else
+              li
+                a(href="/register") Register
           else
             li
               a(href="/logout") Logout

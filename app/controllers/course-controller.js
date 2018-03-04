@@ -25,14 +25,15 @@ class CourseController extends BaseController {
       res.locals.user = req.user
       res.locals.getSlug = getSlug
       res.locals.marked = marked
+      res.locals.activeClass = 'modules'
       res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 
     this.routeGet('/', (req, res, next) => {
       Promise.join(
-        courseService.read({modelName: 'Subtopic', searchClause: {}}),
-        courseService.read({modelName: 'Topic', searchClause: {}})
+        courseService.getAllSubtopics(),
+        courseService.getAllTopics()
       ).spread((subtopicResp, topicResp) => {
         res.locals.subtopics = subtopicResp.data || []
         res.locals.topics = topicResp.data || []

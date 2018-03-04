@@ -10,6 +10,10 @@ const modules = [
     output: 'cms'
   },
   {
+    input: 'account-management-cms',
+    output: 'cms'
+  },
+  {
     input: 'subtopic-cms',
     output: 'cms'
   },
@@ -27,7 +31,8 @@ modules.forEach(module => {
   const b = watchify(browserify(path.join(__dirname, module.input, 'main.js'), {cache: {}, packageCache: {}})
     .transform({global: true}, 'browserify-shim')
     .transform('babelify', {presets: ['es2015']})
-    .transform('uglifyify', {global: true}))
+    .transform('uglifyify', {global: true})
+    )
     // .plugin(watchify)
   b.on('update', () => bundle(b, module.input, module.output))
   b.on('error', err => console.error(err.message))

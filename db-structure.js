@@ -12,7 +12,8 @@ function addTables (sequelize, models) {
   models.Topic = sequelize.define('topic', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     topic: {type: Sequelize.STRING, unique: true},
-    description: {type: Sequelize.STRING}
+    description: {type: Sequelize.STRING},
+    topicNo: {type: Sequelize.INTEGER}
   })
   models.Topic.belongsTo(models.Subject)
 
@@ -20,7 +21,8 @@ function addTables (sequelize, models) {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     subtopic: {type: Sequelize.STRING, unique: true},
     description: {type: Sequelize.STRING},
-    data: {type: Sequelize.TEXT('long')}
+    data: {type: Sequelize.TEXT('long')},
+    subtopicNo: {type: Sequelize.INTEGER}
   })
   models.Subtopic.belongsTo(models.Topic)
 
@@ -57,7 +59,8 @@ function addTables (sequelize, models) {
     username: {type: Sequelize.STRING, unique: true},
     saltedPass: {type: Sequelize.STRING},
     salt: {type: Sequelize.STRING},
-    email: {type: Sequelize.STRING, unique: true}
+    email: {type: Sequelize.STRING, unique: true},
+    fullName: {type: Sequelize.STRING}
   })
 
   models.Exercise = sequelize.define('exercise', {

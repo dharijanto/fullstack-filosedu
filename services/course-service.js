@@ -95,6 +95,18 @@ class CourseService extends CRUDService {
     })
   }
 
+  getAllTopics () {
+    return this._models['Topic'].findAll({order: [['topicNo', 'ASC']]}).then(resp => {
+      return {status: true, data: resp}
+    })
+  }
+
+  getAllSubtopics () {
+    return this._models['Subtopic'].findAll({order: [['subtopicNo', 'ASC']]}).then(resp => {
+      return {status: true, data: resp}
+    })
+  }
+
   getTopicDependencies (topicId) {
     return this._sequelize.query(
       `SELECT topicDependencies.id, topicDependencies.description, topicDependencies.updatedAt, topics.topic as dependencyName FROM topicDependencies INNER JOIN topics ON topics.id = topicDependencies.dependencyId WHERE topicDependencies.topicId=${topicId}`,
