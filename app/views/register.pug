@@ -7,6 +7,9 @@ block contents
   div.container
     form(action="/register" method="POST")
       div.form-group
+        label Full Name
+        input(type="text" name="fullName" class="form-control")
+      div.form-group
         label Username
         input(type="text" name="username" class="form-control")
       div.form-group
@@ -18,9 +21,6 @@ block contents
       div.form-group
         label Email
         input(type="text" name="email" class="form-control")
-      div.form-group
-        label Full Name
-        input(type="text" name="fullName" class="form-control")
       if error.length > 0
         .alert.alert-danger(role='alert')= error
 
