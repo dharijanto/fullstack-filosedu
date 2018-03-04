@@ -64,6 +64,10 @@ class VideoService extends CRUDService {
     })
   }
 
+  getAllVideos () {
+    return this.read({modelName: 'Videos', searchClause: {}})
+  }
+
   static getUploadMiddleware () {
     var fileName = ''
     const upload = multer({

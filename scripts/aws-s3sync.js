@@ -1,4 +1,17 @@
-var http = require('http')
+/*
+This script is used to sync a local server's videos and images
+with what's specified in the database. The files are downloaded
+from S3
+
+Install and configure Filos on a local server:
+1. Download source code
+2. Create and configure app-config.js base on app-config_template.js
+3. Restore database from filosedu-backup git
+4. Run this script
+
+*/
+
+var https = require('https')
 var fs = require('fs')
 var path = require('path')
 
@@ -9,57 +22,59 @@ var AppConfig = require(path.join(__dirname, '../app-config'))
 var VideoService = require(path.join(__dirname, '../services/video-service'))
 var ImageService = require(path.join(__dirname, '../services/image-service'))
 
-var models = {}
 var createSequelizeModel = require(path.join(__dirname, '../db-structure'))
-var sequelize = new Sequelize(AppConfig.testDbPath, {logging: false})
-models = createSequelizeModel(sequelize, models)
+var sequelize = new Sequelize(AppConfig.SQL_DB, {logging: false})
+var models = createSequelizeModel(sequelize, {})
 
 const videoService = new VideoService(sequelize, models)
 const imageService = new ImageService(sequelize, models)
 
-var download = function (url, dest, cb) {
-  var file = fs.createWriteStream(dest)
-  http.get(url, function (response) {
-    response.pipe(file)
-    file.on('finish', function () {
-      file.close(cb)
+var download = function (url, dest) {
+  return new Promise((resolve, reject) => {
+    var file = fs.createWriteStream(dest)
+    https.get(url, function (response) {
+      response.pipe(file)
+      file.on('finish', function () {
+        file.close(() => {
+          resolve()
+        })
+      })
+    }).on('error', (err) => {
+      // If error happen, we need to delete local file
+      fs.unlink(dest)
+      reject(err)
     })
-  }).on('error', (err) => {
-    // If error happen, we need to delete local file
-    fs.unlink(dest)
-    if (cb) {
-      cb(err.message)
-    }
   })
 }
 
 function fetchVideoFromS3 () {
-  return videoService.getAll().then(resp => {
+  return videoService.getAllVideos().then(resp => {
     if (resp.status) {
-      resp.data.map(data => {
-        download(
-          AppConfig.AWS_LINK + '/' + AppConfig.AWS_BUCKET_NAME + '/' + data.filename,
-          AppConfig.VIDEO_PATH + '/' + data.filename,
-          function (e) {
-            if (e) {
-              console.error(e)
-            } else {
-              console.log('Download Complete')
-            }
-          }
-        )
+      const videos = resp.data
+      console.log(`There are ${videos.length} number of videos to download...`)
+      return Promise.map(videos, video => {
+        return download(
+          JSON.parse(video.sourceLink).HD,
+          AppConfig.VIDEO_PATH + '/' + video.filename)
       })
     } else {
-      console.log('No Video Inside DB')
+      return Promise.resolve()
     }
   }).catch(err => {
     console.error(err)
   })
-}
+}r
 
 function fetchImageFromS3 () {
-  return imageService.getAll().then(resp => {
+  return imageService.getAllImages().then(resp => {
     if (resp.status) {
+      const images = resp.data
+      console.log(`There are ${images.length} images to download...`)
+      return Promise.map(images, image => {
+        return download(
+          image.sourceLink,
+          AppConfig.IMAGE_PATH + '/' + image.filename)
+      })
     } else {
       console.log('No Image Inside DB')
     }
@@ -68,12 +83,13 @@ function fetchImageFromS3 () {
   })
 }
 
+console.log('Downloading files....')
 Promise.join(
   fetchVideoFromS3(),
-  fetchImageFromS3(),
-  function (result1, result2) {
-    console.log('Waiting, Downloading File')
-  }
+  fetchImageFromS3()
 ).then(resp => {
-  console.log('Don\'t forget there\'s Download still ongoing')
+  console.log('done!')
+  sequelize.close()
+}).catch(err => {
+  console.error(err)
 })

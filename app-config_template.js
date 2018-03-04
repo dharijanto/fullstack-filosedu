@@ -25,7 +25,7 @@ const AWS_IMAGE_CONF = {
 }
 
 module.exports = {
-  testDbPath: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`,
+  SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
   BASE_URL: 'http://app-filosedu.nusantara-local.com',
   CLOUD_SERVER: true,
   IMAGE_PATH: path.join(__dirname, 'images'),

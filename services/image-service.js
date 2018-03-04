@@ -15,6 +15,8 @@ const TAG = 'ImageService'
 var s3 = new AWS.S3()
 
 class ImageService extends CRUDService {
+  // Get local/remote images, depending whether
+  // server is configured to be cloud or not
   getImages () {
     log.verbose(TAG, `Cloud Server Status = ${AppConfig.CLOUD_SERVER}`)
     return new Promise((resolve, reject) => {
@@ -54,6 +56,10 @@ class ImageService extends CRUDService {
         reject(err)
       })
     })
+  }
+
+  getAllImages () {
+    return this.read({modelName: 'Images', searchClause: {}})
   }
 
   static uploadImageMiddleware () {
