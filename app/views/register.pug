@@ -1,5 +1,8 @@
 extends layout/index.pug
 
+block initialization
+  - const activePage = 'register'
+
 block contents
   div.container
     form(action="/register" method="POST")

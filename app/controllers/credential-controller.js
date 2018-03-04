@@ -14,13 +14,11 @@ class CredentialController extends BaseController {
 
     this.routeGet('/login', (req, res, next) => {
       res.locals.error = req.flash('error')
-      res.locals.activeClass = 'login'
       res.render('login')
     })
 
     this.routeGet('/register', (req, res, next) => {
       res.locals.error = req.flash('error')
-      res.locals.activeClass = 'register'
       res.render('register')
     })
 

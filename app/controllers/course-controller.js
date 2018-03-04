@@ -25,7 +25,6 @@ class CourseController extends BaseController {
       res.locals.user = req.user
       res.locals.getSlug = getSlug
       res.locals.marked = marked
-      res.locals.activeClass = 'modules'
       res.locals.loggedIn = req.isAuthenticated()
       next()
     })

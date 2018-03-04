@@ -1,6 +1,9 @@
 extends layout/index.pug
 include includes/utils.pug
 
+append initialization
+  - const activePage = 'modules'
+
 block contents
   div.container
     if user

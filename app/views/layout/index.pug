@@ -1,5 +1,7 @@
 include header.pug
 
+block initialization
+
 body
   nav.navbar.navbar-default
     .container-fluid
@@ -14,25 +16,13 @@ body
       // Collect the nav links, forms, and other content for toggling
       #bs-example-navbar-collapse-1.collapse.navbar-collapse
         ul.nav.navbar-nav
-          if (activeClass === 'modules')
-            li.active
-              a(href="/") Modules
-          else
-            li
-              a(href="/") Modules
+          li(class=`${activePage === 'modules' ? 'active' : ''}`)
+            a(href="/") Modules
           if (!loggedIn)
-            if (activeClass === 'login')
-              li.active
-                a(href="/login") Login
-            else
-              li
-                a(href="/login") Login
-            if (activeClass === 'register')
-              li.active
-                a(href="/register") Register
-            else
-              li
-                a(href="/register") Register
+            li(class=`${activePage === 'login' ? 'active' : ''}`)
+              a(href="/login") Login
+            li(class=`${activePage === 'register' ? 'active' : ''}`)
+              a(href="/register") Register
           else
             li
               a(href="/logout") Logout
