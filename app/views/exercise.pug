@@ -7,8 +7,8 @@ block contents
     div.container
       h1.text-center Latihan Soal
       h3.text-center #{topic.topic} - #{subtopic.subtopic}
-      h4.text-center 
-        a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Back to Video
+      h3.text-center
+        a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Kembali ke Video
       hr
       input#exerciseId(type="hidden" name="exerciseId" value=`${exerciseId}`)
       input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
@@ -31,7 +31,8 @@ block contents
               hr
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection
-          p.hidden(class='currentScore')
+          p.hidden(id='currentScore')
+          p.hidden(id='submissionError')
           p(class='bestScore')
             | !{starsHTML}
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit

@@ -2,6 +2,9 @@ include header.pug
 
 block initialization
 
+append head
+  link(rel="stylesheet" href="/assets/vendor/fontawesome-5.0.8/css/fa-svg-with-js.css")
+
 body
   nav.navbar.navbar-default
     .container-fluid
@@ -17,20 +20,26 @@ body
       #bs-example-navbar-collapse-1.collapse.navbar-collapse
         ul.nav.navbar-nav
           li(class=`${activePage === 'modules' ? 'active' : ''}`)
-            a(href="/") Modules
+            a(href="/") Topik
+        ul.nav.navbar-nav.navbar-right
           if (!loggedIn)
             li(class=`${activePage === 'login' ? 'active' : ''}`)
               a(href="/login") Login
             li(class=`${activePage === 'register' ? 'active' : ''}`)
               a(href="/register") Register
           else
-            li
-              a(href="/logout") Logout
-
+            li.dropdown
+              a.dropdown-toggle(data-toggle='dropdown')
+                i.fa.fa-fw.fa-user
+                i(style="padding-left: 1em")=  user.fullName || user.username
+              ul.dropdown-menu.dropdown-user
+                li
+                  a(href='/logout') Logout
   block contents
 
 block scripts
   script(src="/assets/vendor/jquery3.3.1/jquery-3.3.1.min.js")
   script(src="/assets/vendor/bootstrap3.3.7/js/bootstrap.min.js")
+  script(src="/assets/vendor/fontawesome-5.0.8/js/fontawesome-all.min.js")
 
 block footer

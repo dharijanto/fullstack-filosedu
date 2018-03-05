@@ -6,3 +6,7 @@
 table.image-repeat {
   margin: auto;
 }
+
+#submissionError {
+  color: red;
+}

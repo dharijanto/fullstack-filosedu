@@ -1,8 +1,6 @@
 var path = require('path')
 var log = require('npmlog')
 var Promise = require('bluebird')
-var marked = require('marked')
-var getSlug = require('speakingurl')
 
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
@@ -18,14 +16,6 @@ class CourseController extends BaseController {
     const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
-      log.verbose(TAG, 'req.path=' + req.path)
-      log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
-      log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
-      res.locals.site = req.site
-      res.locals.user = req.user
-      res.locals.getSlug = getSlug
-      res.locals.marked = marked
-      res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 

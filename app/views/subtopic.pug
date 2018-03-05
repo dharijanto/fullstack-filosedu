@@ -10,8 +10,8 @@ block contents
   div.container
     h1.text-center #{topic.topic} - #{subtopic.subtopic}
     h4.text-center #{subtopic.description}
-    h4.text-center
-      a(href='/') Back to Modules
+    h3.text-center
+      a(href='/') Kembali ke Topik
     hr
     p !{subtopicData.detail}
     //- #ytPlayerContainer
@@ -31,7 +31,7 @@ block contents
         br
       if !isAuthenticated
         br
-        | Please #[a(href='/login') login] or #[a(href='/register') register] to access exercises.
+        h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan.
 
 block footer
   script(src="/assets/vendor/videojs/video.js")

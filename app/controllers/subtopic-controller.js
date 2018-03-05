@@ -20,14 +20,6 @@ class SubtopicController extends BaseController {
     const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
-      log.verbose(TAG, 'req.path=' + req.path)
-      log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
-      log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
-      res.locals.site = req.site
-      res.locals.user = req.user
-      res.locals.getSlug = getSlug
-      res.locals.marked = marked
-      res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 

@@ -7,7 +7,7 @@ append initialization
 block contents
   div.container
     if user
-      p= 'Welcome Back, ' + user.username
+      p= 'Selamat Datang, ' + user.fullName || user.username
     each topic, index in topics
       .panel-group
         .panel.panel-default

@@ -1,7 +1,9 @@
 const path = require('path')
 
 var express = require('express')
+var getSlug = require('speakingurl')
 var log = require('npmlog')
+var marked = require('marked')
 
 var AppConfig = require(path.join(__dirname, '../app-config'))
 var BaseController = require(path.join(__dirname, 'controllers/base-controller'))
@@ -22,6 +24,11 @@ class Controller extends BaseController {
       log.verbose(TAG, 'req.path=' + req.path)
       log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
       log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
+      res.locals.marked = marked
+      res.locals.getSlug = getSlug
+      res.locals.site = req.site
+      res.locals.user = req.user
+      res.locals.loggedIn = req.isAuthenticated()
       next()
     })
 

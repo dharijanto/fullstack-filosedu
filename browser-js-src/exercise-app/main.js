@@ -41,7 +41,7 @@ $('.backToVideoBtn').on('click', function (e) {
 
 $('.btn_submit_answer').on('click', function (e) {
   onNextQuestion()
-  if (confirm('Submit your answers?')) {
+  if (confirm('Masukan jawaban?')) {
     onSetCompleted()
     var answers = $('#questionSubmit').children()
     var userAnswers = []
@@ -65,8 +65,8 @@ $('.btn_submit_answer').on('click', function (e) {
         var bestScore = resp.data.bestScore
         var starsHTML = resp.data.starsHTML
 
-        $('.currentScore').removeClass('hidden')
-        $('.currentScore').text(`Your score is ${currentScore}`)
+        $('#currentScore').removeClass('hidden')
+        $('#currentScore').text(`Nilai yang diperoleh: ${currentScore}`)
 
         $('.bestScore').html(starsHTML)
 
@@ -80,9 +80,9 @@ $('.btn_submit_answer').on('click', function (e) {
           $('.resultAnswer_' + index).empty()
           var answer = null
           if (correction[index] === true) {
-            answer = $('<p style="color:green">Correct</p>')
+            answer = $('<p style="color:green">Benar</p>')
           } else {
-            answer = $('<p style="color:red;">Incorrect! Answer is ' + correctUnknowns.join(', ') + '</p>')
+            answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>')
           }
           $('.resultAnswer_' + index).append(answer)
         })
@@ -90,9 +90,13 @@ $('.btn_submit_answer').on('click', function (e) {
         $('.btn_submit_answer').addClass('hidden')
         $('.btn_retry_question').removeClass('hidden')
       } else {
-        console.error('Failed to submit answers!', resp)
+        $('#submissionError').removeClass('hidden')
+        $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
+        console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
       }
     }).fail(err => {
+      $('#submissionError').removeClass('hidden')
+      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
       console.error(err)
     })
   }
