@@ -63,7 +63,7 @@ function fetchVideoFromS3 () {
   }).catch(err => {
     console.error(err)
   })
-}r
+}
 
 function fetchImageFromS3 () {
   return imageService.getAllImages().then(resp => {
