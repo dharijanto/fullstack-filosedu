@@ -33,20 +33,27 @@ const CONCURRENT_DOWNLOAD = 3
 
 var download = function (url, dest) {
   return new Promise((resolve, reject) => {
-    var file = fs.createWriteStream(dest)
-    https.get(url, function (response) {
-      response.pipe(file)
-      file.on('finish', function () {
-        file.close(() => {
-          resolve()
+    return fs.access(dest, fs.F_CONSTANT_OK, (err) => {
+      if (err) {
+        var file = fs.createWriteStream(dest)
+        https.get(url, function (response) {
+          response.pipe(file)
+          file.on('finish', function () {
+            file.close(() => {
+              resolve()
+            })
+          })
+        }).on('error', (err) => {
+          // If error happen, we need to delete local file
+          fs.unlink(dest, err => {
+            console.error(err)
+          })
+          reject(err)
         })
-      })
-    }).on('error', (err) => {
-      // If error happen, we need to delete local file
-      fs.unlink(dest, err => {
-        console.error(err)
-      })
-      reject(err)
+      } else {
+        console.log('download(): file=' + dest + ' is already existed. Skipped...')
+        resolve()
+      }
     })
   })
 }
@@ -60,7 +67,7 @@ function fetchVideoFromS3 () {
         return download(
           JSON.parse(video.sourceLink).HD,
           AppConfig.VIDEO_PATH + '/' + video.filename)
-      }, {concurrency: CONCURRENT_DOWNLOAD})
+      })
     } else {
       return Promise.resolve()
     }
@@ -75,9 +82,15 @@ function fetchImageFromS3 () {
       const images = resp.data
       console.log(`There are ${images.length} images to download...`)
       return Promise.map(images, image => {
-        return download(
-          image.sourceLink,
-          AppConfig.IMAGE_PATH + '/' + image.filename)
+        return fs.access(AppConfig.IMAGE_PATH + '/' + image.filename, fs.F_CONSTANT_OK, (err) => {
+          if (err) {
+            return download(
+              image.sourceLink,
+              AppConfig.IMAGE_PATH + '/' + image.filename)
+          } else {
+            console.log('Image File Already Exists, No Download Required')
+          }
+        })
       })
     } else {
       console.log('No Image Inside DB')
