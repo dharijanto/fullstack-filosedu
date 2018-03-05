@@ -46,10 +46,10 @@ const tableConfig = {
     table: {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
+        {id: 'fullName', desc: 'Full Name', dataTable: true, input: 'text'},
         {id: 'username', desc: 'User Name', dataTable: true, input: 'text', disabled: false},
         {id: 'email', desc: 'E-mail', dataTable: true, input: 'text', disabled: false},
         {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'},
-        {id: 'fullName', desc: 'Full Name', dataTable: true, input: 'text'},
         {id: 'password', desc: 'Password', dataTable: false, input: 'password'},
         {id: 'passwordConfirm', desc: 'Password Confirm', dataTable: false, input: 'password'}
       ],
