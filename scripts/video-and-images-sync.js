@@ -64,9 +64,15 @@ function fetchVideoFromS3 () {
       const videos = resp.data
       console.log(`There are ${videos.length} number of videos to download...`)
       return Promise.map(videos, video => {
-        return download(
-          JSON.parse(video.sourceLink).HD,
-          AppConfig.VIDEO_PATH + '/' + video.filename)
+        return fs.access(AppConfig.VIDEO_PATH + '/' + video.filename, fs.F_CONSTANT_OK, (err) => {
+          if (err) {
+            return download(
+              JSON.parse(video.sourceLink).HD,
+              AppConfig.VIDEO_PATH + '/' + video.filename)
+          } else {
+            console.log('Video File Already Exists, No Download Required')
+          }
+        })
       })
     } else {
       return Promise.resolve()
