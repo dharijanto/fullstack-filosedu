@@ -29,6 +29,8 @@ var models = createSequelizeModel(sequelize, {})
 const videoService = new VideoService(sequelize, models)
 const imageService = new ImageService(sequelize, models)
 
+const CONCURRENT_DOWNLOAD = 3
+
 var download = function (url, dest) {
   return new Promise((resolve, reject) => {
     var file = fs.createWriteStream(dest)
@@ -41,7 +43,9 @@ var download = function (url, dest) {
       })
     }).on('error', (err) => {
       // If error happen, we need to delete local file
-      fs.unlink(dest)
+      fs.unlink(dest, err => {
+        console.error(err)
+      })
       reject(err)
     })
   })
@@ -56,7 +60,7 @@ function fetchVideoFromS3 () {
         return download(
           JSON.parse(video.sourceLink).HD,
           AppConfig.VIDEO_PATH + '/' + video.filename)
-      })
+      }, {concurrency: CONCURRENT_DOWNLOAD})
     } else {
       return Promise.resolve()
     }
