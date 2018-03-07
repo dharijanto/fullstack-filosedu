@@ -1,8 +1,8 @@
 extends layout/index.pug
 append head
-  link(href='/assets/vendor/videojs/video-js.min.css' rel="stylesheet")
-  link(href='/assets/vendor/videojs/videojs.endcapCTA.css' rel="stylesheet")
-  link(href='/assets/vendor/videojs/videojs-resolution-switcher.css' rel="stylesheet")
+  link(href='/vendor/videojs/video-js.min.css' rel="stylesheet")
+  link(href='/vendor/videojs/videojs.endcapCTA.css' rel="stylesheet")
+  link(href='/vendor/videojs/videojs-resolution-switcher.css' rel="stylesheet")
 
 include includes/utils.pug
 
@@ -34,8 +34,9 @@ block contents
         h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan.
 
 block footer
-  script(src="/assets/vendor/videojs/video.js")
-  script(src="/assets/vendor/videojs/videojs-resolution-switcher.js")
-  script(src="/assets/vendor/videojs/videojs.endcapCTA.js")
-  script(src="/assets/js/subtopic-app-bundle.js")
+  script(src="/vendor/videojs/video.js")
+  script(src="/vendor/videojs/videojs-resolution-switcher.js")
+  script(src="/vendor/videojs/videojs.endcapCTA.js")
+  script(src=`${bundle}`)
+  //- script(src="/js/subtopic-app-bundle.js")
     

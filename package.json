@@ -20,6 +20,7 @@
     "lodash": "^4.17.4",
     "marked": "^0.3.6",
     "mathjax-node": "^1.2.1",
+    "md5": "^2.2.1",
     "multer-s3": "^2.7.0",
     "node-wget": "^0.4.2",
     "passport": "^0.4.0",

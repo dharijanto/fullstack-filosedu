@@ -5,6 +5,7 @@ const marked = require('marked')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
+const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
 const TAG = 'CourseManagementController'
 class CourseManagementController extends BaseController {
@@ -21,7 +22,10 @@ class CourseManagementController extends BaseController {
     })
 
     this.routeGet('/', (req, res, next) => {
-      res.render('index')
+      PathFormatter.hashBundle('cms', 'js/course-management-cms-bundle.js').then(resp => {
+        res.locals.bundle = resp
+        res.render('index')
+      })
     })
 
     this.routePost('/add/TopicDependency', (req, res, next) => {

@@ -1,7 +1,7 @@
 extends layout/index.pug
 
 append head
-  link(rel="stylesheet" href="/assets/css/exercise-style.css")
+  link(rel="stylesheet" href="/css/exercise-style.css")
 
 block contents
     div.container
@@ -39,5 +39,5 @@ block contents
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
 append scripts
-  script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
-  script(src=('/assets/js/exercise-app-bundle.js?hash=12345'))
+  script(src=('/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
+  script(src=`${bundle}`)

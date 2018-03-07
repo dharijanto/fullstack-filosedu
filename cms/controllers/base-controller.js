@@ -15,7 +15,8 @@ class BaseController {
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
     const viewPath = path.join(__dirname, '../views')
-    this._subRouter.use(express.static(viewPath))
+    const assetsPath = path.join(__dirname, '../views/assets')
+    this._subRouter.use(express.static(assetsPath))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
 

@@ -9,8 +9,9 @@ var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
-const TAG = 'CredentialController'
+const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
   constructor (initData) {
@@ -50,8 +51,9 @@ class ExerciseController extends BaseController {
         courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
         courseService.read({modelName: 'Topic', searchClause: {id: topicId}}),
-        getExerciseStars(req.user.id, exerciseId)
-      ).spread((resp, resp2, resp3, resp4) => {
+        getExerciseStars(req.user.id, exerciseId),
+        PathFormatter.hashBundle('app', '/js/exercise-app-bundle.js')
+      ).spread((resp, resp2, resp3, resp4, resp5) => {
         if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
           var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data[0].data)
@@ -62,6 +64,7 @@ class ExerciseController extends BaseController {
           }
           res.locals.subtopic = resp2.data[0]
           res.locals.topic = resp3.data[0]
+          res.locals.bundle = resp5
 
           log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
 

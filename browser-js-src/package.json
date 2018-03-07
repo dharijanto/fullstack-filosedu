@@ -41,5 +41,8 @@
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "datatables.net-responsive": "^2.2.1",
+    "eonasdan-bootstrap-datetimepicker": "^4.17.47"
+  }
 }

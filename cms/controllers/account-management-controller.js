@@ -3,6 +3,7 @@ const path = require('path')
 const log = require('npmlog')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
+const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const UserService = require(path.join(__dirname, '../../services/user-service'))
 
 const TAG = 'AccountManagementController'
@@ -17,7 +18,10 @@ class AccountManagementController extends BaseController {
     })
 
     this.routeGet('/accountmanagement', (req, res, next) => {
-      res.render('account-management')
+      PathFormatter.hashBundle('cms', 'js/account-management-cms-bundle.js').then(resp => {
+        res.locals.bundle = resp
+        res.render('account-management')
+      })
     })
 
     this.routeGet('/get/user/accountmanagement', (req, res, next) => {

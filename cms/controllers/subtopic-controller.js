@@ -8,6 +8,7 @@ const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
 const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 const ImageService = require(path.join(__dirname, '../../services/image-service'))
+const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const AppConfig = require(path.join(__dirname, '../../app-config'))
@@ -34,7 +35,8 @@ class SubtopicController extends BaseController {
       const subtopicId = req.params.id
       return Promise.join(
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})).spread((sResp, eResp) => {
+        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
+        PathFormatter.hashBundle('cms', 'js/subtopic-cms-bundle.js')).spread((sResp, eResp, pResp) => {
           if (sResp.status) {
             res.locals.subtopic = sResp.data[0]
             res.locals.exercises = eResp.data || []
@@ -42,6 +44,7 @@ class SubtopicController extends BaseController {
             return courseService.read({modelName: 'Topic', searchClause: {id: res.locals.subtopic.topicId}}).then(tResp => {
               if (tResp.status) {
                 res.locals.topic = tResp.data[0]
+                res.locals.bundle = pResp
                 res.render('subtopic')
               } else {
                 next() // 404 not found
@@ -188,7 +191,7 @@ class SubtopicController extends BaseController {
       log.verbose(TAG, `req.path = ${req.path}`)
       imageService.getImages().then(resp => {
         if (resp.status) {
-          return res.json(resp.data)
+          return res.json({status: true, data: resp.data})
         } else {
           return res.json({status: false})
         }
@@ -228,7 +231,7 @@ class SubtopicController extends BaseController {
       })
     })
 
-    this.routeGet('/subtopic/images/delete', (req, res, next) => {
+    this.routePost('/subtopic/images/delete', (req, res, next) => {
       log.verbose(TAG, `req.path = ${req.path}`)
       // publicId here means filename
       imageService.deleteImage(req.query.publicId).then(resp => {
