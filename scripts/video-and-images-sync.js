@@ -64,15 +64,9 @@ function fetchVideoFromS3 () {
       const videos = resp.data
       console.log(`There are ${videos.length} number of videos to download...`)
       return Promise.map(videos, video => {
-        return fs.access(AppConfig.VIDEO_PATH + '/' + video.filename, fs.F_CONSTANT_OK, (err) => {
-          if (err) {
-            return download(
-              JSON.parse(video.sourceLink).HD,
-              AppConfig.VIDEO_PATH + '/' + video.filename)
-          } else {
-            console.log('Video File Already Exists, No Download Required')
-          }
-        })
+        return download(
+          JSON.parse(video.sourceLink).HD,
+          AppConfig.VIDEO_PATH + '/' + video.filename)
       })
     } else {
       return Promise.resolve()
@@ -88,15 +82,9 @@ function fetchImageFromS3 () {
       const images = resp.data
       console.log(`There are ${images.length} images to download...`)
       return Promise.map(images, image => {
-        return fs.access(AppConfig.IMAGE_PATH + '/' + image.filename, fs.F_CONSTANT_OK, (err) => {
-          if (err) {
-            return download(
-              image.sourceLink,
-              AppConfig.IMAGE_PATH + '/' + image.filename)
-          } else {
-            console.log('Image File Already Exists, No Download Required')
-          }
-        })
+        return download(
+          image.sourceLink,
+          AppConfig.IMAGE_PATH + '/' + image.filename)
       })
     } else {
       console.log('No Image Inside DB')

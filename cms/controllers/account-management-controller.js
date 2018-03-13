@@ -18,10 +18,7 @@ class AccountManagementController extends BaseController {
     })
 
     this.routeGet('/accountmanagement', (req, res, next) => {
-      PathFormatter.hashBundle('cms', 'js/account-management-cms-bundle.js').then(resp => {
-        res.locals.bundle = resp
-        res.render('account-management')
-      })
+      res.render('account-management')
     })
 
     this.routeGet('/get/user/accountmanagement', (req, res, next) => {

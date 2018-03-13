@@ -22,10 +22,7 @@ class CourseManagementController extends BaseController {
     })
 
     this.routeGet('/', (req, res, next) => {
-      PathFormatter.hashBundle('cms', 'js/course-management-cms-bundle.js').then(resp => {
-        res.locals.bundle = resp
-        res.render('index')
-      })
+      res.render('index')
     })
 
     this.routePost('/add/TopicDependency', (req, res, next) => {

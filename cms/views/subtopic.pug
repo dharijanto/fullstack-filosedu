@@ -3,12 +3,12 @@ extends ../../../../../sites/root/cms/view/v1/layout.pug
 include includes/sidebar.pug
 
 append links
-  link(href=rootifyPath('vendor/summernote/summernote.css') rel="stylesheet")
-  link(href=rootifyPath('vendor/codemirror/lib/codemirror.css') rel="stylesheet")
-  link(href=rootifyPath('css/style.css') rel="stylesheet")
-  link(href=rootifyPath('css/codemirror-theme/material.css') rel="stylesheet")
-  link(href=rootifyPath('css/toastr.min.css') rel="stylesheet" type="text/css")
-  link(href=rootifyPath('vendor/videojs/video-js.min.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/summernote/summernote.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/style.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/toastr.min.css') rel="stylesheet" type="text/css")
+  link(href=rootifyPath('assets/vendor/videojs/video-js.min.css') rel="stylesheet")
 
 block content
     h1 #{topic.topic} - #{subtopic.subtopic}
@@ -53,5 +53,5 @@ block content
 append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
-  script(src=rootifyPath('vendor/videojs/video.js'))
-  script(src=rootifyPath(`${bundle}`))
+  script(src=rootifyPath('assets/vendor/videojs/video.js'))
+  script(src=rootifyPath('/assets/js/subtopic-cms-bundle.js'))

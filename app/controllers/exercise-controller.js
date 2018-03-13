@@ -51,9 +51,8 @@ class ExerciseController extends BaseController {
         courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
         courseService.read({modelName: 'Topic', searchClause: {id: topicId}}),
-        getExerciseStars(req.user.id, exerciseId),
-        PathFormatter.hashBundle('app', '/js/exercise-app-bundle.js')
-      ).spread((resp, resp2, resp3, resp4, resp5) => {
+        getExerciseStars(req.user.id, exerciseId)
+      ).spread((resp, resp2, resp3, resp4) => {
         if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
           var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data[0].data)
@@ -64,7 +63,7 @@ class ExerciseController extends BaseController {
           }
           res.locals.subtopic = resp2.data[0]
           res.locals.topic = resp3.data[0]
-          res.locals.bundle = resp5
+          res.locals.bundle = this._assetBundle
 
           log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
 
@@ -261,6 +260,17 @@ class ExerciseController extends BaseController {
         res.json(resp)
       }).catch(err => {
         next(err)
+      })
+    })
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js').then(result => {
+        this._assetBundle = result
+        resolve()
+      }).catch(err => {
+        reject(err)
       })
     })
   }

@@ -63,10 +63,10 @@ $(document).ready(function () {
   <h2> Rate this video: </h2>
   </br>
   <button id="video-feedback-good">
-    <img class="video-feedback-image" src="/img/good_smiley.jpg"/>
+    <img class="video-feedback-image" src="/assets/img/good_smiley.jpg"/>
   </button>
   <button id="video-feedback-bad">
-    <img class="video-feedback-image" src="/img/bad_smiley.jpg"/>
+    <img class="video-feedback-image" src="/assets/img/bad_smiley.jpg"/>
   </button>
 </section>`,
     run: function () {

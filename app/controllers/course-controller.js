@@ -2,10 +2,8 @@ var path = require('path')
 var log = require('npmlog')
 var Promise = require('bluebird')
 
-var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
-var VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'CourseController'
 
@@ -13,7 +11,6 @@ class CourseController extends BaseController {
   constructor (initData) {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
-    const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       next()
@@ -45,6 +42,12 @@ class CourseController extends BaseController {
       }).catch(err => {
         next(err)
       })
+    })
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      resolve()
     })
   }
 }

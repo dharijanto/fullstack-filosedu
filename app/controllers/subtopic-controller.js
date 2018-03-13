@@ -45,9 +45,8 @@ class SubtopicController extends BaseController {
           courseService.readOne({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
           courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
           courseService.readOne({modelName: 'Topic', searchClause: {id: topicId}}),
-          videoService.getVideo(subtopicId),
-          PathFormatter.hashBundle('app', '/js/subtopic-app-bundle.js')
-        ).spread((resp, resp2, resp3, resp4, resp5) => {
+          videoService.getVideo(subtopicId)
+        ).spread((resp, resp2, resp3, resp4) => {
           if (resp.status && resp3.status && resp4.status) {
             const subtopic = resp.data
             res.locals.topic = resp3.data
@@ -56,8 +55,7 @@ class SubtopicController extends BaseController {
             res.locals.subtopicData = JSON.parse(subtopic.data)
             res.locals.exercises = resp2.data || []
             res.locals.isAuthenticated = req.isAuthenticated()
-            res.locals.bundle = resp5
-
+            res.locals.bundle = this._assetBundle
             log.verbose(TAG, 'subtopic.GET(): resp4=' + JSON.stringify(resp4))
             const videoTag = `<video class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered" id="video-player" data-id=${resp4.data.id} controls data-setup='{}'>`
             const missingVideo = `<div class='text-center text-danger'>Video does not exist</div>`
@@ -109,6 +107,17 @@ class SubtopicController extends BaseController {
       } else {
         next() // 404
       }
+    })
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      PathFormatter.hashAsset('app', '/assets/js/subtopic-app-bundle.js').then(result => {
+        this._assetBundle = result
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
     })
   }
 }

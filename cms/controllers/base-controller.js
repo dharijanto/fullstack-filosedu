@@ -1,8 +1,10 @@
 const path = require('path')
 
 const express = require('express')
-const bodyParser= require('body-parser')
+const bodyParser = require('body-parser')
 const log = require('npmlog')
+
+var AppConfig = require(path.join(__dirname, '../../app-config'))
 
 class BaseController {
   constructor ({site, user, socketIO, db, logTag}) {
@@ -14,9 +16,9 @@ class BaseController {
     this._router.use(bodyParser.json()) // Required for unit-testing
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
-    const viewPath = path.join(__dirname, '../views')
-    const assetsPath = path.join(__dirname, '../views/assets')
-    this._subRouter.use(express.static(assetsPath))
+    const viewPath = AppConfig.VIEWS_CMS_PATH
+    const assetsPath = path.join(viewPath, '/assets')
+    this._subRouter.use('/assets', express.static(assetsPath))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
 

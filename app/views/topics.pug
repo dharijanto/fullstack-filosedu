@@ -19,7 +19,11 @@ block contents
               - var numbering = 0;
               each subtopic, index2 in subtopics
                 if (subtopic.topicId === topic.id)
-                  li.list-group-item #{++numbering}. 
-                    a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
-                    span.pull-right
-                      + renderExerciseStars(parseInt(subtopic.stars), 20)
+                  li.list-group-item
+                    .row
+                      .col-sm-12.col-md-6
+                        | #{++numbering}.
+                        a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
+                      .col-sm-12.col-md-6
+                        span.pull-right
+                          + renderExerciseStars(parseInt(subtopic.stars), 20)

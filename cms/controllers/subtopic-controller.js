@@ -35,27 +35,26 @@ class SubtopicController extends BaseController {
       const subtopicId = req.params.id
       return Promise.join(
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
-        PathFormatter.hashBundle('cms', 'js/subtopic-cms-bundle.js')).spread((sResp, eResp, pResp) => {
-          if (sResp.status) {
-            res.locals.subtopic = sResp.data[0]
-            res.locals.exercises = eResp.data || []
-            res.locals.subtopicData = res.locals.subtopic.data ? JSON.parse(res.locals.subtopic.data) : {}
-            return courseService.read({modelName: 'Topic', searchClause: {id: res.locals.subtopic.topicId}}).then(tResp => {
-              if (tResp.status) {
-                res.locals.topic = tResp.data[0]
-                res.locals.bundle = pResp
-                res.render('subtopic')
-              } else {
-                next() // 404 not found
-              }
-            })
-          } else {
-            next() // 404 not found
-          }
-        }).catch(err => {
-          next(err)
-        })
+        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})
+      ).spread((sResp, eResp) => {
+        if (sResp.status) {
+          res.locals.subtopic = sResp.data[0]
+          res.locals.exercises = eResp.data || []
+          res.locals.subtopicData = res.locals.subtopic.data ? JSON.parse(res.locals.subtopic.data) : {}
+          return courseService.read({modelName: 'Topic', searchClause: {id: res.locals.subtopic.topicId}}).then(tResp => {
+            if (tResp.status) {
+              res.locals.topic = tResp.data[0]
+              res.render('subtopic')
+            } else {
+              next() // 404 not found
+            }
+          })
+        } else {
+          next() // 404 not found
+        }
+      }).catch(err => {
+        next(err)
+      })
     })
 
     // When subtopic is submitted, there 3 informations:
