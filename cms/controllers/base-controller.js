@@ -16,13 +16,12 @@ class BaseController {
     this._router.use(bodyParser.json()) // Required for unit-testing
     this._subRouter = express()
     this._router.use(`/${this._siteHash}`, this._subRouter)
-    const viewPath = AppConfig.VIEWS_CMS_PATH
-    const assetsPath = path.join(viewPath, '/assets')
+    const assetsPath = path.join(AppConfig.VIEWS_CMS_PATH, '/assets')
     this._subRouter.use('/assets', express.static(assetsPath))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
 
-    this._subRouter.set('views', viewPath)
+    this._subRouter.set('views', AppConfig.VIEWS_CMS_PATH)
     this._subRouter.set('view engine', 'pug')
     this._interceptors = []
   }

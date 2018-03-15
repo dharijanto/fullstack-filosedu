@@ -1,36 +1,40 @@
 var path = require('path')
+
 const MYSQL_CONF = {
-  username: 'admin',
-  password: 'password',
-  dbName: 'app_filosedu'
+  username: 'root',
+  password: '',
+  dbName: 'filosedu_test'
 }
 
-const LOGGING_SERVICE = {
-  HOST: 'www.didikbangsa.org',
-  PORT: 12201,
-  LOG_LEVEL: process.env.SERVER_PORT || 'verbose' // Minimum log level to be sent to the service
+const AWS_VIDEO_CONF = {
+  AWS_REGION: 'ap-southeast-1',
+  AWS_LINK: 'https://s3-ap-southeast-1.amazonaws.com',
+  AWS_BUCKET_NAME: 'ncloud-testing',
+  AWS_PIPELINE_ID: '',
+  AWS_360P_PRESET_ID: '',
+  AWS_720P_PRESET_ID: '',
+  AWS_PREFIX_FOLDER_VIDEO_NAME: 'videos_v1/',
+  AWS_360P_FOLDER: '360p/',
+  AWS_720P_FOLDER: '720p/'
+}
+
+const AWS_IMAGE_CONF = {
+  AWS_LINK: 'https://s3-ap-southeast-1.amazonaws.com',
+  AWS_BUCKET_NAME: 'ncloud-testing',
+  AWS_PREFIX_FOLDER_IMAGE_NAME: 'images_v1/'
 }
 
 module.exports = {
-  testDbPath: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@127.0.0.1:3306/${MYSQL_CONF.dbName}`,
-  BASE_URL: 'http://app-filosedu.nusantara-local.com:8080',
-  CLOUD_SERVER: false,
+  SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
+  BASE_URL: 'http://app-filosedu.nusantara-local.com',
+  CLOUD_SERVER: true,
   IMAGE_PATH: path.join(__dirname, 'images'),
   VIDEO_PATH: path.join(__dirname, 'videos'),
-  VIDEO_MOUNT_PATH: '/videos/',
   IMAGE_MOUNT_PATH: '/images/',
-  PREFIX_360P: '360p_',
-  PREFIX_720P: '720P_',
+  VIDEO_MOUNT_PATH: '/videos/', // Video is mounted on www.domain.com/[VIDEO_MOUNT_PATH]
   AWS_REGION: 'ap-southeast-1',
-  AWS_LINK: 'http://s3-ap-southeast-1.amazonaws.com',
-  AWS_BUCKET_NAME: 'ncloud-testing',
-  AWS_PREFIX_FOLDER_VIDEO_NAME: 'videos_v1/',
-  AWS_PREFIX_FOLDER_IMAGE_NAME: 'images_v1/',
-  AWS_PIPELINE_ID: '1517283530132-1wj56s',
-  AWS_360P_PRESET_ID: '1517305976374-exb5fa',
-  AWS_720P_PRESET_ID: '1351620000001-000010',
-  LOGGING_SERVICE,
-  SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
+  AWS_VIDEO_CONF,
+  AWS_IMAGE_CONF,
   VIEWS_APP_PATH: path.join(__dirname, 'app/views'),
   VIEWS_CMS_PATH: path.join(__dirname, 'cms/views')
 }
