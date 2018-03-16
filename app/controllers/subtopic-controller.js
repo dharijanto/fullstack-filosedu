@@ -8,6 +8,7 @@ var AnalyticsService = require(path.join(__dirname, '../../services/analytics-se
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
+var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 var VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'SubtopicController'
@@ -54,7 +55,7 @@ class SubtopicController extends BaseController {
             res.locals.subtopicData = JSON.parse(subtopic.data)
             res.locals.exercises = resp2.data || []
             res.locals.isAuthenticated = req.isAuthenticated()
-
+            res.locals.bundle = this._assetBundle
             log.verbose(TAG, 'subtopic.GET(): resp4=' + JSON.stringify(resp4))
             const videoTag = `<video class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered" id="video-player" data-id=${resp4.data.id} controls data-setup='{}'>`
             const missingVideo = `<div class='text-center text-danger'>Video does not exist</div>`
@@ -106,6 +107,17 @@ class SubtopicController extends BaseController {
       } else {
         next() // 404
       }
+    })
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      PathFormatter.hashAsset('app', '/assets/js/subtopic-app-bundle.js').then(result => {
+        this._assetBundle = result
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
     })
   }
 }

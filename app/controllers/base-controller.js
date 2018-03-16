@@ -3,14 +3,17 @@ const path = require('path')
 const fs = require('fs')
 const log = require('npmlog')
 
+var AppConfig = require(path.join(__dirname, '../../app-config'))
+
 class BaseController {
   constructor ({site, user, socketIO, db, logTag}) {
     this._router = express()
     this._viewPath = path.join(__dirname, '../views')
+    this._assetsPath = path.join(this._viewPath, '/assets')
     this._db = db
     this.getRouter().set('views', this._viewPath)
     this.getRouter().set('view engine', 'pug')
-    this.getRouter().use(express.static(this._viewPath, {maxAge: '1h'}))
+    this.getRouter().use('/assets', express.static(this._assetsPath, {maxAge: '1h'}))
     this._interceptors = []
   }
 

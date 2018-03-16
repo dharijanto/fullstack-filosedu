@@ -82,7 +82,7 @@ class ImageService extends CRUDService {
     return new Promise((resolve, reject) => {
       fs.unlink(path.join(AppConfig.IMAGE_PATH, fileName), (err) => {
         if (err) {
-          resolve(err)
+          reject(err)
         } else {
           resolve({status: true})
         }

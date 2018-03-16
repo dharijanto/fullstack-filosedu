@@ -3,9 +3,9 @@ extends ../../../../../sites/root/cms/view/v1/layout.pug
 include includes/sidebar.pug
 
 append links
-  link(href="/assets/vendor/summernote/summernote.css" rel="stylesheet")
-  link(href=rootifyPath('/assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
-  link(href=rootifyPath('/assets/css/style.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/summernote/summernote.css') rel="stylesheet")
+  link(href=rootifyPath('assets/vendor/codemirror/lib/codemirror.css') rel="stylesheet")
+  link(href=rootifyPath('assets/css/style.css') rel="stylesheet")
   link(href=rootifyPath('assets/css/codemirror-theme/material.css') rel="stylesheet")
   link(href=rootifyPath('assets/css/toastr.min.css') rel="stylesheet" type="text/css")
   link(href=rootifyPath('assets/vendor/videojs/video-js.min.css') rel="stylesheet")
@@ -20,6 +20,8 @@ block content
         div#videoProgress
         div#videoProgressBar
         input(type='file' id='videoUpload' name='video' accept='.mp4')
+        br
+        br
         div#localPlayerContainer
 
       div.form-group
@@ -52,4 +54,4 @@ append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
   script(src=rootifyPath('assets/vendor/videojs/video.js'))
-  script(src=rootifyPath('assets/js/subtopic-cms-bundle.js'))
+  script(src=rootifyPath('/assets/js/subtopic-cms-bundle.js'))

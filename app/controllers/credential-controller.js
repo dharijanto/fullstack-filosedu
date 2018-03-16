@@ -1,4 +1,5 @@
 var path = require('path')
+var Promise = require('bluebird')
 
 var log = require('npmlog')
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
@@ -38,6 +39,12 @@ class CredentialController extends BaseController {
     })
 
     this.routeGet('/logout', PassportHelper.logOut())
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      resolve()
+    })
   }
 }
 

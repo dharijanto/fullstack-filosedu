@@ -5,6 +5,7 @@ const marked = require('marked')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
+const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
 const TAG = 'CourseManagementController'
 class CourseManagementController extends BaseController {

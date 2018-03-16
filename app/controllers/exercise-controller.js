@@ -9,8 +9,9 @@ var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
-const TAG = 'CredentialController'
+const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
   constructor (initData) {
@@ -62,6 +63,7 @@ class ExerciseController extends BaseController {
           }
           res.locals.subtopic = resp2.data[0]
           res.locals.topic = resp3.data[0]
+          res.locals.bundle = this._assetBundle
 
           log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
 
@@ -258,6 +260,17 @@ class ExerciseController extends BaseController {
         res.json(resp)
       }).catch(err => {
         next(err)
+      })
+    })
+  }
+
+  initialize () {
+    return new Promise((resolve, reject) => {
+      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js').then(result => {
+        this._assetBundle = result
+        resolve()
+      }).catch(err => {
+        reject(err)
       })
     })
   }

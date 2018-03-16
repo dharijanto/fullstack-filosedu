@@ -3,6 +3,7 @@ const path = require('path')
 const log = require('npmlog')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
+const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const UserService = require(path.join(__dirname, '../../services/user-service'))
 
 const TAG = 'AccountManagementController'

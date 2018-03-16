@@ -34,5 +34,7 @@ module.exports = {
   VIDEO_MOUNT_PATH: '/videos/', // Video is mounted on www.domain.com/[VIDEO_MOUNT_PATH]
   AWS_REGION: 'ap-southeast-1',
   AWS_VIDEO_CONF,
-  AWS_IMAGE_CONF
+  AWS_IMAGE_CONF,
+  VIEWS_APP_PATH: path.join(__dirname, 'app/views'),
+  VIEWS_CMS_PATH: path.join(__dirname, 'cms/views')
 }
