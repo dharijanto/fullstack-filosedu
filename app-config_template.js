@@ -24,6 +24,16 @@ const AWS_IMAGE_CONF = {
   AWS_PREFIX_FOLDER_IMAGE_NAME: 'images_v1/'
 }
 
+// School information here is used if CLOUD_SERVER is set false
+const LOCAL_SCHOOL_INFORMATION = {
+  id: '0',
+  identifier: 'smpk_1',
+  name: 'smpk merge',
+  logo: '/images/1521435649363_SMAN_78_Jakarta.jpeg',
+  phone: '021-292929292929',
+  address: 'Jl. S. Parman No 34'
+}
+
 module.exports = {
   SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
   BASE_URL: 'http://app-filosedu.nusantara-local.com',
@@ -36,5 +46,6 @@ module.exports = {
   AWS_VIDEO_CONF,
   AWS_IMAGE_CONF,
   VIEWS_APP_PATH: path.join(__dirname, 'app/views'),
-  VIEWS_CMS_PATH: path.join(__dirname, 'cms/views')
+  VIEWS_CMS_PATH: path.join(__dirname, 'cms/views'),
+  LOCAL_SCHOOL_INFORMATION
 }

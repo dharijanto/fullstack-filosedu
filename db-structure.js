@@ -54,14 +54,25 @@ function addTables (sequelize, models) {
     description: Sequelize.STRING
   })
 
+  models.School = sequelize.define('schools', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    identifier: {type: Sequelize.STRING, unique: true},
+    name: {type: Sequelize.TEXT},
+    address: {type: Sequelize.TEXT},
+    phone: {type: Sequelize.STRING},
+    logo: {type: Sequelize.TEXT}
+  })
+
   models.User = sequelize.define('users', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    username: {type: Sequelize.STRING, unique: true},
+    username: {type: Sequelize.STRING}, // The pair of (username, schoolId) should be unique, we should use MySQL composite key for this
     saltedPass: {type: Sequelize.STRING},
     salt: {type: Sequelize.STRING},
     email: {type: Sequelize.STRING, unique: true},
-    fullName: {type: Sequelize.STRING}
+    fullName: {type: Sequelize.STRING},
+    grade: {type: Sequelize.STRING}
   })
+  models.User.belongsTo(models.School)
 
   models.Exercise = sequelize.define('exercise', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
@@ -76,7 +87,8 @@ function addTables (sequelize, models) {
     unknowns: {type: Sequelize.TEXT}, // JSON: array of unknowns i.e. [{a: 1, b: 3}, {a: 7, b: 3}]
     userAnswer: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}]
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
-    score: {type: Sequelize.FLOAT}
+    score: {type: Sequelize.FLOAT},
+    timeFinish: {type: Sequelize.FLOAT}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
   models.GeneratedExercise.belongsTo(models.User)
@@ -104,10 +116,6 @@ function addTables (sequelize, models) {
     videoId: Sequelize.INTEGER,
     exerciseId: Sequelize.INTEGER
   })
-
-  // models.Analytics.belongsTo(models.User)
-  // models.Analytics.belongsTo(models.Video)
-  // models.Analytics.belongsTo(models.Exercise)
 
   return models
 }

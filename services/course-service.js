@@ -69,15 +69,42 @@ class CourseService extends CRUDService {
   getExerciseStar (userId, exerciseId) {
     return this._sequelize.query(`SELECT score FROM generatedExercises WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${exerciseId} ORDER BY score DESC LIMIT 4;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-        const stars = datas.reduce((acc, data) => {
-          if (parseInt(data.score) >= 80) {
-            return acc + 1
-          } else {
-            return acc
-          }
-        }, 0)
-        return {status: true, data: {stars}}
+      const stars = datas.reduce((acc, data) => {
+        if (parseInt(data.score) >= 80) {
+          return acc + 1
+        } else {
+          return acc
+        }
+      }, 0)
+      return {status: true, data: {stars}}
+    })
+  }
+
+  // param data contain {exerciseId: 5}
+  getRankingExercise (data) {
+    return this._sequelize.query(`select min(timeFinish) as timeFinish, userId, users.fullName as fullName, users.grade as grade, schools.name as schoolName from generatedExercises inner join users on users.id = generatedExercises.userId inner join schools on schools.id = users.schoolId where submitted = true and exerciseId = ${data.exerciseId} and score = 100 group by userId order by min(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+      return {status: true, data: resp}
+    })
+  }
+
+  getTotalRanking (exerciseId) {
+    return new Promise((resolve, reject) => {
+      return this._sequelize.query(`select count(*) as total from (select count(*) from generatedExercises  where submitted = true and exerciseId = ${exerciseId} and score = 100 group by userId order by min(timeFinish)) as totalrow`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total}})
+      }).catch(err => {
+        reject(err)
       })
+    })
+  }
+
+  getCurrentRanking (timeFinish, exerciseId) {
+    return new Promise((resolve, reject) => {
+      return this._sequelize.query(`select count(*) as total from (select count(*) from generatedExercises  where submitted = true and timeFinish <= ${timeFinish} and exerciseId = ${exerciseId} and score = 100 group by userId order by min(timeFinish)) as totalrow;`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total}})
+      }).catch(err => {
+        reject(err)
+      })
+    })
   }
 
   getSubtopicStar (userId, subtopicId) {
@@ -111,9 +138,9 @@ class CourseService extends CRUDService {
     return this._sequelize.query(
       `SELECT topicDependencies.id, topicDependencies.description, topicDependencies.updatedAt, topics.topic as dependencyName FROM topicDependencies INNER JOIN topics ON topics.id = topicDependencies.dependencyId WHERE topicDependencies.topicId=${topicId}`,
       { type: Sequelize.QueryTypes.SELECT })
-    .then(data => {
-      return {status: true, data}
-    })
+      .then(data => {
+        return {status: true, data}
+      })
   }
 
   addTopicDependency (topicId, dependencyName, description) {

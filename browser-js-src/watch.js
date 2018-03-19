@@ -10,6 +10,10 @@ const modules = [
     output: 'cms'
   },
   {
+    input: 'school-management-cms',
+    output: 'cms'
+  },
+  {
     input: 'account-management-cms',
     output: 'cms'
   },
@@ -32,8 +36,8 @@ modules.forEach(module => {
     .transform({global: true}, 'browserify-shim')
     .transform('babelify', {presets: ['es2015']})
     .transform('uglifyify', {global: true})
-    )
-    // .plugin(watchify)
+  )
+  // .plugin(watchify)
   b.on('update', () => bundle(b, module.input, module.output))
   b.on('error', err => console.error(err.message))
   // b.on('log', msg => console.log(msg))
@@ -45,9 +49,9 @@ function bundle (b, module, outputFolder) {
   console.log(`Bundling module: ${module}...`)
   console.time(module)
   b.bundle()
-  .on('error', err => console.error(err.message))
-  .pipe(fs.createWriteStream(path.join(__dirname, `../${outputFolder}/views/assets/js/${module}-bundle.js`)))
-  .on('finish', () => {
-    console.timeEnd(module)
-  })
+    .on('error', err => console.error(err.message))
+    .pipe(fs.createWriteStream(path.join(__dirname, `../${outputFolder}/views/assets/js/${module}-bundle.js`)))
+    .on('finish', () => {
+      console.timeEnd(module)
+    })
 }

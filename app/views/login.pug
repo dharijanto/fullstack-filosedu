@@ -3,11 +3,21 @@ extends layout/index.pug
 block initialization
   - const activePage = 'login'
 
+append head
+  link(rel="stylesheet" href="/assets/vendor/select2/select2.min.css")
+
 block contents
   div.container
     .row
       .col-md-12
         form(role="form" action="/login" method="post")
+          div.form-group
+            #logoSchool.text-center
+          div.form-group
+            label School Name
+            select.select2.form-control(name="schoolId")
+              each val in schools
+                option(value=`${val.id}` data-logo=`${val.logo}`) #{val.name}
           div.form-group
             label Username
             input(type="text" name="username" class="form-control")
@@ -20,3 +30,7 @@ block contents
     .row
       .col-md-12
         | Belum memiliki account? Klik #[a(href='/register') disini] untuk register.
+
+append scripts
+  script(type="text/javascript" src="/assets/vendor/select2/select2.min.js")
+  script(type="text/javascript" src="/assets/js/utils.js")

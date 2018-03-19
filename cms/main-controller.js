@@ -8,6 +8,7 @@ const AppConfig = require(path.join(__dirname, '../app-config'))
 const BaseController = require(path.join(__dirname, 'controllers/base-controller'))
 const CourseManagementController = require(path.join(__dirname, 'controllers/course-management-controller'))
 const AccountManagementController = require(path.join(__dirname, 'controllers/account-management-controller'))
+const SchoolManagementController = require(path.join(__dirname, 'controllers/school-management-controller'))
 const SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 
 class MainController extends BaseController {
@@ -23,8 +24,9 @@ class MainController extends BaseController {
     AWS.config.update({region: AppConfig.AWS_REGION})
     this.routeUse('/videos', express.static(AppConfig.VIDEO_PATH))
     this.routeUse('/images', express.static(AppConfig.IMAGE_PATH))
-    this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
     this.routeHashlessUse((new AccountManagementController(initData)).getRouter())
+    this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
+    this.routeHashlessUse((new SchoolManagementController(initData).getRouter()))
     this.routeHashlessUse((new SubtopicController(initData)).getRouter())
   }
 

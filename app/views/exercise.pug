@@ -35,6 +35,8 @@ block contents
           p.hidden(id='submissionError')
           p(class='bestScore')
             | !{starsHTML}
+        div.rankingScore
+          | !{ranking}
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 

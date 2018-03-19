@@ -64,11 +64,23 @@ $('.btn_submit_answer').on('click', function (e) {
         var currentScore = resp.data.currentScore
         var bestScore = resp.data.bestScore
         var starsHTML = resp.data.starsHTML
+        var ranking = resp.data.ranking
+        var currentTimeFinish = resp.data.currentTimeFinish
+        var currentRanking = resp.data.currentRanking
+        var totalRanking = resp.data.totalRanking
+        var isPerfectScore = resp.data.isPerfectScore
 
         $('#currentScore').removeClass('hidden')
         $('#currentScore').text(`Nilai yang diperoleh: ${currentScore}`)
-
         $('.bestScore').html(starsHTML)
+        $('.rankingScore').html(ranking)
+
+        if (isPerfectScore) {
+          $('.rankingScore').append(`<p>Ranking kamu adalah ${currentRanking} dari ${totalRanking} dan selesai dengan waktu penyelesaian ${currentTimeFinish} detik</p>`)
+        } else {
+          $('.bestScore').html('<p>Maaf, hanya yang nilai di atas 80 yang mendapat bintang</p>')
+          $('.rankingScore').append(`<p>Maaf, hanya nilai 100 yang masuk penilaian</p>`)
+        }
 
         realAnswers.forEach((realAnswer, index) => {
           // var collectAnswer = ''

@@ -6,21 +6,29 @@ var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 var passportManager = require(path.join(__dirname, '../../lib/passport-manager'))
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
+var SchoolService = require(path.join(__dirname, '../../services/school-service'))
 
 const TAG = 'CredentialController'
 
 class CredentialController extends BaseController {
   constructor (initData) {
     super(initData)
+    const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
     this.routeGet('/login', (req, res, next) => {
-      res.locals.error = req.flash('error')
-      res.render('login')
+      schoolService.getAll().then(resp => {
+        res.locals.schools = resp.status ? resp.data : []
+        res.locals.error = req.flash('error')
+        res.render('login')
+      })
     })
 
     this.routeGet('/register', (req, res, next) => {
-      res.locals.error = req.flash('error')
-      res.render('register')
+      schoolService.getAll().then(resp => {
+        res.locals.schools = resp.status ? resp.data : []
+        res.locals.error = req.flash('error')
+        res.render('register')
+      })
     })
 
     this.routePost('/register', passportManager.authAppRegistration({

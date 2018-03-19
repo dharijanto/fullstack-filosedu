@@ -5,15 +5,19 @@ const log = require('npmlog')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const UserService = require(path.join(__dirname, '../../services/user-service'))
+const SchoolService = require(path.join(__dirname, '../../services/school-service'))
 
 const TAG = 'AccountManagementController'
+
+// TODO: Update URL from /get/user/accountmanagement -> /accountmanagement/get/user
 class AccountManagementController extends BaseController {
   constructor (initData) {
     super(initData)
+    const userService = new UserService(this.getDb().sequelize, this.getDb().models)
+    const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
-      req.userService = new UserService(this.getDb().sequelize, this.getDb().models)
       next()
     })
 
@@ -21,30 +25,46 @@ class AccountManagementController extends BaseController {
       res.render('account-management')
     })
 
-    this.routeGet('/get/user/accountmanagement', (req, res, next) => {
-      req.userService.getAll().then(resp => {
-        res.json(resp)
-      })
-    })
-
-    this.routePost('/add/user/accountmanagement', (req, res, next) => {
-      req.userService.register(req.body).then(resp => {
+    this.routeGet('/accountmanagement/user/get', (req, res, next) => {
+      userService.getAll().then(resp => {
         res.json(resp)
       }).catch(err => {
         next(err)
       })
     })
 
-    this.routePost('/edit/user/accountmanagement', (req, res, next) => {
-      req.userService.updateCredential(req.body).then(resp => {
-        res.json(resp)
+    this.routePost('/accountmanagement/user/add', (req, res, next) => {
+      schoolService.readOne({modelName: 'School', searchClause: {name: req.body['school.name']}}).then(resp => {
+        if (resp.status) {
+          const data = Object.assign(req.body, {schoolId: resp.data.id})
+          userService.register(data).then(resp => {
+            res.json(resp)
+          })
+        } else {
+          res.json(resp)
+        }
       }).catch(err => {
         next(err)
       })
     })
 
-    this.routePost('/delete/user/accountmanagement', (req, res, next) => {
-      req.userService.deleteById(req.body.id).then(resp => {
+    this.routePost('/accountmanagement/user/edit', (req, res, next) => {
+      schoolService.readOne({modelName: 'School', searchClause: {name: req.body['school.name']}}).then(resp => {
+        if (resp.status) {
+          const data = Object.assign(req.body, {schoolId: resp.data.id})
+          userService.updateCredential(data).then(resp => {
+            res.json(resp)
+          })
+        } else {
+          res.json(resp)
+        }
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routePost('/accountmanagement/user/delete', (req, res, next) => {
+      userService.deleteById(req.body.id).then(resp => {
         res.json({status: true})
       }).catch(err => {
         next(err)

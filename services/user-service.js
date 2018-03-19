@@ -25,8 +25,9 @@ class UserService {
   login (credential) {
     const username = credential.username
     const pass = credential.password
+    const schoolId = credential.schoolId
 
-    return this._models.User.findOne({where: {username: username}}).then(user => {
+    return this._models.User.findOne({where: {username, schoolId}}).then(user => {
       if (!user) {
         return {status: false, errMessage: 'Invalid username or password.', errCode: 1}
       } else if (('active' in user) && !user.active) {
@@ -52,14 +53,18 @@ class UserService {
   // Quirks: siteId is -1 for CMS registration
   // TODO: Check if username is already taken
   register (credential, active = true) {
-    const username = credential.username
+    const username = (credential.username || '').toLowerCase()
     const password = credential.password
     const passwordConfirm = credential.passwordConfirm
-    const email = credential.email
+    const email = (credential.email || '').toLowerCase()
     const siteId = credential.siteId
     const fullName = credential.fullName
+    const schoolId = credential.schoolId
+    const grade = credential.grade
+
+    log.verbose(TAG, 'register(): credential=' + JSON.stringify(credential))
     return new Promise((resolve, reject) => {
-      if (!username || !password || !passwordConfirm || !email) {
+      if (!username || !password || !passwordConfirm || !email || !schoolId) {
         resolve({status: false, errMessage: 'Incomplete credentials!', errCode: 1})
       } else {
         if (password !== passwordConfirm) {
@@ -76,11 +81,14 @@ class UserService {
             saltedPass: salted.passwordHash,
             salt: salted.salt,
             email: email,
-            fullName: fullName}
+            fullName: fullName,
+            schoolId,
+            grade
+          }
           if (siteId) {
             data.siteId = siteId
           }
-          this._models.User.findOne({where: Sequelize.or({username}, {email})}).then(user => {
+          this._models.User.findOne({where: Sequelize.and(Sequelize.or({username}, {email}), {schoolId})}).then(user => {
             if (!user) {
               return this._models.User.create(data).then(user => {
                 resolve({status: true, user})
@@ -106,7 +114,7 @@ class UserService {
   }
 
   getAll () {
-    return this._models.User.findAll().then(users => {
+    return this._models.User.findAll({include: [{model: this._models.School}]}).then(users => {
       return ({status: true, data: users})
     }).catch(err => {
       return (err)
@@ -121,17 +129,23 @@ class UserService {
     })
   }
 
+  // TODO: We shouldn't allow edit so that the user
+  // have the same username and schoolId as an existing user. Should use SQL composite key
   updateCredential (credential) {
     const username = credential.username
     const password = credential.password
     const passwordConfirm = credential.passwordConfirm
     const email = credential.email
     const fullName = credential.fullName
+    const schoolId = credential.schoolId
+    const grade = credential.grade
+
+    log.verbose(TAG, 'updateCredential(): credential=' + JSON.stringify(credential))
     return new Promise((resolve, reject) => {
       // If either password or confirm password is entered, they have to match in order
       // for anything to be updated
       if (password || passwordConfirm) {
-        if (!username || !password || !passwordConfirm || !email) {
+        if (!username || !password || !passwordConfirm || !email || !schoolId) {
           resolve({status: false, errMessage: 'Incomplete credentials!', errCode: 1})
         } else {
           if (password !== passwordConfirm) {
@@ -145,7 +159,10 @@ class UserService {
               saltedPass: salted.passwordHash,
               salt: salted.salt,
               email: email,
-              fullName: fullName}
+              fullName: fullName,
+              schoolId,
+              grade
+            }
             return this._models.User.update(data, {where: {id: credential.id}}).then(resp => {
               resolve({status: true, data: resp})
             }).catch(err => {
@@ -164,7 +181,10 @@ class UserService {
         const data = {
           username: username,
           email: email,
-          fullName: fullName}
+          fullName: fullName,
+          schoolId,
+          grade
+        }
         this._models.User.update(data, {where: {id: credential.id}}).then(resp => {
           resolve({status: true, data: resp})
         }).catch(err => {

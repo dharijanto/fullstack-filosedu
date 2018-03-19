@@ -122,6 +122,18 @@ class ExerciseController extends BaseController {
       })
     }
 
+    function getRenderedExercise (exerciseId, timeFinish) {
+      return courseService.getRankingExercise({exerciseId, timeFinish}).then(resp => {
+        if (resp.status) {
+          const exerciseData = resp.data
+          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/ranking.pug'), {exerciseData})
+          return {status: true, data: html}
+        } else {
+          return (resp)
+        }
+      })
+    }
+
     this.routeGet('/getExerciseStars', (req, res, next) => {
       const exerciseId = parseInt(req.query.exerciseId)
       if (exerciseId === undefined) {
@@ -217,16 +229,26 @@ class ExerciseController extends BaseController {
                 log.error(TAG, err)
               })
 
+              const timeStart = new Date(generatedExercise.createdAt).getTime()
+              const timeSubmit = Math.floor(Date.now())
+              const timeFinish = ((timeSubmit - timeStart) / 1000).toFixed(2)
               return courseService.update({
                 modelName: 'GeneratedExercise',
                 data: {
                   id: generatedExercise.id,
                   score: currentScore,
                   userAnswer: JSON.stringify(userAnswers),
-                  submitted: true}
+                  submitted: true,
+                  timeFinish
+                }
               }).then(resp => {
                 if (resp.status) {
-                  return getExerciseStars(userId, exerciseId).then(resp2 => {
+                  Promise.join(
+                    getExerciseStars(userId, exerciseId),
+                    getRenderedExercise(exerciseId, timeFinish),
+                    courseService.getCurrentRanking(timeFinish, exerciseId),
+                    courseService.getTotalRanking(exerciseId)
+                  ).spread((resp2, resp3, resp4, resp5) => {
                     res.json({
                       status: true,
                       data: {
@@ -234,7 +256,12 @@ class ExerciseController extends BaseController {
                         isAnswerCorrect,
                         currentScore,
                         bestScore,
-                        starsHTML: resp2.data
+                        starsHTML: resp2.data,
+                        ranking: resp3.data,
+                        currentTimeFinish: timeFinish,
+                        currentRanking: resp4.data.count,
+                        totalRanking: resp5.data.count,
+                        isPerfectScore: parseInt(currentScore) === 100 ? true : false
                       }
                     })
                   })

@@ -1,5 +1,6 @@
 var $ = require('jquery')
 var rootPath = require('cmsRootPath')
+var axios = require('axios')
 var toastr = require('toastr')
 
 var NCInputs = {}
@@ -8,7 +9,7 @@ var NCInputs = {}
 // Where to GET the data from
 // -----------------------------------------
 function getUserURL () {
-  return rootPath + 'get/user/accountmanagement'
+  return rootPath + 'accountmanagement/user/get'
 }
 // -----------------------------------------
 
@@ -16,22 +17,38 @@ function getUserURL () {
 // Where to POST the data into
 // -----------------------------------------
 const postTo = {
-  subject: {
+  school: {
     add: function () {
-      return rootPath + 'add/user/accountmanagement'
+      return rootPath + 'accountmanagement/user/add'
     },
     edit: function () {
-      return rootPath + 'edit/user/accountmanagement'
+      return rootPath + 'accountmanagement/user/edit'
     },
     delete: function () {
-      return rootPath + 'delete/user/accountmanagement'
+      return rootPath + 'accountmanagement/user/delete'
     }
   }
 }
 // -----------------------------------------
 
-function onAccountClicked () {
+function getGrade () {
+  return [1, 2, 3, 4, 5, 6]
+}
 
+function getSchoolNames () {
+  return axios.get(rootPath + 'school/management/get').then(resp => {
+    if (resp.data.status) {
+      return resp.data.data.map((data) => {
+        return data.name
+      })
+    } else {
+      return resp
+    }
+  })
+}
+
+function onDataClicked (data) {
+  // console.log(data)
 }
 // -----------------------------------------
 // NC-Input-Library configuration
@@ -49,14 +66,17 @@ const tableConfig = {
         {id: 'fullName', desc: 'Full Name', dataTable: true, input: 'text'},
         {id: 'username', desc: 'User Name', dataTable: true, input: 'text', disabled: false},
         {id: 'email', desc: 'E-mail', dataTable: true, input: 'text', disabled: false},
+        {id: 'school.name', desc: 'School Name', dataTable: true, input: 'select', selectData: getSchoolNames},
+        {id: 'grade', desc: 'Grade', dataTable: true, input: 'select', selectData: getGrade},
         {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'},
         {id: 'password', desc: 'Password', dataTable: false, input: 'password'},
         {id: 'passwordConfirm', desc: 'Password Confirm', dataTable: false, input: 'password'}
       ],
       conf: {
         orderBy: 'updatedAt',
+        orderType: 'desc',
         getURL: getUserURL,
-        onRowClicked: onAccountClicked
+        onRowClicked: onDataClicked
       }
     },
     buttons: {
@@ -64,9 +84,9 @@ const tableConfig = {
         networkTimeOut: 2000
       },
       ui: [
-        {id: 'add', desc: 'Add', postTo: postTo.subject.add},
-        {id: 'edit', desc: 'Edit', postTo: postTo.subject.edit},
-        {id: 'delete', desc: 'Delete', postTo: postTo.subject.delete}
+        {id: 'add', desc: 'Add', postTo: postTo.school.add},
+        {id: 'edit', desc: 'Edit', postTo: postTo.school.edit},
+        {id: 'delete', desc: 'Delete', postTo: postTo.school.delete}
       ]
     }
   }
@@ -76,7 +96,6 @@ const tableConfig = {
 function initializeEditors (accountEditorId) {
   NCInputs.accountNcInput = $(accountEditorId).NCInputLibrary(tableConfig.accountManagementHeader)
   NCInputs.accountNcInput.reloadTable()
-
   return NCInputs
 }
 

@@ -3,16 +3,15 @@ extends ../../../../../sites/root/cms/view/v1/layout.pug
 include includes/sidebar.pug
 
 append links
-  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/datatables.min.css'))
+  link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css")
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/style.css'))
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/nprogress.css'))
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/toastr.min.css'))
-  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/select2/select2.min.css'))
 
 block content
-  #accountEditor
+  #schoolEditor
 
 append scripts
   script.
     var rootPath = "#{rootifyPath('')}"
-  script(type="text/javascript" src=rootifyPath('/assets/js/account-management-cms-bundle.js'))
+  script(type="text/javascript" src=rootifyPath('/assets/js/school-management-cms-bundle.js'))
