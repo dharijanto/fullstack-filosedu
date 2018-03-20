@@ -85,7 +85,7 @@ class SchoolManagementController extends BaseController {
               res.json({
                 status: true,
                 data: {
-                  url: super.rootifyPath(AppConfig.IMAGE_MOUNT_PATH + resp.data.filename),
+                  url: AppConfig.IMAGE_MOUNT_PATH + resp.data.filename,
                   public_id: resp.data.filename,
                   originalName: resp.data.filename,
                   created_at: resp.data.filename.split('_')[0]

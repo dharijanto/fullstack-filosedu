@@ -104,29 +104,29 @@ class ImageService extends CRUDService {
     return Promise.join(
       this._deleteImageLocal(fileName),
       this._deleteImageDB(fileName)).spread((resp1, resp2) => {
-      if (AppConfig.CLOUD_SERVER) {
-        var params = {
-          Bucket: AppConfig.AWS_IMAGE_CONF.AWS_BUCKET_NAME,
-          Key: AppConfig.AWS_IMAGE_CONF.AWS_PREFIX_FOLDER_IMAGE_NAME + fileName
-        }
-
-        // TODO: my account aws not allowed to delete
-        s3.deleteObject(params, function (err, data) {
-          if (err) {
-            log.error(TAG, `deleteImage(): s3.deleteObject err=${JSON.stringify(err)}`)
-            return err
-          } else {
-            return {status: true}
+        if (AppConfig.CLOUD_SERVER) {
+          var params = {
+            Bucket: AppConfig.AWS_IMAGE_CONF.AWS_BUCKET_NAME,
+            Key: AppConfig.AWS_IMAGE_CONF.AWS_PREFIX_FOLDER_IMAGE_NAME + fileName
           }
-        })
-      } else {
-        if (resp1.status && resp2.status) {
-          return {status: true}
+
+          // TODO: my account aws not allowed to delete
+          s3.deleteObject(params, function (err, data) {
+            if (err) {
+              log.error(TAG, `deleteImage(): s3.deleteObject err=${JSON.stringify(err)}`)
+              return err
+            } else {
+              return {status: true}
+            }
+          })
         } else {
-          return {status: false}
+          if (resp1.status && resp2.status) {
+            return {status: true}
+          } else {
+            return {status: false}
+          }
         }
-      }
-    })
+      })
   }
 
   _addImage (filename, sourceLink = null) {
