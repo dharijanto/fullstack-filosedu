@@ -26,12 +26,7 @@ const AWS_IMAGE_CONF = {
 
 // School information here is used if CLOUD_SERVER is set false
 const LOCAL_SCHOOL_INFORMATION = {
-  id: '0',
-  identifier: 'smpk_1',
-  name: 'smpk merge',
-  logo: '/images/1521435649363_SMAN_78_Jakarta.jpeg',
-  phone: '021-292929292929',
-  address: 'Jl. S. Parman No 34'
+  identifier: 'smpk_1'
 }
 
 module.exports = {

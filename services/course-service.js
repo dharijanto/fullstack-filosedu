@@ -81,8 +81,8 @@ class CourseService extends CRUDService {
   }
 
   // param data contain {exerciseId: 5}
-  getRankingExercise (data) {
-    return this._sequelize.query(`select min(timeFinish) as timeFinish, userId, users.fullName as fullName, users.grade as grade, schools.name as schoolName from generatedExercises inner join users on users.id = generatedExercises.userId inner join schools on schools.id = users.schoolId where submitted = true and exerciseId = ${data.exerciseId} and score = 100 group by userId order by min(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+  getExerciseRanking (data) {
+    return this._sequelize.query(`select min(timeFinish) as timeFinish, userId, users.fullName as fullName, users.grade as grade, schools.name as schoolName from generatedExercises inner join users on users.id = generatedExercises.userId inner join schools on schools.id = users.schoolId where submitted = true and exerciseId = ${data.exerciseId} and score = 100 and timeFinish is not NULL group by userId order by min(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
       return {status: true, data: resp}
     })
   }

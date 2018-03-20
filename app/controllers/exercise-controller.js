@@ -122,8 +122,8 @@ class ExerciseController extends BaseController {
       })
     }
 
-    function getRenderedExercise (exerciseId, timeFinish) {
-      return courseService.getRankingExercise({exerciseId, timeFinish}).then(resp => {
+    function getExerciseLeaderboard (exerciseId, timeFinish) {
+      return courseService.getExerciseRanking({exerciseId, timeFinish}).then(resp => {
         if (resp.status) {
           const exerciseData = resp.data
           const html = pug.renderFile(path.join(__dirname, '../views/non-pages/ranking.pug'), {exerciseData})
@@ -230,7 +230,7 @@ class ExerciseController extends BaseController {
               })
 
               const timeStart = new Date(generatedExercise.createdAt).getTime()
-              const timeSubmit = Math.floor(Date.now())
+              const timeSubmit = Date.now()
               const timeFinish = ((timeSubmit - timeStart) / 1000).toFixed(2)
               return courseService.update({
                 modelName: 'GeneratedExercise',
@@ -245,7 +245,7 @@ class ExerciseController extends BaseController {
                 if (resp.status) {
                   Promise.join(
                     getExerciseStars(userId, exerciseId),
-                    getRenderedExercise(exerciseId, timeFinish),
+                    getExerciseLeaderboard(exerciseId, timeFinish),
                     courseService.getCurrentRanking(timeFinish, exerciseId),
                     courseService.getTotalRanking(exerciseId)
                   ).spread((resp2, resp3, resp4, resp5) => {

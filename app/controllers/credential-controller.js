@@ -15,19 +15,36 @@ class CredentialController extends BaseController {
     super(initData)
     const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
+    this.addInterceptor((req, res, next) => {
+      console.log('schoolService=')
+      next()
+    })
+
     this.routeGet('/login', (req, res, next) => {
       schoolService.getAll().then(resp => {
-        res.locals.schools = resp.status ? resp.data : []
+        if (resp.status) {
+          res.locals.schools = resp.data
+        } else {
+          next(new Error(resp.errMessage))
+        }
         res.locals.error = req.flash('error')
         res.render('login')
+      }).catch(err => {
+        next(err)
       })
     })
 
     this.routeGet('/register', (req, res, next) => {
       schoolService.getAll().then(resp => {
-        res.locals.schools = resp.status ? resp.data : []
+        if (resp.status) {
+          res.locals.schools = resp.data
+        } else {
+          next(new Error(resp.errMessage))
+        }
         res.locals.error = req.flash('error')
         res.render('register')
+      }).catch(err => {
+        next(err)
       })
     })
 

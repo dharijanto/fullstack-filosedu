@@ -78,8 +78,11 @@ $('.btn_submit_answer').on('click', function (e) {
         if (isPerfectScore) {
           $('.rankingScore').append(`<p>Ranking kamu adalah ${currentRanking} dari ${totalRanking} dan selesai dengan waktu penyelesaian ${currentTimeFinish} detik</p>`)
         } else {
-          $('.bestScore').html('<p>Maaf, hanya yang nilai di atas 80 yang mendapat bintang</p>')
           $('.rankingScore').append(`<p>Maaf, hanya nilai 100 yang masuk penilaian</p>`)
+        }
+
+        if (parseInt(currentScore) < 80) {
+          $('.bestScore').html('<p>Maaf, hanya yang nilai di atas 80 yang mendapat bintang</p>')
         }
 
         realAnswers.forEach((realAnswer, index) => {

@@ -10,11 +10,13 @@ class SchoolService extends CRUDService {
     if (AppConfig.CLOUD_SERVER) {
       return this._models.School.findAll().then(schools => {
         return ({status: true, data: schools})
-      }).catch(err => {
-        return (err)
       })
     } else {
-      return {status: true, data: [AppConfig.LOCAL_SCHOOL_INFORMATION]}
+      return this.read({
+        modelName: 'School',
+        searchClause: {
+          identifier: AppConfig.LOCAL_SCHOOL_INFORMATION.identifier
+        }})
     }
   }
 
