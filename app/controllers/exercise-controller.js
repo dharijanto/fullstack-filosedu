@@ -122,8 +122,8 @@ class ExerciseController extends BaseController {
       })
     }
 
-    function getExerciseLeaderboard (exerciseId, timeFinish) {
-      return courseService.getExerciseRanking({exerciseId, timeFinish}).then(resp => {
+    function getExerciseLeaderboard (exerciseId) {
+      return courseService.getExerciseRanking({exerciseId}).then(resp => {
         if (resp.status) {
           const exerciseData = resp.data
           const html = pug.renderFile(path.join(__dirname, '../views/non-pages/ranking.pug'), {exerciseData})
@@ -149,7 +149,22 @@ class ExerciseController extends BaseController {
       }
     })
 
-    this.routePost('/submitAnswer', (req, res, next) => {
+    this.routePost('/exercise/getLeaderboard', (req, res, next) => {
+      const exerciseId = parseInt(req.body.exerciseId)
+      if (exerciseId === undefined) {
+        res.json({status: false, errMessage: `exerciseId is needed`})
+      } else if (!req.isAuthenticated) {
+        res.json({status: false, errMessage: `Unauthorized`})
+      } else {
+        getExerciseLeaderboard(exerciseId).then(resp => {
+          res.json(resp)
+        }).catch(err => {
+          next(err)
+        })
+      }
+    })
+
+    this.routePost('/exercise/submitAnswers', (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
@@ -245,7 +260,7 @@ class ExerciseController extends BaseController {
                 if (resp.status) {
                   Promise.join(
                     getExerciseStars(userId, exerciseId),
-                    getExerciseLeaderboard(exerciseId, timeFinish),
+                    getExerciseLeaderboard(exerciseId),
                     courseService.getCurrentRanking(timeFinish, exerciseId),
                     courseService.getTotalRanking(exerciseId)
                   ).spread((resp2, resp3, resp4, resp5) => {

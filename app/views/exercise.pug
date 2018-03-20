@@ -4,18 +4,31 @@ append head
   link(rel="stylesheet" href="/assets/css/exercise-style.css")
 
 block contents
+    #leaderboard.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+      .modal-dialog(role='document')
+        .modal-content
+          .modal-header
+            h4#exampleModalLabel.modal-title.text-center Ranking
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') ×
+          .modal-body#leaderboard-content
+          .modal-footer
+            button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+
     div.container
       h1.text-center Latihan Soal
-      h3.text-center #{topic.topic} - #{subtopic.subtopic}
-      h3.text-center
+      h4.text-center #{topic.topic} - #{subtopic.subtopic}
+      h4.text-center
         a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Kembali ke Video
+      h4.text-center
+        button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       hr
       input#exerciseId(type="hidden" name="exerciseId" value=`${exerciseId}`)
       input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
 
       div.text-center#questionSubmit
         each question, index in allQuestion.questions
-          form.QuestionSection(method="POST")
+          form.QuestionSection(method="POST" onkeypress="return event.keyCode != 13;")
             .row
               | !{marked(question)}
             .row
@@ -37,7 +50,7 @@ block contents
             | !{starsHTML}
         div.rankingScore
           | !{ranking}
-        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
+        button.btn.btn-primary.btn_submit_answer() Submit
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
 append scripts
