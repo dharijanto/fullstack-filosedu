@@ -69,14 +69,7 @@ class ExerciseController extends BaseController {
 
           // Check whether previous exercise has been submitted or not. If submitted,
           // we create new question for student otherwise, restore previous exercise.
-          return courseService.read({
-            modelName: 'GeneratedExercise',
-            searchClause: {
-              userId: req.user.id,
-              exerciseHash,
-              submitted: false
-            }
-          }).then(resp2 => {
+          return courseService.getCurrentExercise({userId: req.user.id, exerciseId}).then(resp2 => {
             if (resp2.status) {
               log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
               return getExerciseData(exerciseSolver, resp2.data[0], exerciseId).then(data => {
