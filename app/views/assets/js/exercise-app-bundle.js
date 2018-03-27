@@ -10,7 +10,7 @@
 "use strict";var axios=require("axios"),Config=require("../config.js");module.exports=axios.create({timeout:Config.NETWORK_TIMEOUT});
 
 },{"../config.js":1,"axios":5}],4:[function(require,module,exports){
-"use strict";function doLog(o,e,r){var g=logLevelOrders.indexOf(logLevel);if(logLevelOrders.indexOf(o)>=g){("error"===o?console.error:console.log)("["+e+"] "+r)}}var logLevelOrders=["debug","verbose","info","error"],logLevel="debug",log={};log.debug=function(o,e){doLog("debug",o,e)},log.verbose=function(o,e){doLog("verbose",o,e)},log.info=function(o,e){doLog("info",o,e)},log.error=function(o,e){doLog("error",o,e)},log.setLogLevel=function(o){logLevel=o},module.exports=log;
+"use strict";function doLog(o,e,r){var l=logLevelOrders.indexOf(logLevel);if(logLevelOrders.indexOf(o)>=l){("error"===o?console.error.bind(console):console.log.bind(console))("["+e+"] "+r)}}var logLevelOrders=["debug","verbose","info","error"],logLevel="debug",log={};log.debug=function(o,e){doLog("debug",o,e)},log.verbose=function(o,e){doLog("verbose",o,e)},log.info=function(o,e){doLog("info",o,e)},log.error=function(o,e){doLog("error",o,e)},log.setLogLevel=function(o){logLevel=o},module.exports=log;
 
 },{}],5:[function(require,module,exports){
 module.exports=require("./lib/axios");
