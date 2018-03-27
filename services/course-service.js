@@ -6,6 +6,8 @@ var Promise = require('bluebird')
 var Sequelize = require('sequelize')
 
 var CRUDService = require(path.join(__dirname, 'crud-service'))
+var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
+var ExerciseHelper = require(path.join(__dirname, '../app/utils/exercise-helper'))
 
 const TAG = 'CourseService'
 class CourseService extends CRUDService {
@@ -30,6 +32,32 @@ class CourseService extends CRUDService {
           userId
         }
       })
+    })
+  }
+
+  generateTopicExercise (exerciseHash, questions, exerciseId, userId, topicId) {
+    // Note: There's a case where exercise has to be generated again
+    // because the original question has change. Due to this, we need
+    // to delete previously generated exercise
+    return this._models['generatedTopicExercise'].destroy({where: {userId, topicId, submitted: false}}).then(resp => {
+      var knowns = []
+      var unknowns = []
+      questions.forEach(question => {
+        knowns.push(question.knowns)
+        unknowns.push(question.unknowns)
+      })
+      return {
+        status: true,
+        data: {
+          exerciseDetail: JSON.stringify({
+            knowns: JSON.stringify(knowns),
+            unknowns: JSON.stringify(unknowns),
+            userAnswer: '',
+            exerciseHash,
+            exerciseId
+          })
+        }
+      }
     })
   }
 
@@ -174,6 +202,28 @@ ORDER BY score DESC LIMIT 4;`,
         }
       } else {
         return {status: false, errMessage: `Could not find topic with name "${dependencyName}"`}
+      }
+    })
+  }
+
+  getSubtopicByTopicId (topicId) {
+    return this._models['Subtopic'].findAll({where: {topicId}, order: [['subtopicNo', 'ASC']]}).then(data => {
+      return {status: true, data}
+    })
+  }
+
+  getExerciseBySubtopicId (subtopicId) {
+    return this._models['Exercise'].findAll({where: {subtopicId}, order: [['id', 'ASC']]}).then(data => {
+      return {status: true, data}
+    })
+  }
+
+  processExerciseToArray (exercises) {
+    return Promise.map(exercises, exercise => {
+      return {
+        id: exercise.id,
+        hash: ExerciseGenerator.getHash(exercise.data),
+        solver: ExerciseGenerator.getExerciseSolver(exercise.data)
       }
     })
   }

@@ -8,9 +8,9 @@ var AnalyticsService = require(path.join(__dirname, '../../services/analytics-se
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
-
 const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
@@ -22,25 +22,6 @@ class ExerciseController extends BaseController {
     this.addInterceptor((req, res, next) => {
       next()
     })
-
-    // Helper function: data that are used for exercise view
-    function getExerciseData (exerciseSolver, generatedExercise, exerciseId) {
-      const data = {}
-      var knowns = JSON.parse(generatedExercise.knowns)
-
-      return Promise.map(knowns, known => {
-        return exerciseSolver.formatQuestion(known)
-      }).then(formattedQuestions => {
-        data.allQuestion = {
-          unknowns: exerciseSolver._question.unknowns,
-          questions: formattedQuestions,
-          userAnswers: generatedExercise.userAnswer
-        }
-        data.generateExerciseId = generatedExercise.id
-        data.exerciseId = exerciseId
-        return data
-      })
-    }
 
     // route to get exercise table
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
@@ -72,7 +53,7 @@ class ExerciseController extends BaseController {
           return courseService.getCurrentExercise({userId: req.user.id, exerciseId}).then(resp2 => {
             if (resp2.status) {
               log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
-              return getExerciseData(exerciseSolver, resp2.data[0], exerciseId).then(data => {
+              return ExerciseHelper.getExerciseData(exerciseSolver, resp2.data[0], exerciseId).then(data => {
                 Object.assign(res.locals, data)
                 res.render('exercise')
               })
@@ -85,7 +66,7 @@ class ExerciseController extends BaseController {
                 req.user.id
               ).then(resp3 => {
                 if (resp3.status) {
-                  return getExerciseData(exerciseSolver, resp3.data, exerciseId).then(data => {
+                  return ExerciseHelper.getExerciseData(exerciseSolver, resp3.data, exerciseId).then(data => {
                     Object.assign(res.locals, data)
                     res.render('exercise')
                   })

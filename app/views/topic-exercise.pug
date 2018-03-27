@@ -1,0 +1,37 @@
+extends layout/index.pug
+
+append head
+  link(rel="stylesheet" href="/assets/css/exercise-style.css")
+
+block contents
+    div.container
+      h1.text-center Review Topics
+      div.text-center#questionSubmit
+        form.QuestionSection#topicQuestion(method="POST")
+          each formattedExercise in formattedExercises
+            if ((formattedExercise.renderedQuestions).length > 0)
+              .row
+                | !{formattedExercise.renderedQuestions}
+              .row
+              br
+              each unknown in formattedExercise.unknowns
+                .row.form-group(style="width: 40%; margin:auto")
+                  .col-md-2
+                    label.control-label(style="font-size: 150%") #{unknown}
+                  .col-md-10
+                    input.form-control.answerInput(name=`${unknown}` value='')
+              hr
+      div.text-center(style="margin-bottom:5%;")
+        div.scoreSection
+          p.hidden(id='currentScore')
+          p.hidden(id='submissionError')
+          p(class='bestScore')
+            | !{starsHTML}
+        div.rankingScore
+          | !{ranking}
+        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
+        a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+
+append scripts
+  script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
+  script(src=`${bundle}`)

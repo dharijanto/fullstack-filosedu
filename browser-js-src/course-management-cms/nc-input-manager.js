@@ -103,7 +103,7 @@ function onTopicDependencyClicked (data) {
 }
 
 function onSubtopicClicked (data) {
-  toastr.info('Click on highlighted row to open topic-management page')
+  toastr.info('Click on highlighted row to open subtopic-management page')
   // When highlighted row is clicked, open management page
   if (selectedIds.subtopic === data.id) {
     // window.location = rootPath + 'subtopic/' + data.id
