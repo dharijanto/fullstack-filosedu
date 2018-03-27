@@ -8,7 +8,9 @@ function doLog (level, tag, message) {
   const currentLevel = logLevelOrders.indexOf(level)
   // console.log('doLog(): currentLevel=' + currentLevel + ' settingLevel=' + settingLevel)
   if (currentLevel >= settingLevel) {
-    const logger = (level === 'error' ? console.error : console.log)
+    // In some older browsers, console.log has to be called within the context of console.
+    // Without binding to console, it's called with global context
+    const logger = (level === 'error' ? console.error.bind(console) : console.log.bind(console))
     logger(`[${tag}] ${message}`)
   }
 }

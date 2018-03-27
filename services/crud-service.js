@@ -41,7 +41,7 @@ class CRUDService {
       if (readData.length > 0) {
         return {status: true, data: readData.map(data => data.get({plain: true}))}
       } else {
-        return {status: false}
+        return {status: false, errMessage: 'Data not found'}
       }
     })
   }

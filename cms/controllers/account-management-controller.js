@@ -37,7 +37,7 @@ class AccountManagementController extends BaseController {
       schoolService.readOne({modelName: 'School', searchClause: {name: req.body['school.name']}}).then(resp => {
         if (resp.status) {
           const data = Object.assign(req.body, {schoolId: resp.data.id})
-          userService.register(data).then(resp => {
+          return userService.register(data).then(resp => {
             res.json(resp)
           })
         } else {
@@ -52,7 +52,7 @@ class AccountManagementController extends BaseController {
       schoolService.readOne({modelName: 'School', searchClause: {name: req.body['school.name']}}).then(resp => {
         if (resp.status) {
           const data = Object.assign(req.body, {schoolId: resp.data.id})
-          userService.updateCredential(data).then(resp => {
+          return userService.updateCredential(data).then(resp => {
             res.json(resp)
           })
         } else {
@@ -64,7 +64,7 @@ class AccountManagementController extends BaseController {
     })
 
     this.routePost('/accountmanagement/user/delete', (req, res, next) => {
-      userService.deleteById(req.body.id).then(resp => {
+      return userService.deleteById(req.body.id).then(resp => {
         res.json({status: true})
       }).catch(err => {
         next(err)

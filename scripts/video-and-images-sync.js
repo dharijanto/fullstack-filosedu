@@ -67,7 +67,7 @@ function fetchVideoFromS3 () {
         return download(
           JSON.parse(video.sourceLink).HD,
           AppConfig.VIDEO_PATH + '/' + video.filename)
-      })
+      }, {concurrency: CONCURRENT_DOWNLOAD})
     } else {
       return Promise.resolve()
     }
@@ -85,7 +85,7 @@ function fetchImageFromS3 () {
         return download(
           image.sourceLink,
           AppConfig.IMAGE_PATH + '/' + image.filename)
-      })
+      }, {concurrency: CONCURRENT_DOWNLOAD})
     } else {
       console.log('No Image Inside DB')
     }
