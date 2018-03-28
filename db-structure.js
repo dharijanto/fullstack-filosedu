@@ -117,15 +117,15 @@ function addTables (sequelize, models) {
     exerciseId: Sequelize.INTEGER
   })
 
-  models.generatedTopicExercise = sequelize.define('generatedTopicExercises', {
+  models.GeneratedTopicExercise = sequelize.define('generatedTopicExercises', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
     exerciseDetail: {type: Sequelize.TEXT}
   })
-  models.generatedTopicExercise.belongsTo(models.Topic)
-  models.generatedTopicExercise.belongsTo(models.User)
+  models.GeneratedTopicExercise.belongsTo(models.Topic)
+  models.GeneratedTopicExercise.belongsTo(models.User)
 
   return models
 }

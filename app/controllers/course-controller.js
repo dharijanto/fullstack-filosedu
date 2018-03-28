@@ -59,107 +59,82 @@ class CourseController extends BaseController {
         exerciseService.getTopicExercises(topicId),
         exerciseService.getGeneratedTopicExercise(userId, topicId)
       ).spread((resp, resp2) => {
+        // log.verbose(TAG, 'exercise.review.GET: resp=' + JSON.stringify(resp))
+        // log.verbose(TAG, 'exercise.review.GET: resp2=' + JSON.stringify(resp2))
+
         if (resp2.status) {
-          const exerciseSaved = JSON.parse(resp2.data.exerciseDetail)
-          return exerciseService.checkHash(exerciseSaved).then(isSame => {
-            if (isSame.status) {
-              return exerciseService.getRenderedQuestion(exerciseSaved).then(respRendered => {
-                // harus dalam bentuk array dan tipe data
-                return respRendered
+          const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
+          return exerciseService.checkHash(generatedExercises).then(resp3 => {
+            // log.verbose(TAG, 'exercise.review.GET: resp3=' + JSON.stringify(resp3))
+            if (resp3.status) {
+              console.log('ahahahah')
+              return exerciseService.formatExercises(generatedExercises).then(resp4 => {
+                if (resp4.status) {
+                  return resp4.data.formatted
+                } else {
+                  throw new Error(resp4.errMessage)
+                }
               })
             } else {
-              // create new if hash is false / not same
+              // Update the exercise if the hash is not valid
               const exercises = resp.data
-              return Promise.map(exercises, exercise => {
-                return exerciseService.generateExercise(exercise)
-              }).then(respExercise => {
-                var exerciseToBeSaveToDB = []
-                respExercise.forEach(content => {
-                  // disini kita melakukan simpan dan tampung ke dalam array sebelum di save ke dalam database
-                  // knowns menghitung 2 sebagai string dalam '[]'
-                  if (content.status && (content.data.exerciseData.knowns).length > 2) {
-                    exerciseToBeSaveToDB.push(content.data.exerciseData)
-                  } else {
-                    // dont know what to do
-                  }
-                })
-                return exerciseService.createGeneratedTopicExercise({
-                  submitted: false,
-                  exerciseDetail: JSON.stringify(exerciseToBeSaveToDB),
-                  topicId,
-                  userId
-                }).then(respCreate => {
-                  return respExercise
-                })
+
+              return exerciseService.generateExercises(exercises).then(resp4 => {
+                if (resp4.status) {
+                  const generatedExercises = resp4.data.exerciseData
+                  const formattedExercises = resp4.data.formatted
+
+                  return exerciseService.updateGeneratedTopicExercise(resp2.data.id, generatedExercises).then(resp5 => {
+                    if (resp5.status) {
+                      return formattedExercises
+                    } else {
+                      throw new Error(resp5.errMessage)
+                    }
+                  })
+                } else {
+                  throw new Error(resp4.errMessage)
+                }
               })
             }
           })
         } else {
           if (resp.status) {
             const exercises = resp.data
-            return Promise.map(exercises, exercise => {
-              return exerciseService.generateExercise(exercise)
-            }).then(respExercise => {
-              var exerciseToBeSaveToDB = []
-              respExercise.forEach(content => {
-                // disini kita melakukan simpan dan tampung ke dalam array sebelum di save ke dalam database
-                // knowns menghitung 2 sebagai string dalam '[]'
-                if (content.status && (content.data.exerciseData.knowns).length > 2) {
-                  exerciseToBeSaveToDB.push(content.data.exerciseData)
-                } else {
-                  // dont know what to do
-                }
-              })
-              return exerciseService.createGeneratedTopicExercise({
-                submitted: false,
-                exerciseDetail: JSON.stringify(exerciseToBeSaveToDB),
-                topicId,
-                userId
-              }).then(respCreate => {
-                return respExercise
-              })
+
+            return exerciseService.generateExercises(exercises).then(resp4 => {
+              if (resp4.status) {
+                const generatedExercises = resp4.data.exerciseData
+                const formattedExercises = resp4.data.formatted
+
+                return exerciseService.createGeneratedTopicExercise(topicId, userId, generatedExercises).then(resp5 => {
+                  if (resp5.status) {
+                    return formattedExercises
+                  } else {
+                    throw new Error(resp5.errMessage)
+                  }
+                })
+              } else {
+                throw new Error(resp4.errMessage)
+              }
             })
           } else {
             next(new Error(resp.errMessage))
           }
         }
-      }).then(generatedExercises => {
+      }).then(formattedExercises => {
         /*
-        Content of generatedExercises:
-        [{
-            "status": true,
-            "data": {
-                "exerciseData": {
-                    "knowns": "[{\"a\":2,\"b\":3},{\"a\":1,\"b\":2}]",
-                    "unknowns": "[[\"x\"],[\"x\"]]",
-                    "exerciseHash": "111753fbfe7ff0c9c59bfe98cb2e61e9",
-                    "userAnswer": [],
-                    "exerciseId": 26
-                },
-                "formatted": {
-                    "renderedQuestions": ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"],
-                    "unknowns": [
-                        ["x"],
-                        ["x"]
-                    ]
-                }
-            }
-        }]
+        Content of formattedExercises:
+        {
+          "formatted": [{
+              "renderedQuestions": ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"],
+              "unknowns": [
+                  ["x"],
+                  ["x"]
+              ]
+          }]
+        }
         */
-        const exerciseDatas = []
-        const formattedExercises = []
-        generatedExercises.forEach(resp => {
-          if (resp.status) {
-            exerciseDatas.push(resp.data.exerciseData)
-            formattedExercises.push(resp.data.formatted)
-          } else {
-            exerciseDatas.push(null)
-            formattedExercises.push(null)
-            // Some of the exercise can't be generated
-            // TODO: What do we do?
-          }
-        })
-
+        log.verbose(TAG, '/topics/:topicId/review.GET: formattedExercises=' + JSON.stringify(formattedExercises))
         res.locals.bundle = this._assetBundle
         res.locals.formattedExercises = formattedExercises
         res.render('topic-exercise')
