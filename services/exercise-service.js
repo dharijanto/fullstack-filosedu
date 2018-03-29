@@ -52,7 +52,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         exerciseData: {
           knowns,  // Already stringified
           unknowns, // Already stringified
-          exerciseHash, // DONE
           userAnswer, // DONE
           exerciseId
         }
@@ -65,7 +64,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     }
   */
   generateExercise (exercise) {
-    var exerciseHash = ExerciseGenerator.getHash(exercise.data)
     var exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
     var questions = exerciseSolver.generateTopicQuestions()
 
@@ -92,7 +90,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           exerciseData: {
             knowns: JSON.stringify(knowns),
             unknowns: JSON.stringify(answerUnknowns),
-            exerciseHash,
             userAnswer: [],
             exerciseId: exercise.id
           },
@@ -126,7 +123,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         exerciseData: [{
           knowns,  // Already stringified
           unknowns, // Already stringified
-          exerciseHash, // DONE
           userAnswer, // DONE
           exerciseId
         }]
@@ -145,7 +141,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           // Check this has questions
           const parsedKnowns = JSON.parse(resp.data.exerciseData.knowns)
           if (parsedKnowns.length > 0) {
-            return {exerciseData: resp.data.exerciseData, formatted: resp.data.formatted}
+            return {
+              exerciseData: resp.data.exerciseData,
+              formatted: resp.data.formatted
+            }
           } else {
             return null
           }
@@ -156,6 +155,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     }).then(results => {
       const exerciseData = []
       const formatted = []
+
       results.filter(result => result != null).forEach(result => {
         exerciseData.push(result.exerciseData)
         formatted.push(result.formatted)
@@ -177,7 +177,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
       unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
       userAnswer: [],
-      exerciseHash: '0c9a610a26d61394bfde9e877533e9b9',
       exerciseId: 14
     }]
 
@@ -234,39 +233,67 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   /*
+    Input:
+      topicId: 5
+    Output:
+      {
+        status: true,
+        data: {
+          topicExerciseHash: 'kekekekek'
+        }
+      }
+  */
+  getTopicExerciseHash (topicId) {
+    return new Promise((resolve, reject) => {
+      this.getTopicExercises(topicId).then(resp => {
+        if (resp.status) {
+          var tempCollectHash = ''
+          resp.data.forEach(topicExercise => {
+            tempCollectHash += ExerciseGenerator.getHash(topicExercise.data)
+          })
+          var topicExerciseHash = ExerciseGenerator.getHash(tempCollectHash)
+          resolve({
+            status: true,
+            data: {
+              topicExerciseHash
+            }
+          })
+        } else {
+          reject(new Error(resp.errMessage))
+        }
+      })
+    })
+  }
+  /*
     Return whether the topicExercise given is still valid or not.
     Not valid if:
       1. Any of the exercise has changed
       2. Any of the exercise has been deleted
 
-    generatedTopicExercises: [{
-      knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
-      unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
-      userAnswer: [],
-      exerciseHash: '0c9a610a26d61394bfde9e877533e9b9',
-      exerciseId: 14
+    exercises: [{
+      id: 1,
+      data: 'code nodejs'
     }]
+    topicExerciseHash: 'kdkdkdkd'
     return:
       {status: true}
   */
-  checkHash (generatedTopicExercises) {
-    return Promise.map(generatedTopicExercises, topicExercise => {
-      return this.readOne({modelName: 'Exercise', searchClause: {id: topicExercise.exerciseId}}).then(resp => {
-        if (resp.status) {
-          var exerciseHash = ExerciseGenerator.getHash(resp.data.data)
-          log.verbose(TAG, `checkHash(): exerciseHash=${exerciseHash} topicExercise.exerciseHash=${topicExercise.exerciseHash}`)
-          return exerciseHash === topicExercise.exerciseHash
-        } else {
-          // If we can't read the exercise with given ID, it means the exercise has been deleted, which means the topicExercise is no longer valid
-          return false
-        }
+  checkHash (exercises, topicExerciseHash) {
+    return new Promise((resolve, reject) => {
+      var tempHash = ''
+      exercises.forEach(exercise => {
+        var exerciseHash = ExerciseGenerator.getHash(exercise.data)
+        // log.verbose(TAG, `checkHash(): exerciseHash=${exerciseHash} topicExercise.exerciseHash=${topicExerciseHash}`)
+        tempHash += exerciseHash
       })
-    }).then(results => {
-      // If at least one the exercise is not valid, we return false
-      const status = results.reduce((acc, result) => {
-        return acc && result
-      }, true)
-      return {status}
+
+      var hashCollectedExercise = ExerciseGenerator.getHash(tempHash)
+      log.verbose(TAG, `checkHash(): hashCollectedExercise=${hashCollectedExercise} topicExercise.exerciseHash=${topicExerciseHash}`)
+      if (hashCollectedExercise === topicExerciseHash) {
+        resolve({status: true})
+      } else {
+        resolve({status: false})
+      }
     })
   }
 
@@ -331,22 +358,23 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
 
   /*
     topicId: 3
-    userId; 5
+    userId; 5,
+    topicExerciseHash: 'kdkdkdk',
     exerciseDetail:
     [ { knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
         unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
         userAnswer: [],
-        exerciseHash: '0c9a610a26d61394bfde9e877533e9b9',
         exerciseId: 14 } ]
 
   */
-  createGeneratedTopicExercise (topicId, userId, exerciseDetail) {
+  createGeneratedTopicExercise (topicId, userId, exerciseDetail, topicExerciseHash) {
     return this.create({
       modelName: 'GeneratedTopicExercise',
       data: {
         topicId,
         userId,
-        exerciseDetail: JSON.stringify(exerciseDetail)
+        exerciseDetail: JSON.stringify(exerciseDetail),
+        topicExerciseHash
       }
     })
   }
@@ -355,26 +383,132 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     Get generatedTopicExercise that is not yet submitted, and uppdate its
     exercise detail.
 
-    generatedTopicExerciseId: 5
+    generatedTopicExerciseId: 5,
+    topicExerciseHash: 'kdkdkdk',
     exerciseDetail:
       [ { knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
           unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
           userAnswer: [],
-          exerciseHash: '0c9a610a26d61394bfde9e877533e9b9',
           exerciseId: 14 } ],
     return: {
       status: true
     }
   */
-  updateGeneratedTopicExercise (generatedTopicExerciseId, exerciseDetail) {
+  updateGeneratedTopicExercise (generatedTopicExerciseId, exerciseDetail, topicExerciseHash) {
     return this.update({
       modelName: 'GeneratedTopicExercise',
       data: {
         id: generatedTopicExerciseId,
-        exerciseDetail: JSON.stringify(exerciseDetail)
+        exerciseDetail: JSON.stringify(exerciseDetail),
+        topicExerciseHash
       }
     }).then(resp => {
       return resp
+    })
+  }
+
+  /*
+    Input:
+      generatedTopicId: 1,
+      score: 100
+      timeFinish: 23.23
+      exerciseDetail: '[{knowns: {a: 1, b:2}, unknowns: [{x:3}]}]'
+  */
+  updateGeneratedTopicAnswer (generatedTopicId, score, timeFinish, exerciseDetail) {
+    return this.update({
+      modelName: 'GeneratedTopicExercise',
+      data: {
+        id: generatedTopicId,
+        submitted: true,
+        score,
+        timeFinish,
+        exerciseDetail
+      }
+    })
+  }
+
+  // Get user score of an exercise
+  //
+  // Return:
+  // 0 - 4: How many of the submitted scores are > 80%
+  getExerciseStar (userId, topicId) {
+    return this._sequelize.query(`
+SELECT score FROM generatedTopicExercises
+WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId}
+ORDER BY score DESC LIMIT 4;`,
+    { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+      const stars = datas.reduce((acc, data) => {
+        if (parseInt(data.score) >= 80) {
+          return acc + 1
+        } else {
+          return acc
+        }
+      }, 0)
+      return {status: true, data: {stars}}
+    })
+  }
+
+  // Get the number of submissions in the leaderboard
+  getTotalRanking (topicId) {
+    return new Promise((resolve, reject) => {
+      return this._sequelize.query(
+        `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedTopicExercises WHERE submitted = TRUE AND topicId = ${topicId} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`,
+        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total + 1}})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  // Get the number of rank in leaderboard
+  getCurrentRanking (timeFinish, topicId) {
+    return new Promise((resolve, reject) => {
+      return this._sequelize.query(
+        `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedTopicExercises
+  WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND topicId = ${topicId} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`,
+        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total + 1}})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  /*
+    Input:
+      topicId: 12
+    Output:
+      {
+        status: true,
+        data: {
+          id: 1
+          topic: penjumlahan
+        }
+      }
+  */
+  getTopicContent (topicId) {
+    return this.readOne({
+      modelName: 'Topic',
+      searchClause: {
+        id: topicId
+      }
+    })
+  }
+
+  // Get leaderboard data
+  getExerciseRanking (data) {
+    return this._sequelize.query(
+      `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
+  FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
+  WHERE submitted = TRUE AND topicId = ${data.topicId} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+      return {status: true, data: resp}
     })
   }
 }

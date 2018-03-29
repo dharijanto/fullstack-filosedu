@@ -122,6 +122,7 @@ function addTables (sequelize, models) {
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
+    topicExerciseHash: {type: Sequelize.STRING},
     exerciseDetail: {type: Sequelize.TEXT}
   })
   models.GeneratedTopicExercise.belongsTo(models.Topic)

@@ -16,10 +16,7 @@ block contents
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
               button.btn.btn-info.btn-sm(onclick=`location.href="/topics/${topic.id}/review"`) Review Question
               span
-                img(src="/assets/img/star_empty.png" width="20")
-                img(src="/assets/img/star_empty.png" width="20")
-                img(src="/assets/img/star_empty.png" width="20")
-                img(src="/assets/img/star_empty.png" width="20")
+                + renderExerciseStars(parseInt(topic.stars), 20)
           .panel-collapse.collapse.in(id=`collapse_${index}`)
             ul.list-group
               - var numbering = 0;
