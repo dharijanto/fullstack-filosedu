@@ -3,6 +3,8 @@ const path = require('path')
 const fs = require('fs')
 const log = require('npmlog')
 
+var Promise = require('bluebird')
+
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 
 class BaseController {
