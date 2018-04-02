@@ -30,7 +30,7 @@ const modules = [
     output: 'app'
   },
   {
-    input: 'course-app',
+    input: 'topic-exercise-app',
     output: 'app'
   }]
 

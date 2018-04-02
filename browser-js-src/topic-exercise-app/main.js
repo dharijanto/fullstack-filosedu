@@ -1,9 +1,13 @@
 var $ = require('jquery')
 const ONE_SECOND_IN_MILLIS = 1000 // millisecond
-const TAG = 'Exercise-App'
+const TAG = 'Topic-Exercise-App'
 
 var axios = require('../libs/axios-wrapper')
 var log = require('../libs/logger')
+
+var pathName = window.location.pathname
+// to split and get topic id from url pathname
+var topicId = pathName.split('/')[2]
 
 // Keep track of elapsed time between questions and sets
 var questionTime = 0
@@ -15,9 +19,7 @@ setInterval(function () {
 
 $('#leaderboard-button').on('click', function (e) {
   $('#leaderboard-content').empty()
-  axios.post('/topics/getLeaderboard', {
-    pathname: window.location.pathname
-  }).then(rawResp => {
+  axios.get(`/topics/${topicId}/getLeaderboard`).then(rawResp => {
     const resp = rawResp.data
     $('#leaderboard-content').append(resp.data)
   }).catch(err => {
@@ -27,9 +29,10 @@ $('#leaderboard-button').on('click', function (e) {
 })
 
 $('.btn_submit_answer').on('click', function (e) {
-  $.post(window.location.href, {
+  axios.post(window.location.href, {
     userAnswers: $('form#topicQuestion').serialize()
-  }).done(function (resp) {
+  }).then(rawResp => {
+    var resp = rawResp.data
     if (resp.status) {
       $('input').prop('disabled', true)
       $('input').prop('read-only', true)
@@ -81,7 +84,7 @@ $('.btn_submit_answer').on('click', function (e) {
       $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
       console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
     }
-  }).fail(err => {
+  }).catch(err => {
     $('#submissionError').removeClass('hidden')
     $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
     console.error(err)
