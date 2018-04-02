@@ -35,32 +35,6 @@ class CourseService extends CRUDService {
     })
   }
 
-  generateTopicExercise (exerciseHash, questions, exerciseId, userId, topicId) {
-    // Note: There's a case where exercise has to be generated again
-    // because the original question has change. Due to this, we need
-    // to delete previously generated exercise
-    return this._models['generatedTopicExercise'].destroy({where: {userId, topicId, submitted: false}}).then(resp => {
-      var knowns = []
-      var unknowns = []
-      questions.forEach(question => {
-        knowns.push(question.knowns)
-        unknowns.push(question.unknowns)
-      })
-      return {
-        status: true,
-        data: {
-          exerciseDetail: JSON.stringify({
-            knowns: JSON.stringify(knowns),
-            unknowns: JSON.stringify(unknowns),
-            userAnswer: '',
-            exerciseHash,
-            exerciseId
-          })
-        }
-      }
-    })
-  }
-
   saveAndGetGeneratedExercise (generateExerciseId, userAnswer) {
     return this.update({
       modelName: 'GeneratedExercise',
@@ -215,16 +189,6 @@ ORDER BY score DESC LIMIT 4;`,
   getExerciseBySubtopicId (subtopicId) {
     return this._models['Exercise'].findAll({where: {subtopicId}, order: [['id', 'ASC']]}).then(data => {
       return {status: true, data}
-    })
-  }
-
-  processExerciseToArray (exercises) {
-    return Promise.map(exercises, exercise => {
-      return {
-        id: exercise.id,
-        hash: ExerciseGenerator.getHash(exercise.data),
-        solver: ExerciseGenerator.getExerciseSolver(exercise.data)
-      }
     })
   }
 }

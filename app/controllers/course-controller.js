@@ -9,6 +9,8 @@ var CourseService = require(path.join(__dirname, '../../services/course-service'
 var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
+var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
+
 const TAG = 'CourseController'
 
 class CourseController extends BaseController {
@@ -35,7 +37,7 @@ class CourseController extends BaseController {
               return courseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
             Promise.map(res.locals.topics, topic => {
-              return exerciseService.getExerciseStar(req.user.id, topic.id)
+              return exerciseService.getTopicExerciseStars(req.user.id, topic.id)
             })
           ).spread((subtopics, topics) => {
             subtopics.forEach((resp, index) => {
@@ -49,10 +51,10 @@ class CourseController extends BaseController {
           })
         } else {
           res.locals.subtopics.forEach((subtopic, index) => {
-            subtopic.stars = 0
+            res.locals.subtopics[index].stars = 0
           })
           res.locals.topics.forEach((topic, index) => {
-            topic.stars = 0
+            res.locals.topics[index].stars = 0
           })
           res.render('topics')
         }
@@ -69,11 +71,17 @@ class CourseController extends BaseController {
         exerciseService.getTopicExercises(topicId),
         exerciseService.getGeneratedTopicExercise(userId, topicId),
         exerciseService.getTopicExerciseHash(topicId),
-        exerciseService.getTopicContent(topicId)
+        exerciseService.getTopic(topicId)
       ).spread((resp, resp2, resp3, resp7) => {
         // log.verbose(TAG, 'exercise.review.GET: resp=' + JSON.stringify(resp))
         // log.verbose(TAG, 'exercise.review.GET: resp2=' + JSON.stringify(resp2))
-        const topicExerciseHash = resp3.data.topicExerciseHash
+        var topicExerciseHash = null
+        if (resp3.status) {
+          topicExerciseHash = resp3.data.topicExerciseHash
+        } else {
+          throw new Error(resp3.errMessage)
+        }
+
         if (resp2.status) {
           const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
 
@@ -158,16 +166,15 @@ class CourseController extends BaseController {
       })
     })
 
-    this.routePost('/topics/getLeaderboard', (req, res, next) => {
-      // content of pathname is '/topics/12/review'
-      var topicId = req.body.pathname.split('/')[2]
+    this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
+      var topicId = req.params.topicId
 
       if (topicId === undefined) {
         res.json({status: false, errMessage: `topicId is needed`})
       } else if (!req.isAuthenticated) {
         res.json({status: false, errMessage: `Unauthorized`})
       } else {
-        getExerciseLeaderboard(topicId).then(resp => {
+        getTopicExerciseLeaderboard(topicId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -176,8 +183,8 @@ class CourseController extends BaseController {
     })
 
     // TODO: move to utils, exercise in topic and subtopic same usage
-    function getExerciseStars (userId, topicId) {
-      return exerciseService.getExerciseStar(userId, topicId).then(resp => {
+    function getTopicExerciseStars (userId, topicId) {
+      return exerciseService.getTopicExerciseStars(userId, topicId).then(resp => {
         if (resp.status) {
           const stars = resp.data.stars
           const html = pug.renderFile(path.join(__dirname, '../views/non-pages/stars.pug'), {stars})
@@ -189,7 +196,7 @@ class CourseController extends BaseController {
     }
 
     // TODO: move to utils, exercise in topic and subtopic same usage
-    function getExerciseLeaderboard (topicId) {
+    function getTopicExerciseLeaderboard (topicId) {
       return exerciseService.getExerciseRanking({topicId}).then(resp => {
         if (resp.status) {
           const exerciseData = resp.data
@@ -203,6 +210,7 @@ class CourseController extends BaseController {
 
     this.routePost('/topics/:topicId/review', (req, res, next) => {
       var userAnswers = req.body.userAnswers.split('&')
+
       var topicId = req.params.topicId
       var userId = req.user.id
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} topicId=${topicId} userAnswers=${userAnswers}`)
@@ -217,64 +225,68 @@ class CourseController extends BaseController {
           dateCreatedAt = resp.data.createdAt
           var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
           // check jawaban secara berurutan
-          return Promise.map(exerciseDetail, (data, index, length) => {
-            var userAnswer = userAnswers[index].split('=')[1]
-            return exerciseService.checkAnswer(data.exerciseId, JSON.parse(data.knowns)[0], userAnswer).then(resp2 => {
-              if (resp2.data.isCorrect) {
-                totalCorrectAnswer++
-              }
-              isAnswerCorrect.push(resp2.data.isCorrect)
-              totalAnswer++
-              return {
-                x: userAnswer
-              }
-            })
-          }).then(userAnswers => {
-            const timeStart = new Date(dateCreatedAt).getTime()
-            const timeSubmit = Date.now()
-            const timeFinish = ((timeSubmit - timeStart) / 1000).toFixed(2)
-
-            var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
-            var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
-            var i = 0
-            var realAnswers = []
-            exerciseDetail.forEach(exercise => {
-              JSON.parse(exercise.unknowns).forEach(unknown => {
-                realAnswers.push(unknown)
-              })
-              exercise.userAnswer.push({x: userAnswers[i].x})
-              i++
-            })
-
-            exerciseService.updateGeneratedTopicAnswer(
-              resp.data.id,
-              currentScore,
-              timeFinish,
-              JSON.stringify(exerciseDetail)
-            ).then(resp3 => {
-              Promise.join(
-                getExerciseStars(userId, topicId),
-                exerciseService.getCurrentRanking(timeFinish, topicId),
-                exerciseService.getTotalRanking(topicId),
-                getExerciseLeaderboard(topicId)
-              ).spread((resp11, resp12, resp13, resp14) => {
-                res.json({
-                  status: true,
-                  data: {
-                    realAnswers,
-                    isAnswerCorrect,
-                    currentScore,
-                    starsHTML: resp11.data,
-                    ranking: resp14.data,
-                    currentTimeFinish: timeFinish,
-                    currentRanking: resp12.data.count,
-                    totalRanking: resp13.data.count,
-                    isPerfectScore: currentScore === 100 ? true : false
-                  }
-                })
-              })
-            })
+          console.log(exerciseDetail)
+          exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp => {
+            console.log(resp)
+            return {status: true}
           })
+          // return Promise.map(exerciseDetail, (data, index, length) => {
+            // User answer harus ambil dari index nya unknowns
+            // var userAnswer = userAnswers[index].split('=')[1]
+
+          //   return exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp2 => {
+          //     if (resp2.data.isCorrect) {
+          //       totalCorrectAnswer++
+          //     }
+          //     isAnswerCorrect.push(resp2.data.isCorrect)
+          //     totalAnswer++
+          //     return {
+          //       x: 1
+          //     }
+          //   })
+          // }).then(userAnswers => {
+          //   const timeFinish = ExerciseHelper.countTimeFinish(dateCreatedAt)
+
+          //   var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
+          //   var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
+
+          //   // var realAnswers = []
+          //   // exerciseDetail.forEach((exercise, index) => {
+          //   //   JSON.parse(exercise.unknowns).forEach(unknown => {
+          //   //     realAnswers.push(unknown)
+          //   //   })
+          //   //   exercise.userAnswer.push({x: userAnswers[index].x})
+          //   // })
+
+          //   exerciseService.updateGeneratedTopicAnswer(
+          //     resp.data.id,
+          //     currentScore,
+          //     timeFinish,
+          //     JSON.stringify(exerciseDetail)
+          //   ).then(resp3 => {
+          //     Promise.join(
+          //       getTopicExerciseStars(userId, topicId),
+          //       exerciseService.getCurrentRanking(timeFinish, topicId),
+          //       exerciseService.getTotalRanking(topicId),
+          //       getTopicExerciseLeaderboard(topicId)
+          //     ).spread((resp11, resp12, resp13, resp14) => {
+          //       res.json({
+          //         status: true,
+          //         data: {
+          //           // realAnswers,
+          //           isAnswerCorrect,
+          //           currentScore,
+          //           starsHTML: resp11.data,
+          //           ranking: resp14.data,
+          //           currentTimeFinish: timeFinish,
+          //           currentRanking: resp12.data.count,
+          //           totalRanking: resp13.data.count,
+          //           isPerfectScore: currentScore === 100 ? true : false
+          //         }
+          //       })
+          //     })
+          //   })
+          // })
         } else {
           throw (new Error(resp.errMessage))
         }
@@ -284,7 +296,7 @@ class CourseController extends BaseController {
 
   initialize () {
     return new Promise((resolve, reject) => {
-      PathFormatter.hashAsset('app', '/assets/js/course-app-bundle.js').then(result => {
+      PathFormatter.hashAsset('app', '/assets/js/topic-exercise-app-bundle.js').then(result => {
         this._assetBundle = result
         resolve()
       }).catch(err => {

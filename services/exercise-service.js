@@ -299,25 +299,37 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
 
   /*
   Input:
-    knowns: {
-      a: 6,
-      b: 8
-    },
-    unknowns: {
-      x: '9'
-    }
+    exerciseDetail:
+      [ { knowns: '[{"a":3},{"a":5},{"a":4},{"a":2}]',
+      unknowns: '[{"x":3},{"x":5},{"x":4},{"x":2}]',
+      userAnswer: [],
+      exerciseId: 23 },
+    { knowns: '[{"a":4,"b":1}]',
+      unknowns: '[{"x":5}]',
+      userAnswer: [],
+      exerciseId: 25 },
+    { knowns: '[{"a":4,"b":1},{"a":3,"b":2},{"a":3,"b":1}]',
+      unknowns: '[{"x":"Lima"},{"x":"Lima"},{"x":"Empat"}]',
+      userAnswer: [],
+      exerciseId: 31 } ]
+    userAnswers: [ 'x=1', 'x=2', 'x=3']
   Output:
     status: true/false
     data: {
       isCorrect: true/false
     }
   */
-  checkAnswer (exerciseId, knowns, unknowns) {
+  checkAnswer (exerciseDetail, userAnswers) {
+    // pointerIndex later tobe used as get answer when query with knowns
+    var pointerIndex = 0
+    return Promise.map(exerciseDetail, (data, index, length) => {
+      // TODO: write code in here
+    })
     return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
       if (resp.status) {
         const exercise = resp.data
         const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-        var isCorrect = exerciseSolver.isAnswer(knowns, {x: unknowns})
+        var isCorrect = exerciseSolver.isAnswer(knowns, {x: userAnswers[pointerIndex].split('=')[1]})
         return {status: true, data: {isCorrect}}
       } else {
         return {status: false, errMessage: 'Exercise is not avaiable'}
@@ -431,7 +443,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   //
   // Return:
   // 0 - 4: How many of the submitted scores are > 80%
-  getExerciseStar (userId, topicId) {
+  getTopicExerciseStars (userId, topicId) {
     return this._sequelize.query(`
 SELECT score FROM generatedTopicExercises
 WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId}
@@ -493,7 +505,7 @@ ORDER BY score DESC LIMIT 4;`,
         }
       }
   */
-  getTopicContent (topicId) {
+  getTopic (topicId) {
     return this.readOne({
       modelName: 'Topic',
       searchClause: {

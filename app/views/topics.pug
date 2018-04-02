@@ -14,7 +14,8 @@ block contents
           .panel-heading
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-              button.btn.btn-info.btn-sm(onclick=`location.href="/topics/${topic.id}/review"`) Review Question
+              if user
+                button.btn.btn-info.btn-sm(onclick=`location.href="/topics/${topic.id}/review"`) Review Question
               span
                 + renderExerciseStars(parseInt(topic.stars), 20)
           .panel-collapse.collapse.in(id=`collapse_${index}`)

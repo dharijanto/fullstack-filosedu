@@ -22,19 +22,20 @@ block contents
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       div.text-center#questionSubmit
         form.QuestionSection#topicQuestion(method="POST")
+          - var pointerIndex = 0
           each formattedExercise, index in formattedExercises
             if ((formattedExercise.renderedQuestions).length > 0)
-              .row
-                | !{formattedExercise.renderedQuestions}
-              .row
-              br
-              each unknown in formattedExercise.unknowns
-                .row.form-group(style="width: 40%; margin:auto")
+              each val, index2 in formattedExercise.renderedQuestions
+                .row
+                  | !{marked(val)}
+                .row.form-group(style="width:40%; margin:auto;")
                   .col-md-2
-                    label.control-label(style="font-size: 150%") #{unknown}
+                    label.control-label(style="font-size: 150%") #{formattedExercise.unknowns[index2]}
                   .col-md-10
-                    input.form-control.answerInput(name=`${unknown}` value='')
-              div(class=`resultAnswer_${index}`)
+                    input.form-control.answerInput(name=`${formattedExercise.unknowns[index2]}` value='')
+                div(class=`resultAnswer_${pointerIndex}`)
+                - pointerIndex++
+              br
               hr
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection
