@@ -299,7 +299,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
 
   /*
   Input:
-    exerciseDetail:
+    exerciseDetails:
       [ { knowns: '[{"a":3},{"a":5},{"a":4},{"a":2}]',
       unknowns: '[{"x":3},{"x":5},{"x":4},{"x":2}]',
       userAnswer: [],
@@ -315,25 +315,40 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     userAnswers: [ 'x=1', 'x=2', 'x=3']
   Output:
     status: true/false
-    data: {
-      isCorrect: true/false
-    }
+    data: [
+      { isCorrect: false, userAnswer: '4', unknown: [Object] },
+      { isCorrect: false, userAnswer: '4', unknown: [Object] },
+      { isCorrect: true, userAnswer: '4', unknown: [Object] },
+      { isCorrect: false, userAnswer: '4', unknown: [Object] },
+      { isCorrect: false, userAnswer: '4', unknown: [Object] },
+      { isCorrect: false, userAnswer: '4314', unknown: [Object] },
+      { isCorrect: false, userAnswer: '', unknown: [Object] },
+      { isCorrect: false, userAnswer: '4', unknown: [Object] }
+    ]
   */
-  checkAnswer (exerciseDetail, userAnswers) {
+  checkAnswer (exerciseDetails, userAnswers) {
     // pointerIndex later tobe used as get answer when query with knowns
     var pointerIndex = 0
-    return Promise.map(exerciseDetail, (data, index, length) => {
-      // TODO: write code in here
-    })
-    return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseId}}).then(resp => {
-      if (resp.status) {
-        const exercise = resp.data
-        const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-        var isCorrect = exerciseSolver.isAnswer(knowns, {x: userAnswers[pointerIndex].split('=')[1]})
-        return {status: true, data: {isCorrect}}
-      } else {
-        return {status: false, errMessage: 'Exercise is not avaiable'}
-      }
+    return Promise.map(exerciseDetails, (exerciseDetail, index, length) => {
+      return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseDetail.exerciseId}}).then(resp => {
+        if (resp.status) {
+          const exercise = resp.data
+          const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
+          return JSON.parse(exerciseDetail.knowns).map((known, index2) => {
+            var userAnswer = userAnswers[pointerIndex].split('=')[1]
+            var isCorrect = exerciseSolver.isAnswer(known, {x: userAnswer})
+            pointerIndex++
+            return {isCorrect, userAnswer, unknown: JSON.parse(exerciseDetail.unknowns)[index2]}
+          })
+        } else {
+          return {status: false, errMessage: 'Exercise is not avaiable'}
+        }
+      })
+    }).then(results => {
+      var resultAnswers = results.reduce((acc, currentValue) => {
+        return acc.concat(currentValue)
+      }, [])
+      return {status: true, data: resultAnswers}
     })
   }
 

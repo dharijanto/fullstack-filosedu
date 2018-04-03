@@ -225,68 +225,75 @@ class CourseController extends BaseController {
           dateCreatedAt = resp.data.createdAt
           var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
           // check jawaban secara berurutan
-          console.log(exerciseDetail)
-          exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp => {
-            console.log(resp)
-            return {status: true}
+          return exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp2 => {
+            if (resp2.status) {
+              resp2.data.forEach((data, index) => {
+                if (data.isCorrect) {
+                  totalCorrectAnswer++
+                }
+                isAnswerCorrect.push(data.isCorrect)
+              })
+              totalAnswer = resp2.data.length
+
+              const timeFinish = ExerciseHelper.countTimeFinish(dateCreatedAt)
+              var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
+
+              // Adding userAnswer to existing content from exerciseDetail tobe saved in DB
+              var pointerIndex = 0
+              exerciseDetail.forEach((exercise, index) => {
+                JSON.parse(exercise.unknowns).forEach(unknown => {
+                  exercise.userAnswer.push({x: userAnswers[pointerIndex].split('=')[1] || ''})
+                  pointerIndex++
+                })
+              })
+
+              return exerciseService.updateGeneratedTopicAnswer(
+                resp.data.id,
+                currentScore,
+                timeFinish,
+                JSON.stringify(exerciseDetail)
+              ).then(resp3 => {
+                return {data: resp2.data, timeFinish, currentScore}
+              })
+            } else {
+              throw new Error(resp.errMessage)
+            }
+          }).then(resultAnswers => {
+            /*
+            content of resultAnswers
+            { data:
+               [ { isCorrect: false, userAnswer: '4', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
+                 { isCorrect: true, userAnswer: '4', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '4314', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '', unknown: [Object] },
+                 { isCorrect: false, userAnswer: '4', unknown: [Object] } ],
+              timeFinish: '73437.55',
+              currentScore: 100 }
+            */
+            Promise.join(
+              getTopicExerciseStars(userId, topicId),
+              exerciseService.getCurrentRanking(resultAnswers.timeFinish, topicId),
+              exerciseService.getTotalRanking(topicId),
+              getTopicExerciseLeaderboard(topicId)
+            ).spread((resp11, resp12, resp13, resp14) => {
+              res.json({
+                status: true,
+                data: {
+                  summaryAnswers: resultAnswers.data,
+                  currentScore: resultAnswers.currentScore,
+                  starsHTML: resp11.data,
+                  ranking: resp14.data,
+                  currentTimeFinish: resultAnswers.timeFinish,
+                  currentRanking: resp12.data.count,
+                  totalRanking: resp13.data.count,
+                  isPerfectScore: resultAnswers.currentScore === 100 ? true : false
+                }
+              })
+            })
           })
-          // return Promise.map(exerciseDetail, (data, index, length) => {
-            // User answer harus ambil dari index nya unknowns
-            // var userAnswer = userAnswers[index].split('=')[1]
-
-          //   return exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp2 => {
-          //     if (resp2.data.isCorrect) {
-          //       totalCorrectAnswer++
-          //     }
-          //     isAnswerCorrect.push(resp2.data.isCorrect)
-          //     totalAnswer++
-          //     return {
-          //       x: 1
-          //     }
-          //   })
-          // }).then(userAnswers => {
-          //   const timeFinish = ExerciseHelper.countTimeFinish(dateCreatedAt)
-
-          //   var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
-          //   var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
-
-          //   // var realAnswers = []
-          //   // exerciseDetail.forEach((exercise, index) => {
-          //   //   JSON.parse(exercise.unknowns).forEach(unknown => {
-          //   //     realAnswers.push(unknown)
-          //   //   })
-          //   //   exercise.userAnswer.push({x: userAnswers[index].x})
-          //   // })
-
-          //   exerciseService.updateGeneratedTopicAnswer(
-          //     resp.data.id,
-          //     currentScore,
-          //     timeFinish,
-          //     JSON.stringify(exerciseDetail)
-          //   ).then(resp3 => {
-          //     Promise.join(
-          //       getTopicExerciseStars(userId, topicId),
-          //       exerciseService.getCurrentRanking(timeFinish, topicId),
-          //       exerciseService.getTotalRanking(topicId),
-          //       getTopicExerciseLeaderboard(topicId)
-          //     ).spread((resp11, resp12, resp13, resp14) => {
-          //       res.json({
-          //         status: true,
-          //         data: {
-          //           // realAnswers,
-          //           isAnswerCorrect,
-          //           currentScore,
-          //           starsHTML: resp11.data,
-          //           ranking: resp14.data,
-          //           currentTimeFinish: timeFinish,
-          //           currentRanking: resp12.data.count,
-          //           totalRanking: resp13.data.count,
-          //           isPerfectScore: currentScore === 100 ? true : false
-          //         }
-          //       })
-          //     })
-          //   })
-          // })
         } else {
           throw (new Error(resp.errMessage))
         }

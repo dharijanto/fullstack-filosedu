@@ -37,10 +37,8 @@ $('.btn_submit_answer').on('click', function (e) {
       $('input').prop('disabled', true)
       $('input').prop('read-only', true)
 
-      var correction = resp.data.isAnswerCorrect
-      var realAnswers = resp.data.realAnswers
+      var realAnswers = resp.data.summaryAnswers
       var currentScore = resp.data.currentScore
-      // var bestScore = resp.data.bestScore
       var starsHTML = resp.data.starsHTML
       var ranking = resp.data.ranking
       var currentTimeFinish = resp.data.currentTimeFinish
@@ -64,12 +62,12 @@ $('.btn_submit_answer').on('click', function (e) {
 
       realAnswers.forEach((realAnswer, index) => {
         var correctUnknowns = []
-        for (var unknown in realAnswer) {
-          correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
+        for (var x in realAnswer.unknown) {
+          correctUnknowns.push(`${x} = ${realAnswer.unknown[x]}`)
         }
         $('.resultAnswer_' + index).empty()
         var answer = null
-        if (correction[index] === true) {
+        if (realAnswer.isCorrect) {
           answer = $('<p style="color:green">Benar</p>')
         } else {
           answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>')
