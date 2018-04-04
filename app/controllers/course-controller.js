@@ -34,10 +34,10 @@ class CourseController extends BaseController {
         if (req.isAuthenticated()) {
           Promise.join(
             Promise.map(res.locals.subtopics, subtopic => {
-              return courseService.getSubtopicStar(req.user.id, subtopic.id)
+              return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
             Promise.map(res.locals.topics, topic => {
-              return exerciseService.getTopicExerciseStars(req.user.id, topic.id)
+              return exerciseService.getExerciseStars(req.user.id, topic.id, true, false)
             })
           ).spread((subtopics, topics) => {
             subtopics.forEach((resp, index) => {
@@ -174,39 +174,13 @@ class CourseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({status: false, errMessage: `Unauthorized`})
       } else {
-        getTopicExerciseLeaderboard(topicId).then(resp => {
+        exerciseService.getExerciseLeaderboard(topicId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
         })
       }
     })
-
-    // TODO: move to utils, exercise in topic and subtopic same usage
-    function getTopicExerciseStars (userId, topicId) {
-      return exerciseService.getTopicExerciseStars(userId, topicId).then(resp => {
-        if (resp.status) {
-          const stars = resp.data.stars
-          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/stars.pug'), {stars})
-          return {status: true, data: html}
-        } else {
-          return (resp)
-        }
-      })
-    }
-
-    // TODO: move to utils, exercise in topic and subtopic same usage
-    function getTopicExerciseLeaderboard (topicId) {
-      return exerciseService.getExerciseRanking({topicId}).then(resp => {
-        if (resp.status) {
-          const exerciseData = resp.data
-          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/ranking.pug'), {exerciseData})
-          return {status: true, data: html}
-        } else {
-          return (resp)
-        }
-      })
-    }
 
     this.routePost('/topics/:topicId/review', (req, res, next) => {
       var userAnswers = req.body.userAnswers.split('&')
@@ -274,10 +248,10 @@ class CourseController extends BaseController {
               currentScore: 100 }
             */
             Promise.join(
-              getTopicExerciseStars(userId, topicId),
-              exerciseService.getCurrentRanking(resultAnswers.timeFinish, topicId),
-              exerciseService.getTotalRanking(topicId),
-              getTopicExerciseLeaderboard(topicId)
+              exerciseService.getExerciseStars(userId, topicId),
+              exerciseService.getTopicCurrentRanking(resultAnswers.timeFinish, topicId),
+              exerciseService.getTopicTotalRanking(topicId),
+              exerciseService.getExerciseLeaderboard(topicId)
             ).spread((resp11, resp12, resp13, resp14) => {
               res.json({
                 status: true,

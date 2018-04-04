@@ -24,21 +24,17 @@ block contents
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       hr
       input#exerciseId(type="hidden" name="exerciseId" value=`${exerciseId}`)
-      input(type="hidden" name="generatedExerciseId" value=`${generateExerciseId}`)
 
       div.text-center#questionSubmit
-        each question, index in allQuestion.questions
+        each question, index in formatted.renderedQuestions
           form.QuestionSection(method="POST" onkeypress="return event.keyCode != 13;")
             .row
               | !{marked(question)}
-            .row
-              br
-            each unknown, index2 in allQuestion.unknowns
-              .row.form-group(style="width: 40%; margin:auto")
-                .col-md-2
-                  label.control-label(style="font-size: 150%") #{unknown}
-                .col-md-10
-                  input.form-control.answerInput(name=`${unknown}` value=`${allQuestion.userAnswers && allQuestion.userAnswers[index] || ''}`)
+            .row.form-group(style="width: 40%; margin:auto")
+              .col-md-2
+                label.control-label(style="font-size: 150%") #{unknown}
+              .col-md-10
+                input.form-control.answerInput(name=`${formatted.unknowns[index]}` value="")
             div(class=`resultAnswer_${index}`)
             .row
               hr

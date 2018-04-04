@@ -7,6 +7,7 @@ var pug = require('pug')
 var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
+var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
 var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
@@ -18,6 +19,7 @@ class ExerciseController extends BaseController {
     super(initData)
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
+    const exerciseService = new ExerciseService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       next()
@@ -29,21 +31,21 @@ class ExerciseController extends BaseController {
       var subtopicId = req.params.subtopicId
       var topicId = req.params.topicId
       Promise.join(
-        courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}}),
-        courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        courseService.read({modelName: 'Topic', searchClause: {id: topicId}}),
-        getExerciseStars(req.user.id, exerciseId)
+        courseService.getSingleExercise(exerciseId),
+        courseService.getSingleSubtopic(subtopicId),
+        courseService.getSingleTopic(topicId),
+        exerciseService.getExerciseStars(req.user.id, exerciseId, false)
       ).spread((resp, resp2, resp3, resp4) => {
         if (resp.status && resp2.status) {
-          var exerciseHash = ExerciseGenerator.getHash(resp.data[0].data)
-          var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data[0].data)
+          var exerciseHash = ExerciseGenerator.getHash(resp.data.data)
+          var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
           if (resp4.status) {
             res.locals.starsHTML = resp4.data
           } else {
             res.locals.starsHTML = '<p style="color:red;"> Unable to retrieve stars... </p>'
           }
-          res.locals.subtopic = resp2.data[0]
-          res.locals.topic = resp3.data[0]
+          res.locals.subtopic = resp2.data
+          res.locals.topic = resp3.data
           res.locals.bundle = this._assetBundle
 
           log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
@@ -53,25 +55,48 @@ class ExerciseController extends BaseController {
           return courseService.getCurrentExercise({userId: req.user.id, exerciseId}).then(resp2 => {
             if (resp2.status) {
               log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
-              return ExerciseHelper.getExerciseData(exerciseSolver, resp2.data[0], exerciseId).then(data => {
+              return ExerciseHelper.getExerciseData(exerciseSolver, resp2.data, exerciseId).then(data => {
                 Object.assign(res.locals, data)
                 res.render('exercise')
               })
             } else {
               log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
-              return courseService.generateExercise(
-                exerciseHash,
-                exerciseSolver.generateQuestions(),
-                exerciseId,
-                req.user.id
-              ).then(resp3 => {
+              return exerciseService.generateExercise(resp.data).then(resp3 => {
+                // {
+                //     "status": true,
+                //     "data": {
+                //         "exerciseData": {
+                //             "knowns": "[{\"a\":1},{\"a\":2},{\"a\":4},{\"a\":3},{\"a\":5}]",
+                //             "unknowns": "[{\"x\":1},{\"x\":2},{\"x\":4},{\"x\":3},{\"x\":5}]",
+                //             "userAnswer": [],
+                //             "exerciseId": 22
+                //         },
+                //         "formatted": {
+                //             "renderedQuestions": [
+                //                 "\n<table class=\"image-repeat\" style=\"width: 30%;\"><tbody><tr><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519265726137_fresh-apple-red-delicious-v-500-g.png\" width=\"100%\"/></td></tr></tbody></table>\nAda berapa buah apel? (dalam angka)\n",
+                //             ],
+                //             "unknowns": [
+                //                 ["x"],
+                //                 ["x"],
+                //                 ["x"],
+                //                 ["x"],
+                //                 ["x"]
+                //             ]
+                //         }
+                //     }
+                // }
                 if (resp3.status) {
-                  return ExerciseHelper.getExerciseData(exerciseSolver, resp3.data, exerciseId).then(data => {
-                    Object.assign(res.locals, data)
-                    res.render('exercise')
+                  return courseService.destroyAndCreateGeneratedExercise(req.user.id, resp3.data.exerciseData, exerciseHash).then(resp => {
+                    if (resp.status) {
+                      res.locals.exerciseId = exerciseId
+                      res.locals.formatted = resp3.data.formatted
+                      res.render('exercise')
+                    } else {
+                      throw new Error('Cannot create exercise!')
+                    }
                   })
                 } else {
-                  throw new Error('Cannot create exercise!')
+                  throw new Error('Exercise does not exists!')
                 }
               })
             }
@@ -84,30 +109,6 @@ class ExerciseController extends BaseController {
       })
     })
 
-    function getExerciseStars (userId, exerciseId) {
-      return courseService.getExerciseStar(userId, exerciseId).then(resp => {
-        if (resp.status) {
-          const stars = resp.data.stars
-          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/stars.pug'), {stars})
-          return {status: true, data: html}
-        } else {
-          return (resp)
-        }
-      })
-    }
-
-    function getExerciseLeaderboard (exerciseId) {
-      return courseService.getExerciseRanking({exerciseId}).then(resp => {
-        if (resp.status) {
-          const exerciseData = resp.data
-          const html = pug.renderFile(path.join(__dirname, '../views/non-pages/ranking.pug'), {exerciseData})
-          return {status: true, data: html}
-        } else {
-          return (resp)
-        }
-      })
-    }
-
     this.routeGet('/getExerciseStars', (req, res, next) => {
       const exerciseId = parseInt(req.query.exerciseId)
       if (exerciseId === undefined) {
@@ -115,7 +116,7 @@ class ExerciseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({status: false, errMessage: `Unauthorized`})
       } else {
-        getExerciseStars(req.user.id, exerciseId).then(resp => {
+        exerciseService.getExerciseStars(req.user.id, exerciseId, false, false).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -130,7 +131,7 @@ class ExerciseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({status: false, errMessage: `Unauthorized`})
       } else {
-        getExerciseLeaderboard(exerciseId).then(resp => {
+        exerciseService.getExerciseLeaderboard(exerciseId, false, true).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -150,7 +151,7 @@ class ExerciseController extends BaseController {
         Promise.join(
           courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
           courseService.getSubmittedExercises({userId, exerciseId}),
-          courseService.read({modelName: 'Exercise', searchClause: {id: exerciseId}})
+          courseService.getSingleExercise(exerciseId)
         ).spread((geResp, sgeResp, eResp) => {
           if (!geResp.status) {
             log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
@@ -158,10 +159,11 @@ class ExerciseController extends BaseController {
           } else if (!eResp.status) {
             res.json({status: false, errMessage: 'Exercise information be found'})
           } else {
-            const generatedExercise = geResp.data[0]
-            const generatedQuestions = JSON.parse(generatedExercise.knowns)
+            const generatedExercise = geResp.data
+            var generatedQuestions = JSON.parse(generatedExercise.knowns)
+            generatedQuestions = JSON.parse(generatedQuestions)
             const submittedExercises = sgeResp.status ? sgeResp.data : []
-            const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data[0].data)
+            const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data.data)
             const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
 
             log.verbose(TAG, `submitAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
@@ -218,25 +220,20 @@ class ExerciseController extends BaseController {
                 log.error(TAG, err)
               })
 
-              const timeStart = new Date(generatedExercise.createdAt).getTime()
-              const timeSubmit = Date.now()
-              const timeFinish = ((timeSubmit - timeStart) / 1000).toFixed(2)
-              return courseService.update({
-                modelName: 'GeneratedExercise',
-                data: {
-                  id: generatedExercise.id,
-                  score: currentScore,
-                  userAnswer: JSON.stringify(userAnswers),
-                  submitted: true,
-                  timeFinish
-                }
+              const timeFinish = ExerciseHelper.countTimeFinish(generatedExercise.createdAt)
+              return courseService.updateGenerateExercise({
+                id: generatedExercise.id,
+                score: currentScore,
+                userAnswer: JSON.stringify(userAnswers),
+                submitted: true,
+                timeFinish
               }).then(resp => {
                 if (resp.status) {
                   Promise.join(
-                    getExerciseStars(userId, exerciseId),
-                    getExerciseLeaderboard(exerciseId),
-                    courseService.getCurrentRanking(timeFinish, exerciseId),
-                    courseService.getTotalRanking(exerciseId)
+                    exerciseService.getExerciseStars(userId, exerciseId, false),
+                    exerciseService.getExerciseLeaderboard(exerciseId, false),
+                    exerciseService.getSubtopicCurrentRanking(timeFinish, exerciseId),
+                    exerciseService.getSubtopicTotalRanking(exerciseId)
                   ).spread((resp2, resp3, resp4, resp5) => {
                     res.json({
                       status: true,
