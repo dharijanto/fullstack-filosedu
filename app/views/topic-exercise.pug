@@ -1,0 +1,53 @@
+extends layout/index.pug
+
+append head
+  link(rel="stylesheet" href="/assets/css/exercise-style.css")
+
+block contents
+    #leaderboard.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+      .modal-dialog(role='document')
+        .modal-content
+          .modal-header
+            h4#exampleModalLabel.modal-title.text-center Ranking
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') ×
+          .modal-body#leaderboard-content
+          .modal-footer
+            button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+
+    div.container
+      h1.text-center Review Topics
+      h4.text-center #{topicName}
+      h4.text-center
+        button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
+      div.text-center#questionSubmit
+        form.QuestionSection#topicQuestion(method="POST")
+          - var pointerIndex = 0
+          each formattedExercise, index in formattedExercises
+            if ((formattedExercise.renderedQuestions).length > 0)
+              each val, index2 in formattedExercise.renderedQuestions
+                .row
+                  | !{marked(val)}
+                .row.form-group(style="width:40%; margin:auto;")
+                  .col-md-2
+                    label.control-label(style="font-size: 150%") #{formattedExercise.unknowns[index2]}
+                  .col-md-10
+                    input.form-control.answerInput(name=`${formattedExercise.unknowns[index2]}` value='')
+                div(class=`resultAnswer_${pointerIndex}`)
+                - pointerIndex++
+              br
+              hr
+      div.text-center(style="margin-bottom:5%;")
+        div.scoreSection
+          p.hidden(id='currentScore')
+          p.hidden(id='submissionError')
+          p(class='bestScore')
+            | !{starsHTML}
+        div.rankingScore
+          | !{ranking}
+        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
+        a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+
+append scripts
+  script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
+  script(src=`${bundle}`)

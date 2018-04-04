@@ -7,202 +7,6 @@ module.exports = {
 };
 
 },{}],2:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-
-var axios = require('../libs/axios-wrapper');
-var log = require('../libs/logger');
-
-var ONE_SECOND_IN_MILLIS = 1000; // millisecond
-var TAG = 'Exercise-App';
-// Keep track of elapsed time between questions and sets
-var questionTime = 0;
-var setTime = 0;
-setInterval(function () {
-  questionTime += 1;
-  setTime += 1;
-}, ONE_SECOND_IN_MILLIS);
-
-function onNextQuestion() {
-  var exerciseId = $('#exerciseId').val();
-  log.verbose(TAG, 'onNextQuestion(): questionTime=' + questionTime + ' exerciseId=' + exerciseId);
-
-  // Switch to the next question
-  if (questionTime !== 0) {
-    addQuestionTime(exerciseId, questionTime);
-    questionTime = 0;
-  }
-}
-
-function onSetCompleted() {
-  var exerciseId = $('#exerciseId').val();
-  log.verbose(TAG, 'onSetCompleted(): setTime=' + setTime + ' exerciseId=' + exerciseId);
-  addSetTime(exerciseId, setTime);
-}
-
-$('.answerInput').on('focus', onNextQuestion);
-
-$('.backToVideoBtn').on('click', function (e) {
-  var exerciseId = $(this).data('exercise-id');
-  var href = $(this).data('href');
-  addBackToVideo(exerciseId, function () {
-    window.location.href = href;
-  });
-});
-
-$('#leaderboard-button').on('click', function (e) {
-  $('#leaderboard-content').empty();
-  axios.post('/exercise/getLeaderboard', {
-    exerciseId: $('input[name=exerciseId]').val()
-  }).then(function (rawResp) {
-    var resp = rawResp.data;
-    $('#leaderboard-content').append(resp.data);
-  }).catch(function (err) {
-    alert(err);
-    console.error(err);
-  });
-});
-
-$('.btn_submit_answer').on('click', function (e) {
-  $('.btn_submit_answer').attr('disabled', true);
-  onNextQuestion();
-  onSetCompleted();
-  var answers = $('#questionSubmit').children();
-  var userAnswers = [];
-
-  answers.each(function (index, value) {
-    userAnswers.push($(value).serializeObject());
-  });
-
-  axios.post('/exercise/submitAnswers', {
-    userAnswers: userAnswers,
-    generatedExerciseId: $('input[name=generatedExerciseId]').val(),
-    exerciseId: $('input[name=exerciseId]').val()
-  }).then(function (rawResp) {
-    var resp = rawResp.data;
-    $('.btn_submit_answer').removeAttr('disabled');
-    if (resp.status) {
-      $('input').prop('disabled', true);
-      $('input').prop('read-only', true);
-
-      var correction = resp.data.isAnswerCorrect;
-      var realAnswers = resp.data.realAnswers;
-      var currentScore = resp.data.currentScore;
-      var bestScore = resp.data.bestScore;
-      var starsHTML = resp.data.starsHTML;
-      var ranking = resp.data.ranking;
-      var currentTimeFinish = resp.data.currentTimeFinish;
-      var currentRanking = resp.data.currentRanking;
-      var totalRanking = resp.data.totalRanking;
-      var isPerfectScore = resp.data.isPerfectScore;
-
-      $('#currentScore').removeClass('hidden');
-      $('#currentScore').text('Nilai yang diperoleh: ' + currentScore);
-      $('.bestScore').empty();
-      $('.bestScore').append(starsHTML);
-      $('.rankingScore').html(ranking);
-
-      if (isPerfectScore) {
-        $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
-      } else {
-        $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
-      }
-
-      if (parseInt(currentScore) < 80) {
-        $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
-      }
-
-      realAnswers.forEach(function (realAnswer, index) {
-        var correctUnknowns = [];
-        for (var unknown in realAnswer) {
-          correctUnknowns.push(unknown + ' = ' + realAnswer[unknown]);
-        }
-        $('.resultAnswer_' + index).empty();
-        var answer = null;
-        if (correction[index] === true) {
-          answer = $('<p style="color:green">Benar</p>');
-        } else {
-          answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>');
-        }
-        $('.resultAnswer_' + index).append(answer);
-      });
-
-      $('.btn_submit_answer').addClass('hidden');
-      $('.btn_retry_question').removeClass('hidden');
-    } else {
-      $('#submissionError').removeClass('hidden');
-      $('#submissionError').text('Gagal memasukan jawaban: ' + resp.errMessage);
-      console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp);
-    }
-  }).catch(function (err) {
-    $('.btn_submit_answer').removeAttr('disabled');
-    $('#submissionError').removeClass('hidden');
-    $('#submissionError').text('Gagal memasukan jawaban: server mengalami kendala');
-    console.error(err);
-  });
-});
-
-// ---Analyitics  Section ---
-function addBackToVideo(exerciseId, callback) {
-  $.ajax({
-    method: 'POST',
-    url: '/exercise/analytics',
-    data: {
-      exerciseId: exerciseId,
-      value: 1,
-      key: 'backToVideo'
-    }
-  }).done(function (resp) {
-    if (!resp.status) {
-      console.error(JSON.stringify(resp.errMessage));
-    }
-    callback();
-  }).fail(function (jqXHR, textStatus) {
-    console.error(textStatus);
-    callback();
-  });
-}
-
-function addQuestionTime(exerciseId, questionTime) {
-  $.ajax({
-    method: 'POST',
-    url: '/exercise/analytics',
-    data: {
-      exerciseId: exerciseId,
-      value: questionTime, // in seconds
-      key: 'questionTime'
-    }
-  }).done(function (resp) {
-    if (!resp.status) {
-      console.error(JSON.stringify(resp.errMessage));
-    }
-  }).fail(function (jqXHR, textStatus) {
-    console.error(textStatus);
-  });
-}
-
-function addSetTime(exerciseId, setTime) {
-  $.ajax({
-    method: 'POST',
-    url: '/exercise/analytics',
-    data: {
-      exerciseId: exerciseId,
-      value: setTime, // in seconds
-      key: 'setTime'
-    }
-  }).done(function (resp) {
-    if (!resp.status) {
-      console.error(JSON.stringify(resp.errMessage));
-    }
-  }).fail(function (jqXHR, textStatus) {
-    console.error(textStatus);
-  });
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../libs/axios-wrapper":3,"../libs/logger":4}],3:[function(require,module,exports){
 'use strict';
 
 require('es6-promise').polyfill();
@@ -212,7 +16,7 @@ module.exports = axios.create({
   timeout: Config.NETWORK_TIMEOUT
 });
 
-},{"../config.js":1,"axios":5,"es6-promise":30}],4:[function(require,module,exports){
+},{"../config.js":1,"axios":4,"es6-promise":29}],3:[function(require,module,exports){
 'use strict';
 
 var logLevelOrders = ['debug', 'verbose', 'info', 'error'];
@@ -254,9 +58,9 @@ log.setLogLevel = function (level) {
 
 module.exports = log;
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":7}],6:[function(require,module,exports){
+},{"./lib/axios":6}],5:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -440,7 +244,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":13,"./../core/settle":16,"./../helpers/btoa":20,"./../helpers/buildURL":21,"./../helpers/cookies":23,"./../helpers/isURLSameOrigin":25,"./../helpers/parseHeaders":27,"./../utils":29,"_process":32}],7:[function(require,module,exports){
+},{"../core/createError":12,"./../core/settle":15,"./../helpers/btoa":19,"./../helpers/buildURL":20,"./../helpers/cookies":22,"./../helpers/isURLSameOrigin":24,"./../helpers/parseHeaders":26,"./../utils":28,"_process":31}],6:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -494,7 +298,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":8,"./cancel/CancelToken":9,"./cancel/isCancel":10,"./core/Axios":11,"./defaults":18,"./helpers/bind":19,"./helpers/spread":28,"./utils":29}],8:[function(require,module,exports){
+},{"./cancel/Cancel":7,"./cancel/CancelToken":8,"./cancel/isCancel":9,"./core/Axios":10,"./defaults":17,"./helpers/bind":18,"./helpers/spread":27,"./utils":28}],7:[function(require,module,exports){
 'use strict';
 
 /**
@@ -515,7 +319,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -574,14 +378,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":8}],10:[function(require,module,exports){
+},{"./Cancel":7}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -662,7 +466,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":18,"./../utils":29,"./InterceptorManager":12,"./dispatchRequest":14}],12:[function(require,module,exports){
+},{"./../defaults":17,"./../utils":28,"./InterceptorManager":11,"./dispatchRequest":13}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -716,7 +520,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":29}],13:[function(require,module,exports){
+},{"./../utils":28}],12:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -736,7 +540,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":15}],14:[function(require,module,exports){
+},{"./enhanceError":14}],13:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -824,7 +628,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":10,"../defaults":18,"./../helpers/combineURLs":22,"./../helpers/isAbsoluteURL":24,"./../utils":29,"./transformData":17}],15:[function(require,module,exports){
+},{"../cancel/isCancel":9,"../defaults":17,"./../helpers/combineURLs":21,"./../helpers/isAbsoluteURL":23,"./../utils":28,"./transformData":16}],14:[function(require,module,exports){
 'use strict';
 
 /**
@@ -847,7 +651,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -875,7 +679,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":13}],17:[function(require,module,exports){
+},{"./createError":12}],16:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -897,7 +701,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":29}],18:[function(require,module,exports){
+},{"./../utils":28}],17:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -993,7 +797,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":6,"./adapters/xhr":6,"./helpers/normalizeHeaderName":26,"./utils":29,"_process":32}],19:[function(require,module,exports){
+},{"./adapters/http":5,"./adapters/xhr":5,"./helpers/normalizeHeaderName":25,"./utils":28,"_process":31}],18:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -1006,7 +810,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -1044,7 +848,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1114,7 +918,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":29}],22:[function(require,module,exports){
+},{"./../utils":28}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1130,7 +934,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1185,7 +989,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],24:[function(require,module,exports){
+},{"./../utils":28}],23:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1201,7 +1005,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1271,7 +1075,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],26:[function(require,module,exports){
+},{"./../utils":28}],25:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1285,7 +1089,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":29}],27:[function(require,module,exports){
+},{"../utils":28}],26:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1340,7 +1144,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":29}],28:[function(require,module,exports){
+},{"./../utils":28}],27:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1369,7 +1173,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1674,7 +1478,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":19,"is-buffer":31}],30:[function(require,module,exports){
+},{"./helpers/bind":18,"is-buffer":30}],29:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2857,7 +2661,7 @@ return Promise$1;
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":32}],31:[function(require,module,exports){
+},{"_process":31}],30:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -2880,7 +2684,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -3066,4 +2870,100 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[2]);
+},{}],32:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var ONE_SECOND_IN_MILLIS = 1000; // millisecond
+var TAG = 'Topic-Exercise-App';
+
+var axios = require('../libs/axios-wrapper');
+var log = require('../libs/logger');
+
+var pathName = window.location.pathname;
+// to split and get topic id from url pathname
+var topicId = pathName.split('/')[2];
+
+// Keep track of elapsed time between questions and sets
+var questionTime = 0;
+var setTime = 0;
+setInterval(function () {
+  questionTime += 1;
+  setTime += 1;
+}, ONE_SECOND_IN_MILLIS);
+
+$('#leaderboard-button').on('click', function (e) {
+  $('#leaderboard-content').empty();
+  axios.get('/topics/' + topicId + '/getLeaderboard').then(function (rawResp) {
+    var resp = rawResp.data;
+    $('#leaderboard-content').append(resp.data);
+  }).catch(function (err) {
+    alert(err);
+    console.error(err);
+  });
+});
+
+$('.btn_submit_answer').on('click', function (e) {
+  axios.post(window.location.href, {
+    userAnswers: $('form#topicQuestion').serialize()
+  }).then(function (rawResp) {
+    var resp = rawResp.data;
+    if (resp.status) {
+      $('input').prop('disabled', true);
+      $('input').prop('read-only', true);
+
+      var realAnswers = resp.data.summaryAnswers;
+      var currentScore = resp.data.currentScore;
+      var starsHTML = resp.data.starsHTML;
+      var ranking = resp.data.ranking;
+      var currentTimeFinish = resp.data.currentTimeFinish;
+      var currentRanking = resp.data.currentRanking;
+      var totalRanking = resp.data.totalRanking;
+      var isPerfectScore = resp.data.isPerfectScore;
+
+      $('#currentScore').removeClass('hidden');
+      $('#currentScore').text('Nilai yang diperoleh: ' + currentScore);
+      $('.bestScore').html(starsHTML);
+      $('.rankingScore').html(ranking);
+
+      if (isPerfectScore) {
+        $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
+      } else {
+        $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
+      }
+      if (parseInt(currentScore) < 80) {
+        $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
+      }
+
+      realAnswers.forEach(function (realAnswer, index) {
+        var correctUnknowns = [];
+        for (var x in realAnswer.unknown) {
+          correctUnknowns.push(x + ' = ' + realAnswer.unknown[x]);
+        }
+        $('.resultAnswer_' + index).empty();
+        var answer = null;
+        if (realAnswer.isCorrect) {
+          answer = $('<p style="color:green">Benar</p>');
+        } else {
+          answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>');
+        }
+        $('.resultAnswer_' + index).append(answer);
+      });
+
+      $('.btn_submit_answer').addClass('hidden');
+      $('.btn_retry_question').removeClass('hidden');
+    } else {
+      $('#submissionError').removeClass('hidden');
+      $('#submissionError').text('Gagal memasukan jawaban: ' + resp.errMessage);
+      console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp);
+    }
+  }).catch(function (err) {
+    $('#submissionError').removeClass('hidden');
+    $('#submissionError').text('Gagal memasukan jawaban: server mengalami kendala');
+    console.error(err);
+  });
+});
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../libs/axios-wrapper":2,"../libs/logger":3}]},{},[32]);

@@ -17,7 +17,7 @@ function addTables (sequelize, models) {
   })
   models.Topic.belongsTo(models.Subject)
 
-  models.Subtopic = sequelize.define('subtopic', {
+  models.Subtopic = sequelize.define('subtopics', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     subtopic: {type: Sequelize.STRING, unique: true},
     description: {type: Sequelize.STRING},
@@ -74,7 +74,7 @@ function addTables (sequelize, models) {
   })
   models.User.belongsTo(models.School)
 
-  models.Exercise = sequelize.define('exercise', {
+  models.Exercise = sequelize.define('exercises', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     data: {type: Sequelize.TEXT}
   })
@@ -116,6 +116,17 @@ function addTables (sequelize, models) {
     videoId: Sequelize.INTEGER,
     exerciseId: Sequelize.INTEGER
   })
+
+  models.GeneratedTopicExercise = sequelize.define('generatedTopicExercises', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
+    score: {type: Sequelize.FLOAT},
+    timeFinish: {type: Sequelize.FLOAT},
+    topicExerciseHash: {type: Sequelize.STRING},
+    exerciseDetail: {type: Sequelize.TEXT}
+  })
+  models.GeneratedTopicExercise.belongsTo(models.Topic)
+  models.GeneratedTopicExercise.belongsTo(models.User)
 
   return models
 }

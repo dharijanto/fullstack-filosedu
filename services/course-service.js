@@ -6,6 +6,8 @@ var Promise = require('bluebird')
 var Sequelize = require('sequelize')
 
 var CRUDService = require(path.join(__dirname, 'crud-service'))
+var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
+var ExerciseHelper = require(path.join(__dirname, '../app/utils/exercise-helper'))
 
 const TAG = 'CourseService'
 class CourseService extends CRUDService {
@@ -175,6 +177,18 @@ ORDER BY score DESC LIMIT 4;`,
       } else {
         return {status: false, errMessage: `Could not find topic with name "${dependencyName}"`}
       }
+    })
+  }
+
+  getSubtopicByTopicId (topicId) {
+    return this._models['Subtopic'].findAll({where: {topicId}, order: [['subtopicNo', 'ASC']]}).then(data => {
+      return {status: true, data}
+    })
+  }
+
+  getExerciseBySubtopicId (subtopicId) {
+    return this._models['Exercise'].findAll({where: {subtopicId}, order: [['id', 'ASC']]}).then(data => {
+      return {status: true, data}
     })
   }
 }

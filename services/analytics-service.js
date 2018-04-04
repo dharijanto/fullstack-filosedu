@@ -1,4 +1,5 @@
 var path = require('path')
+var Promise = require('bluebird')
 
 var CRUDService = require(path.join(__dirname, 'crud-service'))
 

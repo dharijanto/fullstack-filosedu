@@ -16,7 +16,6 @@ class CredentialController extends BaseController {
     const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
-      console.log('schoolService=')
       next()
     })
 

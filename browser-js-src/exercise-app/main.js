@@ -64,11 +64,6 @@ $('.btn_submit_answer').on('click', function (e) {
     userAnswers.push($(value).serializeObject())
   })
 
-  // $.post('/submitAnswer', {
-    // userAnswers,
-    // generatedExerciseId: $('input[name=generatedExerciseId]').val(),
-    // exerciseId: $('input[name=exerciseId]').val()
-  // }).done(function (resp) {
   axios.post('/exercise/submitAnswers', {
     userAnswers,
     generatedExerciseId: $('input[name=generatedExerciseId]').val(),
@@ -108,10 +103,8 @@ $('.btn_submit_answer').on('click', function (e) {
       }
 
       realAnswers.forEach((realAnswer, index) => {
-        // var collectAnswer = ''
         var correctUnknowns = []
         for (var unknown in realAnswer) {
-          // collectAnswer = unknown + ' = ' + realAnswer[unknown]
           correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
         }
         $('.resultAnswer_' + index).empty()
