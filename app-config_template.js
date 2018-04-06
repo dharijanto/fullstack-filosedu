@@ -29,6 +29,10 @@ const LOCAL_SCHOOL_INFORMATION = {
   identifier: 'smpk_1'
 }
 
+const CLOUD_INFORMATION = {
+  HOST: 'http://app-filosedu.nusantara-local.com:8080/synchronization'
+}
+
 module.exports = {
   SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
   BASE_URL: 'http://app-filosedu.nusantara-local.com',
@@ -42,5 +46,6 @@ module.exports = {
   AWS_IMAGE_CONF,
   VIEWS_APP_PATH: path.join(__dirname, 'app/views'),
   VIEWS_CMS_PATH: path.join(__dirname, 'cms/views'),
-  LOCAL_SCHOOL_INFORMATION
+  LOCAL_SCHOOL_INFORMATION,
+  CLOUD_INFORMATION
 }

@@ -12,6 +12,7 @@ var CourseController = require(path.join(__dirname, 'controllers/course-controll
 var CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 var ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
 var SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
+var SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 var PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
 
 const TAG = 'FiloseduAppController'
@@ -37,6 +38,7 @@ class Controller extends BaseController {
     this.exerciseController = new ExerciseController(initData)
     this.courseController = new CourseController(initData)
     this.subtopicController = new SubtopicController(initData)
+    this.syncController = new SyncController(initData)
 
     this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, {maxAge: '1h'}))
     this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, {maxAge: '1h'}))
@@ -44,6 +46,7 @@ class Controller extends BaseController {
     this.routeUse(this.exerciseController.getRouter())
     this.routeUse(this.courseController.getRouter())
     this.routeUse(this.subtopicController.getRouter())
+    this.routeUse(this.syncController.getRouter())
   }
 
   initialize () {
@@ -51,7 +54,8 @@ class Controller extends BaseController {
       this.credentialController.initialize(),
       this.courseController.initialize(),
       this.subtopicController.initialize(),
-      this.exerciseController.initialize()
+      this.exerciseController.initialize(),
+      this.syncController.initialize()
     )
   }
 }

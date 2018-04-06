@@ -8,23 +8,41 @@ class CRUDService {
     this._models = models
   }
 
-  create ({modelName, data}) {
+  create ({modelName, data, transaction}) {
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
     delete data.id // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
     if (!data) {
       throw new Error('data has to be specified!')
     }
-    return this._models[modelName].create(data).then(createdData => {
-      return {status: true, data: createdData.get({plain: true})}
-    }).catch(err => {
-      if (err.name === 'SequelizeUniqueConstraintError') {
-        return {status: false, errMessage: 'Unique Constraint Error'}
-      } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-        return {status: false, errMessage: 'Foreign Key Constraint Error!'}
-      } else {
-        throw err
-      }
-    })
+
+    console.log('transaction')
+    console.log(transaction)
+    if (transaction === null || transaction === undefined) {
+      console.log('insert masuk ek sini')
+      return this._models[modelName].create(data).then(createdData => {
+        return {status: true, data: createdData.get({plain: true})}
+      }).catch(err => {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          return {status: false, errMessage: 'Unique Constraint Error'}
+        } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+          return {status: false, errMessage: 'Foreign Key Constraint Error!'}
+        } else {
+          throw err
+        }
+      })
+    } else {
+      return this._models[modelName].create(data, transaction).then(createdData => {
+        return {status: true, data: createdData.get({plain: true})}
+      }).catch(err => {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          return {status: false, errMessage: 'Unique Constraint Error'}
+        } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+          return {status: false, errMessage: 'Foreign Key Constraint Error!'}
+        } else {
+          throw err
+        }
+      })
+    }
   }
 
   // If there's data to be read:
@@ -56,22 +74,42 @@ class CRUDService {
     })
   }
 
-  update ({modelName, data}) {
+  update ({modelName, data, transaction}) {
     if (!('id' in data)) {
       throw new Error('data needs to have id!')
     }
     log.verbose(TAG, `update(): modelName=${modelName} data=${JSON.stringify(data)}`)
-    return this._models[modelName].update(data, {where: {id: data.id}}).spread((count) => {
-      return {status: true}
-    }).catch(err => {
-      if (err.name === 'SequelizeUniqueConstraintError') {
-        return {status: false, errMessage: 'Unique Constraint Error'}
-      } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-        return {status: false, errMessage: 'Foreign Key Constraint Error!'}
-      } else {
-        throw err
-      }
-    })
+
+
+    console.log('transaction')
+    console.log(transaction)
+
+
+    if (transaction === null || transaction === undefined) {
+      return this._models[modelName].update(data, {where: {id: data.id}}).spread((count) => {
+        return {status: true}
+      }).catch(err => {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          return {status: false, errMessage: 'Unique Constraint Error'}
+        } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+          return {status: false, errMessage: 'Foreign Key Constraint Error!'}
+        } else {
+          throw err
+        }
+      })
+    } else {
+      return this._models[modelName].update(data, {where: {id: data.id}}, transaction).spread((count) => {
+        return {status: true}
+      }).catch(err => {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          return {status: false, errMessage: 'Unique Constraint Error'}
+        } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+          return {status: false, errMessage: 'Foreign Key Constraint Error!'}
+        } else {
+          throw err
+        }
+      })
+    }
   }
 
   delete ({modelName, data}) {

@@ -128,6 +128,13 @@ function addTables (sequelize, models) {
   models.GeneratedTopicExercise.belongsTo(models.Topic)
   models.GeneratedTopicExercise.belongsTo(models.User)
 
+  models.Synchronization = sequelize.define('synchronization', {
+    schoolIdentifier: {type: Sequelize.STRING},
+    localId: {type: Sequelize.INTEGER},
+    cloudId: {type: Sequelize.INTEGER},
+    tableName: {type: Sequelize.STRING}
+  })
+
   return models
 }
 
