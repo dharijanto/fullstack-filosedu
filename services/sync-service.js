@@ -155,7 +155,7 @@ class SyncService extends CRUDService {
     return data
   }
 
-  insertTable (preProcessedData, modelName, schoolId, userCloudId, {transaction}) {
+  insertTable (preProcessedData, modelName, schoolId, userCloudId = null, trx) {
     var data = this._getTypeData(modelName, preProcessedData)
     if (modelName === 'User') {
       data.schoolId = schoolId
@@ -165,22 +165,20 @@ class SyncService extends CRUDService {
 
     return this.create({
       modelName,
-      data,
-      transaction
-    })
+      data
+    }, trx)
   }
 
-  updateTable (preProcessedData, modelName, cloudId, {transaction}) {
+  updateTable (preProcessedData, modelName, cloudId, trx) {
     var data = this._getTypeData(modelName, preProcessedData)
     data.id = cloudId
     return this.update({
       modelName,
-      data,
-      transaction
-    })
+      data
+    }, trx)
   }
 
-  insertToSyncTable (localId, schoolIdentifier, tableName, cloudId, {transaction}) {
+  insertToSyncTable (localId, schoolIdentifier, tableName, cloudId, trx) {
     return this.create({
       modelName: 'Synchronization',
       data: {
@@ -188,9 +186,8 @@ class SyncService extends CRUDService {
         cloudId,
         schoolIdentifier,
         tableName
-      },
-      transaction
-    })
+      }
+    }, trx)
   }
 
   getTableName (key) {
