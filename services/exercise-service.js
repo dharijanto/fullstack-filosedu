@@ -1,14 +1,12 @@
 var path = require('path')
 
-// var Promise = require('bluebird')
 var log = require('npmlog')
-var marked = require('marked')
 var Promise = require('bluebird')
+var pug = require('pug')
 var Sequelize = require('sequelize')
 
 var CRUDService = require(path.join(__dirname, 'crud-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
-var ExerciseHelper = require(path.join(__dirname, '../app/utils/exercise-helper'))
 
 const TAG = 'ExerciseService'
 class ExerciseService extends CRUDService {
@@ -63,9 +61,14 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }
     }
   */
-  generateExercise (exercise) {
+  generateExercise (exercise, isTopic = false) {
     var exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-    var questions = exerciseSolver.generateTopicQuestions()
+    var questions = null
+    if (isTopic) {
+      questions = exerciseSolver.generateTopicQuestions()
+    } else {
+      questions = exerciseSolver.generateQuestions()
+    }
 
     var knowns = []
     var unknowns = []
@@ -136,7 +139,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   */
   generateExercises (exerciseDatas) {
     return Promise.map(exerciseDatas, exerciseData => {
-      return this.generateExercise(exerciseData).then(resp => {
+      return this.generateExercise(exerciseData, true).then(resp => {
         if (resp.status) {
           // Check this has questions
           const parsedKnowns = JSON.parse(resp.data.exerciseData.knowns)
@@ -454,60 +457,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  // Get user score of an exercise
-  //
-  // Return:
-  // 0 - 4: How many of the submitted scores are > 80%
-  getTopicExerciseStars (userId, topicId) {
-    return this._sequelize.query(`
-SELECT score FROM generatedTopicExercises
-WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId}
-ORDER BY score DESC LIMIT 4;`,
-    { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-      const stars = datas.reduce((acc, data) => {
-        if (parseInt(data.score) >= 80) {
-          return acc + 1
-        } else {
-          return acc
-        }
-      }, 0)
-      return {status: true, data: {stars}}
-    })
-  }
-
-  // Get the number of submissions in the leaderboard
-  getTotalRanking (topicId) {
-    return new Promise((resolve, reject) => {
-      return this._sequelize.query(
-        `SELECT COUNT(*) AS total
-  FROM (SELECT COUNT(*) FROM generatedTopicExercises WHERE submitted = TRUE AND topicId = ${topicId} AND score = 100 AND timeFinish IS NOT NULL
-  GROUP BY userId
-  ORDER BY MIN(timeFinish)) AS totalrow;`,
-        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        resolve({status: true, data: {count: resp[0].total + 1}})
-      }).catch(err => {
-        reject(err)
-      })
-    })
-  }
-
-  // Get the number of rank in leaderboard
-  getCurrentRanking (timeFinish, topicId) {
-    return new Promise((resolve, reject) => {
-      return this._sequelize.query(
-        `SELECT COUNT(*) AS total
-  FROM (SELECT COUNT(*) FROM generatedTopicExercises
-  WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND topicId = ${topicId} AND score = 100 AND timeFinish IS NOT NULL
-  GROUP BY userId
-  ORDER BY MIN(timeFinish)) AS totalrow;`,
-        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        resolve({status: true, data: {count: resp[0].total + 1}})
-      }).catch(err => {
-        reject(err)
-      })
-    })
-  }
-
   /*
     Input:
       topicId: 12
@@ -529,14 +478,203 @@ ORDER BY score DESC LIMIT 4;`,
     })
   }
 
-  // Get leaderboard data
-  getExerciseRanking (data) {
-    return this._sequelize.query(
-      `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
-  FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
-  WHERE submitted = TRUE AND topicId = ${data.topicId} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-      return {status: true, data: resp}
+  // Get user score of an exercise
+  //
+  // Return:
+  // 0 - 4: How many of the submitted scores are > 80%
+  _getExerciseStars (userId, id, tableName) {
+    if (tableName === 'generatedTopicExercises') {
+      return this._sequelize.query(`
+  SELECT score FROM ${tableName}
+  WHERE submitted = 1 AND topicId = ${id} AND userId = ${userId}
+  ORDER BY score DESC LIMIT 4;`,
+      { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+        const stars = datas.reduce((acc, data) => {
+          if (parseInt(data.score) >= 80) {
+            return acc + 1
+          } else {
+            return acc
+          }
+        }, 0)
+        return {status: true, data: {stars}}
+      })
+    } else {
+      return this._sequelize.query(`
+  SELECT score FROM generatedExercises
+  WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${id}
+  ORDER BY score DESC LIMIT 4;`,
+      { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+        const stars = datas.reduce((acc, data) => {
+          if (parseInt(data.score) >= 80) {
+            return acc + 1
+          } else {
+            return acc
+          }
+        }, 0)
+        return {status: true, data: {stars}}
+      })
+    }
+  }
+
+  /*
+    if renderStar is true
+      will return {
+        status: true,
+        data: '<span><img /></span>'
+      }
+    else
+      {
+        status: true,
+        data: {
+          stars: 0.25 / 1 / 0
+        }
+      }
+  */
+  getExerciseStars (userId, id, isTopic = true, renderStar = true) {
+    var tableName = null
+    if (isTopic) {
+      tableName = 'generatedTopicExercises'
+    } else {
+      tableName = 'generatedExercise'
+    }
+    return this._getExerciseStars(userId, id, tableName).then(resp => {
+      if (resp.status) {
+        if (renderStar) {
+          const stars = resp.data.stars
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), {stars})
+          return {status: true, data: html}
+        } else {
+          return resp
+        }
+      } else {
+        return (resp)
+      }
     })
+  }
+
+  // Specially called from course controller
+  getSubtopicStar (userId, subtopicId) {
+    return this.read({
+      modelName: 'Exercise', searchClause: {subtopicId}
+    }).then(resp => {
+      return Promise.map(resp.data || [], exercise => {
+        return this._getExerciseStars(userId, exercise.id, 'generatedExercise')
+      }).then(datas => {
+        const stars = datas.reduce((acc, resp) => {
+          return acc + resp.data.stars
+        }, 0)
+        return {status: true, data: {stars}}
+      })
+    })
+  }
+
+  // Get leaderboard data
+  _getExerciseRanking (id, tableName) {
+    if (tableName === 'generatedTopicExercises') {
+      return this._sequelize.query(
+        `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
+    FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
+    WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        return {status: true, data: resp}
+      })
+    } else {
+      return this._sequelize.query(
+        `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
+    FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
+    WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`,
+        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        return {status: true, data: resp}
+      })
+    }
+  }
+
+  getExerciseLeaderboard (id, isTopic = true, renderLeaderboard = true) {
+    var tableName = null
+    if (isTopic) {
+      tableName = 'generatedTopicExercises'
+    } else {
+      tableName = 'generatedExercises'
+    }
+    return this._getExerciseRanking(id, tableName).then(resp => {
+      if (resp.status) {
+        if (renderLeaderboard) {
+          const exerciseData = resp.data
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ranking.pug'), {exerciseData})
+          return {status: true, data: html}
+        } else {
+          return resp
+        }
+      } else {
+        return (resp)
+      }
+    })
+  }
+
+  // Get the number of rank in leaderboard
+  _getCurrentRanking (timeFinish, id, isTopic = true) {
+    return new Promise((resolve, reject) => {
+      var queryDB = null
+      if (isTopic) {
+        queryDB = `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedTopicExercises
+  WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`
+      } else {
+        queryDB = `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedExercises
+  WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`
+      }
+
+      return this._sequelize.query(queryDB,
+        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total}})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  getSubtopicCurrentRanking (timeFinish, exerciseId) {
+    return this._getCurrentRanking(timeFinish, exerciseId, false)
+  }
+
+  getTopicCurrentRanking (timeFinish, topicId) {
+    return this._getCurrentRanking(timeFinish, topicId)
+  }
+
+  // Get the number of submissions in the leaderboard
+  _getTotalRanking (id, isTopic = true) {
+    return new Promise((resolve, reject) => {
+      var queryDB = null
+      if (isTopic) {
+        queryDB = `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedTopicExercises WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`
+      } else {
+        queryDB = `SELECT COUNT(*) AS total
+  FROM (SELECT COUNT(*) FROM generatedExercises WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL
+  GROUP BY userId
+  ORDER BY MIN(timeFinish)) AS totalrow;`
+      }
+      return this._sequelize.query(queryDB,
+        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        resolve({status: true, data: {count: resp[0].total}})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  getSubtopicTotalRanking (exerciseId) {
+    return this._getTotalRanking(exerciseId, false)
+  }
+
+  getTopicTotalRanking (topicId) {
+    return this._getTotalRanking(topicId)
   }
 }
 

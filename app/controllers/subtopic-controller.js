@@ -1,13 +1,12 @@
 var path = require('path')
 var log = require('npmlog')
 var Promise = require('bluebird')
-var marked = require('marked')
-var getSlug = require('speakingurl')
 
 var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
+var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 var VideoService = require(path.join(__dirname, '../../services/video-service'))
 
@@ -19,6 +18,7 @@ class SubtopicController extends BaseController {
     const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const videoService = new VideoService(this.getDb().sequelize, this.getDb().models)
     const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
+    const exerciseService = new ExerciseService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       next()
@@ -88,7 +88,7 @@ class SubtopicController extends BaseController {
               res.render('subtopic')
             } else {
               return Promise.map(res.locals.exercises, exercise => {
-                return courseService.getExerciseStar(req.user.id, exercise.id)
+                return exerciseService.getExerciseStars(req.user.id, exercise.id, false, false)
               }).then(results => {
                 results.forEach((result, index) => {
                   log.verbose(TAG, 'subtopic.GET(): star=' + result.data.stars)

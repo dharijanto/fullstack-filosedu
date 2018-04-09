@@ -4,18 +4,22 @@ class ExerciseHelper {
   static getExerciseData (exerciseSolver, generatedExercise, exerciseId) {
     const data = {}
     var knowns = JSON.parse(generatedExercise.knowns)
+    var unknowns = JSON.parse(generatedExercise.unknowns)
 
-    return Promise.map(knowns, known => {
-      return exerciseSolver.formatQuestion(known)
-    }).then(formattedQuestions => {
-      data.allQuestion = {
-        unknowns: exerciseSolver._question.unknowns,
-        questions: formattedQuestions,
-        userAnswers: generatedExercise.userAnswer
+    return Promise.join(
+      Promise.map(knowns, known => {
+        return exerciseSolver.formatQuestion(known)
+      }),
+      Promise.map(unknowns, unknown => {
+        return Object.keys(unknown)
+      })
+    ).spread((formattedQuestions, unknowns) => {
+      data.formatted = {
+        renderedQuestions: formattedQuestions,
+        unknowns
       }
-      data.generateExerciseId = generatedExercise.id
       data.exerciseId = exerciseId
-      return data
+      return (data)
     })
   }
 
