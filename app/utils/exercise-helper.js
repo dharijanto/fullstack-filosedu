@@ -7,10 +7,10 @@ class ExerciseHelper {
     var unknowns = JSON.parse(generatedExercise.unknowns)
 
     return Promise.join(
-      Promise.map(JSON.parse(knowns), known => {
+      Promise.map(knowns, known => {
         return exerciseSolver.formatQuestion(known)
       }),
-      Promise.map(JSON.parse(unknowns), unknown => {
+      Promise.map(unknowns, unknown => {
         return Object.keys(unknown)
       })
     ).spread((formattedQuestions, unknowns) => {

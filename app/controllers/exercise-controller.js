@@ -161,7 +161,6 @@ class ExerciseController extends BaseController {
           } else {
             const generatedExercise = geResp.data
             var generatedQuestions = JSON.parse(generatedExercise.knowns)
-            generatedQuestions = JSON.parse(generatedQuestions)
             const submittedExercises = sgeResp.status ? sgeResp.data : []
             const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data.data)
             const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based

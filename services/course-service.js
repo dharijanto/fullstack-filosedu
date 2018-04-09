@@ -18,8 +18,8 @@ class CourseService extends CRUDService {
       modelName: 'GeneratedExercise',
       data: {
         exerciseHash,
-        knowns: JSON.stringify(data.knowns),
-        unknowns: JSON.stringify(data.unknowns),
+        knowns: data.knowns,
+        unknowns: data.unknowns,
         exerciseId,
         userId
       }
