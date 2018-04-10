@@ -88,7 +88,7 @@ $('.btn_submit_answer').on('click', function (e) {
       $('input').prop('read-only', true);
 
       var correction = resp.data.isAnswerCorrect;
-      var realAnswers = JSON.parse(resp.data.realAnswers);
+      var realAnswers = resp.data.realAnswers;
       var currentScore = resp.data.currentScore;
       var bestScore = resp.data.bestScore;
       var starsHTML = resp.data.starsHTML;
