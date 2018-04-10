@@ -37,7 +37,7 @@ class CourseController extends BaseController {
               return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
             Promise.map(res.locals.topics, topic => {
-              return exerciseService.getExerciseStars(req.user.id, topic.id, true, false)
+              return exerciseService.getTopicExerciseStars(req.user.id, topic.id, false)
             })
           ).spread((subtopics, topics) => {
             subtopics.forEach((resp, index) => {
@@ -248,7 +248,7 @@ class CourseController extends BaseController {
               currentScore: 100 }
             */
             Promise.join(
-              exerciseService.getExerciseStars(userId, topicId),
+              exerciseService.getTopicExerciseStars(userId, topicId),
               exerciseService.getTopicCurrentRanking(resultAnswers.timeFinish, topicId),
               exerciseService.getTopicTotalRanking(topicId),
               exerciseService.getExerciseLeaderboard(topicId)

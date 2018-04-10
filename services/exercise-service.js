@@ -236,6 +236,63 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   /*
+    Input of generatedExercise
+    {
+      id: 140,
+      exerciseHash: '306e75a560185c08fa9937e1095d9af3',
+      knowns: '[{"a":10,"b":3},{"a":10,"b":1},{"a":10,"b":5},{"a":10,"b":9},{"a":10,"b":6},{"a":10,"b":2}]',
+      unknowns: '[{"x":13},{"x":11},{"x":15},{"x":19},{"x":16},{"x":12}]',
+      userAnswer: null,
+      submitted: false,
+      score: null,
+      timeFinish: null,
+      createdAt: 2018-04-10T02:26:51.000Z,
+      updatedAt: 2018-04-10T02:26:51.000Z,
+      exerciseId: 34,
+      userId: 99
+    }
+
+    Output of formatExercise
+    {
+      "formatted": {
+        "renderedQuestions": [
+            "\n<span><img src='http://app-filosedu.nusantara-local.com/images/1519379519782_tens.jpeg' width='5%' /></span>\n<span><table class=\"image-repeat\" style=\"width: 23.333333333333332%;\"><tbody><tr><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td></tr></tbody></table></span>\n\nBerapa jumlah balok diatas? (dalam angka)\n",
+        ],
+        "unknowns": [
+            ["x"],
+            ["x"],
+            ["x"],
+            ["x"],
+            ["x"],
+            ["x"]
+        ]
+      },
+      "exerciseId": 34
+    }
+  */
+  formatExercise (generatedExercise, exerciseSolver) {
+    const data = {}
+    var knowns = JSON.parse(generatedExercise.knowns)
+    var unknowns = JSON.parse(generatedExercise.unknowns)
+
+    return Promise.join(
+      Promise.map(knowns, known => {
+        return exerciseSolver.formatQuestion(known)
+      }),
+      Promise.map(unknowns, unknown => {
+        return Object.keys(unknown)
+      })
+    ).spread((formattedQuestions, unknowns) => {
+      data.formatted = {
+        renderedQuestions: formattedQuestions,
+        unknowns
+      }
+      data.exerciseId = generatedExercise.exerciseId
+      return data
+    })
+  }
+
+  /*
     Input:
       topicId: 5
     Output:
@@ -430,7 +487,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       data: {
         id: generatedTopicExerciseId,
         exerciseDetail: JSON.stringify(exerciseDetail),
-        topicExerciseHash
+        topicExerciseHash,
+        createdAt: Date.now()
       }
     }).then(resp => {
       return resp
@@ -530,13 +588,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         }
       }
   */
-  getExerciseStars (userId, id, isTopic = true, renderStar = true) {
-    var tableName = null
-    if (isTopic) {
-      tableName = 'generatedTopicExercises'
-    } else {
-      tableName = 'generatedExercise'
-    }
+  _getExerciseStarsUniversal (userId, id, tableName, renderStar = true) {
     return this._getExerciseStars(userId, id, tableName).then(resp => {
       if (resp.status) {
         if (renderStar) {
@@ -552,13 +604,21 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
+  getSubtopicExerciseStars (userId, id, renderStar = true) {
+    return this._getExerciseStarsUniversal(userId, id, 'generatedExercises', renderStar)
+  }
+
+  getTopicExerciseStars (userId, id, renderStar = true) {
+    return this._getExerciseStarsUniversal(userId, id, 'generatedTopicExercises', renderStar)
+  }
+
   // Specially called from course controller
   getSubtopicStar (userId, subtopicId) {
     return this.read({
       modelName: 'Exercise', searchClause: {subtopicId}
     }).then(resp => {
       return Promise.map(resp.data || [], exercise => {
-        return this._getExerciseStars(userId, exercise.id, 'generatedExercise')
+        return this._getExerciseStars(userId, exercise.id, 'generatedExercises')
       }).then(datas => {
         const stars = datas.reduce((acc, resp) => {
           return acc + resp.data.stars
