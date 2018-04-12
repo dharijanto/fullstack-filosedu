@@ -26,7 +26,7 @@ class CourseService extends CRUDService {
     })
   }
 
-  destroyAndCreateGeneratedExercise (userId, data, exerciseHash) {
+  updateExercise (userId, data, exerciseHash) {
     return this._destroySingleGeneratedExercise(userId, data.exerciseId).then(() => {
       return this._createSingleGeneratedExercise(exerciseHash, data, userId, data.exerciseId)
     })

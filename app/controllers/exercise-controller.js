@@ -63,17 +63,20 @@ class ExerciseController extends BaseController {
               } else {
                 return exerciseService.generateExercise(resp.data).then(resp3 => {
                   if (resp3.status) {
-                    return courseService.destroyAndCreateGeneratedExercise(req.user.id, resp3.data.exerciseData, exerciseHash).then(resp => {
+                    return courseService.updateExercise(
+                      req.user.id,
+                      resp3.data.exerciseData,
+                      exerciseHash).then(resp => {
                       if (resp.status) {
                         res.locals.exerciseId = exerciseId
                         res.locals.formatted = resp3.data.formatted
                         res.render('exercise')
                       } else {
-                        throw new Error('Cannot create exercise!')
+                        throw new Error('Cannot create exercise:' + resp.errMessage)
                       }
                     })
                   } else {
-                    throw new Error('Exercise does not exists!')
+                    throw new Error('Exercise does not exists:' + resp.errMessage)
                   }
                 })
               }
@@ -104,17 +107,20 @@ class ExerciseController extends BaseController {
                 //     }
                 // }
                 if (resp3.status) {
-                  return courseService.destroyAndCreateGeneratedExercise(req.user.id, resp3.data.exerciseData, exerciseHash).then(resp => {
+                  return courseService.updateExercise(
+                    req.user.id,
+                    resp3.data.exerciseData,
+                    exerciseHash).then(resp => {
                     if (resp.status) {
                       res.locals.exerciseId = exerciseId
                       res.locals.formatted = resp3.data.formatted
                       res.render('exercise')
                     } else {
-                      throw new Error('Cannot create exercise!')
+                      throw new Error('Cannot create exercise:' + resp.errMessage)
                     }
                   })
                 } else {
-                  throw new Error('Exercise does not exists!')
+                  throw new Error('Exercise does not exists:' + resp.errMessage)
                 }
               })
             }
