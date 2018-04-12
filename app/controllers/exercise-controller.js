@@ -34,7 +34,7 @@ class ExerciseController extends BaseController {
         courseService.getSingleExercise(exerciseId),
         courseService.getSingleSubtopic(subtopicId),
         courseService.getSingleTopic(topicId),
-        exerciseService.getExerciseStars(req.user.id, exerciseId, false)
+        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId)
       ).spread((resp, resp2, resp3, resp4) => {
         if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data.data)
@@ -54,11 +54,32 @@ class ExerciseController extends BaseController {
           // we create new question for student otherwise, restore previous exercise.
           return courseService.getCurrentExercise({userId: req.user.id, exerciseId}).then(resp2 => {
             if (resp2.status) {
-              log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
-              return ExerciseHelper.getExerciseData(exerciseSolver, resp2.data, exerciseId).then(data => {
-                Object.assign(res.locals, data)
-                res.render('exercise')
-              })
+              if (resp2.data.exerciseHash === exerciseHash) {
+                log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
+                return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
+                  Object.assign(res.locals, data)
+                  res.render('exercise')
+                })
+              } else {
+                return exerciseService.generateExercise(resp.data).then(resp3 => {
+                  if (resp3.status) {
+                    return courseService.updateExercise(
+                      req.user.id,
+                      resp3.data.exerciseData,
+                      exerciseHash).then(resp => {
+                      if (resp.status) {
+                        res.locals.exerciseId = exerciseId
+                        res.locals.formatted = resp3.data.formatted
+                        res.render('exercise')
+                      } else {
+                        throw new Error('Cannot create exercise:' + resp.errMessage)
+                      }
+                    })
+                  } else {
+                    throw new Error('Exercise does not exists:' + resp.errMessage)
+                  }
+                })
+              }
             } else {
               log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
               return exerciseService.generateExercise(resp.data).then(resp3 => {
@@ -86,17 +107,20 @@ class ExerciseController extends BaseController {
                 //     }
                 // }
                 if (resp3.status) {
-                  return courseService.destroyAndCreateGeneratedExercise(req.user.id, resp3.data.exerciseData, exerciseHash).then(resp => {
+                  return courseService.updateExercise(
+                    req.user.id,
+                    resp3.data.exerciseData,
+                    exerciseHash).then(resp => {
                     if (resp.status) {
                       res.locals.exerciseId = exerciseId
                       res.locals.formatted = resp3.data.formatted
                       res.render('exercise')
                     } else {
-                      throw new Error('Cannot create exercise!')
+                      throw new Error('Cannot create exercise:' + resp.errMessage)
                     }
                   })
                 } else {
-                  throw new Error('Exercise does not exists!')
+                  throw new Error('Exercise does not exists:' + resp.errMessage)
                 }
               })
             }
@@ -116,7 +140,8 @@ class ExerciseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({status: false, errMessage: `Unauthorized`})
       } else {
-        exerciseService.getExerciseStars(req.user.id, exerciseId, false, false).then(resp => {
+        // subtopic stars
+        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId, false).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -229,7 +254,7 @@ class ExerciseController extends BaseController {
               }).then(resp => {
                 if (resp.status) {
                   Promise.join(
-                    exerciseService.getExerciseStars(userId, exerciseId, false),
+                    exerciseService.getSubtopicExerciseStars(userId, exerciseId),
                     exerciseService.getExerciseLeaderboard(exerciseId, false),
                     exerciseService.getSubtopicCurrentRanking(timeFinish, exerciseId),
                     exerciseService.getSubtopicTotalRanking(exerciseId)

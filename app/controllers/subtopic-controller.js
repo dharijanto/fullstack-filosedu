@@ -88,7 +88,7 @@ class SubtopicController extends BaseController {
               res.render('subtopic')
             } else {
               return Promise.map(res.locals.exercises, exercise => {
-                return exerciseService.getExerciseStars(req.user.id, exercise.id, false, false)
+                return exerciseService.getSubtopicExerciseStars(req.user.id, exercise.id, false)
               }).then(results => {
                 results.forEach((result, index) => {
                   log.verbose(TAG, 'subtopic.GET(): star=' + result.data.stars)
