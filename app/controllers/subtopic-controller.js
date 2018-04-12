@@ -87,13 +87,18 @@ class SubtopicController extends BaseController {
               req.session.returnTo = req.originalUrl || req.url
               res.render('subtopic')
             } else {
-              return Promise.map(res.locals.exercises, exercise => {
-                return exerciseService.getSubtopicExerciseStars(req.user.id, exercise.id, false)
+              return Promise.map(res.locals.exercises, (exercise, index) => {
+                return Promise.join(
+                  exerciseService.getSubtopicExerciseStars(req.user.id, exercise.id, false),
+                  exerciseService.getSubtopicExerciseTimer(req.user.id, exercise.id, false),
+                  (respStars, respTimers) => {
+                    log.verbose(TAG, 'subtopic.GET(): star=' + respStars.data.stars)
+                    log.verbose(TAG, 'subtopic.GET(): timer=' + respTimers.data.timers)
+                    res.locals.exercises[index].stars = respStars.data.stars
+                    res.locals.exercises[index].timers = respTimers.data.timers
+                  }
+                )
               }).then(results => {
-                results.forEach((result, index) => {
-                  log.verbose(TAG, 'subtopic.GET(): star=' + result.data.stars)
-                  res.locals.exercises[index].stars = result.data.stars
-                })
                 res.render('subtopic')
               })
             }

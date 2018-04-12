@@ -3,6 +3,8 @@ var $ = require('jquery')
 var axios = require('../libs/axios-wrapper')
 var log = require('../libs/logger')
 
+var Promise = require('bluebird')
+
 const ONE_SECOND_IN_MILLIS = 1000 // millisecond
 const TAG = 'Exercise-App'
 // Keep track of elapsed time between questions and sets
@@ -54,82 +56,7 @@ $('#leaderboard-button').on('click', function (e) {
 })
 
 $('.btn_submit_answer').on('click', function (e) {
-  $('.btn_submit_answer').attr('disabled', true)
-  onNextQuestion()
-  onSetCompleted()
-  var answers = $('#questionSubmit').children()
-  var userAnswers = []
-
-  answers.each((index, value) => {
-    userAnswers.push($(value).serializeObject())
-  })
-
-  axios.post(window.location.href, {
-    userAnswers,
-    generatedExerciseId: $('input[name=generatedExerciseId]').val(),
-    exerciseId: $('input[name=exerciseId]').val()
-  }).then(rawResp => {
-    const resp = rawResp.data
-    $('.btn_submit_answer').removeAttr('disabled')
-    if (resp.status) {
-      $('input').prop('disabled', true)
-      $('input').prop('read-only', true)
-
-      var correction = resp.data.isAnswerCorrect
-      var realAnswers = resp.data.realAnswers
-      var currentScore = resp.data.currentScore
-      var bestScore = resp.data.bestScore
-      var starsHTML = resp.data.starsHTML
-      var ranking = resp.data.ranking
-      var currentTimeFinish = resp.data.currentTimeFinish
-      var currentRanking = resp.data.currentRanking
-      var totalRanking = resp.data.totalRanking
-      var isPerfectScore = resp.data.isPerfectScore
-
-      $('#currentScore').removeClass('hidden')
-      $('#currentScore').text(`Nilai yang diperoleh: ${currentScore}`)
-      $('.bestScore').empty()
-      $('.bestScore').append(starsHTML)
-      $('.rankingScore').html(ranking)
-
-      if (isPerfectScore) {
-        $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${currentTimeFinish} detik</b>. Waktu ini ada di urutan ${currentRanking} dari ${totalRanking}</p>`)
-      } else {
-        $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${currentTimeFinish} detik</b>. Hanya nilai 100 yang masuk penilaian. </p>`)
-      }
-
-      if (parseInt(currentScore) < 80) {
-        $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
-      }
-
-      realAnswers.forEach((realAnswer, index) => {
-        var correctUnknowns = []
-        for (var unknown in realAnswer) {
-          correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
-        }
-        $('.resultAnswer_' + index).empty()
-        var answer = null
-        if (correction[index] === true) {
-          answer = $('<p style="color:green">Benar</p>')
-        } else {
-          answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>')
-        }
-        $('.resultAnswer_' + index).append(answer)
-      })
-
-      $('.btn_submit_answer').addClass('hidden')
-      $('.btn_retry_question').removeClass('hidden')
-    } else {
-      $('#submissionError').removeClass('hidden')
-      $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
-      console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
-    }
-  }).catch(err => {
-    $('.btn_submit_answer').removeAttr('disabled')
-    $('#submissionError').removeClass('hidden')
-    $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
-    console.error(err)
-  })
+  postAnswer()
 })
 
 // ---Analyitics  Section ---
@@ -188,3 +115,140 @@ function addSetTime (exerciseId, setTime) {
     console.error(textStatus)
   })
 }
+
+function postAnswer () {
+  return new Promise((resolve, reject) => {
+    $('.btn_submit_answer').attr('disabled', true)
+    onNextQuestion()
+    onSetCompleted()
+    var answers = $('#questionSubmit').children()
+    var userAnswers = []
+
+    answers.each((index, value) => {
+      userAnswers.push($(value).serializeObject())
+    })
+
+    axios.post('/exercise/submitAnswers', {
+      userAnswers,
+      generatedExerciseId: $('input[name=generatedExerciseId]').val(),
+      exerciseId: $('input[name=exerciseId]').val()
+    }).then(rawResp => {
+      const resp = rawResp.data
+      $('.btn_submit_answer').removeAttr('disabled')
+      if (resp.status) {
+        $('input').prop('disabled', true)
+        $('input').prop('read-only', true)
+
+        var correction = resp.data.isAnswerCorrect
+        var realAnswers = resp.data.realAnswers
+        var currentScore = resp.data.currentScore
+        var starsHTML = resp.data.starsHTML
+        var timersHTML = resp.data.timersHTML
+        var ranking = resp.data.ranking
+        var currentTimeFinish = resp.data.currentTimeFinish
+        var currentRanking = resp.data.currentRanking
+        var totalRanking = resp.data.totalRanking
+        var isPerfectScore = resp.data.isPerfectScore
+
+        $('#currentScore').removeClass('hidden')
+        $('#currentScore').text(`Nilai yang diperoleh: ${currentScore}`)
+        $('.bestScore').empty()
+        $('.bestScore').append(starsHTML)
+        $('.bestTimer').empty()
+        $('.bestTimer').append(timersHTML)
+        $('.rankingScore').html(ranking)
+
+        if (isPerfectScore) {
+          $('.rankingScore').append(`<p>Soal diselesaikan dalam 
+            <b>${currentTimeFinish} detik</b>. Waktu ini ada di 
+            urutan ${currentRanking} dari ${totalRanking}</p>`)
+        } else {
+          $('.rankingScore').append(`<p>Soal diselesaikan dalam 
+            <b>${currentTimeFinish} detik</b>. 
+            Hanya nilai 100 yang masuk penilaian. </p>`)
+        }
+
+        if (parseInt(currentScore) < 80) {
+          $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
+        }
+
+        realAnswers.forEach((realAnswer, index) => {
+          var correctUnknowns = []
+          for (var unknown in realAnswer) {
+            correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
+          }
+          $('.resultAnswer_' + index).empty()
+          var answer = null
+          if (correction[index] === true) {
+            answer = $('<p style="color:green">Benar</p>')
+          } else {
+            answer = $(`<p style="color:red;">Salah. 
+              Jawaban yang benar: ${correctUnknowns.join(', ')} </p>`)
+          }
+          $('.resultAnswer_' + index).append(answer)
+        })
+
+        $('.btn_submit_answer').addClass('hidden')
+        $('.btn_retry_question').removeClass('hidden')
+        resolve({status: true})
+      } else {
+        $('#submissionError').removeClass('hidden')
+        $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
+        console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
+        resolve({status: false})
+      }
+    }).catch(err => {
+      $('.btn_submit_answer').removeAttr('disabled')
+      $('#submissionError').removeClass('hidden')
+      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
+      console.error(err)
+      reject(err)
+    })
+  })
+}
+
+$('#resetQuestion').on('click', function (e) {
+  postAnswer().then(resp => {
+    if (resp.status) {
+      setTimeout(
+        function () {
+          window.location.reload()
+        },
+        2000)
+    } else {
+      window.location.reload()
+    }
+  })
+})
+
+// remember to get Exercise date. not subtopic
+var createdAt = $('input[name=createdAt]').val()
+var timerElapsed = (new Date(createdAt)).getTime()
+var idealTime = $('input[name=idealTime]').val()
+var worstTime = idealTime * 3
+
+$('#timer').timer({
+  format: '%M:%S',
+  seconds: (Date.now() - timerElapsed) / 1000,
+  repeat: true
+})
+
+// call the function every 5 seconds
+window.setInterval(function () {
+  changeProgressBar()
+}, 1000)
+
+function changeProgressBar () {
+  // Get current value of progress bar
+  var currentValueProgressBar = $('#timer').data('seconds')
+  if (currentValueProgressBar <= idealTime) {
+    // do nothing
+  } else {
+    var valueProgressBarToBeApllied = 100 - ((currentValueProgressBar - idealTime) * (100 / (worstTime - idealTime)))
+    // Set the width of progress bar
+    $('.progress-bar').css('width', valueProgressBarToBeApllied + '%')
+  }
+}
+
+// when page first load, first call only
+changeProgressBar()

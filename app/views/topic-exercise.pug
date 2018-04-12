@@ -15,19 +15,35 @@ block contents
           .modal-footer
             button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 
-    div.container
-      h1.text-center Review Topic
+    .container
+      .row
+        input(type='hidden' name="createdAt" value=`${createdAt}`)
+        input(type='hidden' name="idealTime" value=`${idealTime}`)
+        .col-md-3.col-sm-3.col-xs-4(style="position:fixed")
+          .thumbnail.text-center
+            .progress#progressBar
+              .progress-bar.progress-bar-info.progress-bar-striped.active(role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%;")
+            .border(style="border-top: 2px dashed #ffbc49; margin-bottom:10px;")
+            h4#timer
+            .border(style="border-top: 2px dashed #ffbc49; margin-bottom:10px;")
+            p Target:
+              span#targetTime #{idealTime}
+              |  Sec
+            button.btn.btn-primary#resetQuestion RESET
+
+      h1.text-center Review Topics
       h4.text-center #{topicName}
       h4.text-center
         a(href='/') Kembali
       h4.text-center
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       div.text-center#questionSubmit
-        - var pointerIndex = 0
-        each formattedExercise in formattedExercises
-            //- if ((formattedExercise.renderedQuestions).length > 0)
-            each renderedQuestion, index in formattedExercise.renderedQuestions
-              form(name='question')
+        form.QuestionSection#topicQuestion(method="POST")
+          - var pointerIndex = 0
+          each formattedExercise, index in formattedExercises
+            if ((formattedExercise.renderedQuestions).length > 0)
+              h4 #{formattedExercise.subtopicName}
+              each val, index2 in formattedExercise.renderedQuestions
                 .row
                   | !{renderedQuestion}
                   for unknown in formattedExercise.unknowns[index]
@@ -44,8 +60,10 @@ block contents
         div.scoreSection
           p.hidden(id='currentScore')
           p.hidden(id='submissionError')
-          p(class='bestScore')
+          p.bestScore
             | !{starsHTML}
+          p.bestTimer
+            | !{timersHTML}
         div.rankingScore
           | !{ranking}
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
@@ -53,4 +71,5 @@ block contents
 
 append scripts
   script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
+  script(src="/assets/vendor/jquery-timer/timer.jquery.js")
   script(src=`${bundle}`)

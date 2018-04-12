@@ -39,15 +39,30 @@ class CourseController extends BaseController {
             }),
             Promise.map(res.locals.topics, topic => {
               return exerciseService.getTopicExerciseStars(req.user.id, topic.id, false)
+            }),
+            Promise.map(res.locals.subtopics, subtopic => {
+              return exerciseService.getSubtopicExerciseTimers(req.user.id, subtopic.id)
+            }),
+            Promise.map(res.locals.topics, topic => {
+              return exerciseService.getTopicExerciseTimer(req.user.id, topic.id, false)
             })
-          ).spread((subtopics, topics) => {
-            subtopics.forEach((resp, index) => {
+          ).spread((subtopicstars, topicstars, subtopicTimers, topicTimers) => {
+            subtopicstars.forEach((resp, index) => {
               res.locals.subtopics[index].stars = resp.data.stars
             })
 
-            topics.forEach((resp, index) => {
+            topicstars.forEach((resp, index) => {
               res.locals.topics[index].stars = resp.data.stars
             })
+
+            subtopicTimers.forEach((resp, index) => {
+              res.locals.subtopics[index].timers = resp.data.timers
+            })
+
+            topicTimers.forEach((resp, index) => {
+              res.locals.topics[index].timers = resp.data.timers
+            })
+
             res.render('topics')
           })
         } else {
@@ -92,7 +107,12 @@ class CourseController extends BaseController {
           if (topicExerciseHash === resp2.data.topicExerciseHash) {
             return exerciseService.formatExercises(generatedExercises).then(resp5 => {
               if (resp5.status) {
-                return {formatted: resp5.data.formatted, topicName: resp7.data.topic}
+                return {
+                  formatted: resp5.data.formatted,
+                  topicName: resp7.data.topic,
+                  idealTime: resp2.data.idealTime,
+                  createdAt: resp2.data.createdAt
+                }
               } else {
                 throw new Error(resp5.errMessage)
               }
@@ -104,10 +124,16 @@ class CourseController extends BaseController {
               if (resp5.status) {
                 const generatedExercises = resp5.data.exerciseData
                 const formattedExercises = resp5.data.formatted
+                const idealTimeExercises = resp5.data.idealTime
 
                 return exerciseService.updateGeneratedTopicExercise(resp2.data.id, generatedExercises, topicExerciseHash).then(resp6 => {
                   if (resp6.status) {
-                    return {formatted: formattedExercises, topicName: resp7.data.topic}
+                    return {
+                      formatted: formattedExercises,
+                      topicName: resp7.data.topic,
+                      idealTime: idealTimeExercises,
+                      createdAt: resp6.createdAt
+                    }
                   } else {
                     throw new Error(resp6.errMessage)
                   }
@@ -124,10 +150,15 @@ class CourseController extends BaseController {
               if (resp4.status) {
                 const generatedExercises = resp4.data.exerciseData
                 const formattedExercises = resp4.data.formatted
-
-                return exerciseService.createGeneratedTopicExercise(topicId, userId, generatedExercises, topicExerciseHash).then(resp5 => {
+                const idealTimeExercises = resp4.data.idealTime
+                return exerciseService.createGeneratedTopicExercise(topicId, userId, generatedExercises, topicExerciseHash, idealTimeExercises).then(resp5 => {
                   if (resp5.status) {
-                    return {formatted: formattedExercises, topicName: resp7.data.topic}
+                    return {
+                      formatted: formattedExercises,
+                      topicName: resp7.data.topic,
+                      idealTime: idealTimeExercises,
+                      createdAt: resp5.data.createdAt
+                    }
                   } else {
                     throw new Error(resp5.errMessage)
                   }
@@ -146,15 +177,22 @@ class CourseController extends BaseController {
         {
           "formatted": [{
               "renderedQuestions": ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"],
-              "unknowns": [["x"],["x"]]
+              "unknowns": [
+                  ["x"],
+                  ["x"]
+              ],
+              "subtopicName": "Penjumlahan Bilangan 1-5"
           }]
           "topic": {
             id: 1
             topic: "penjumlahan"
-          }
+          },
+          "idealTime": 125,
+          "subtopicContent": [ArrayofObject]
         }
         */
-        console.log(JSON.stringify(formattedContent))
+        res.locals.createdAt = formattedContent.createdAt
+        res.locals.idealTime = formattedContent.idealTime
         res.locals.topicName = formattedContent.topicName
         res.locals.bundle = this._assetBundle
         res.locals.formattedExercises = formattedContent.formatted
@@ -251,14 +289,16 @@ class CourseController extends BaseController {
               exerciseService.getTopicExerciseStars(userId, topicId),
               exerciseService.getTopicCurrentRanking(resultAnswers.timeFinish, topicId),
               exerciseService.getTopicTotalRanking(topicId),
-              exerciseService.getExerciseLeaderboard(topicId)
-            ).spread((resp11, resp12, resp13, resp14) => {
+              exerciseService.getExerciseLeaderboard(topicId),
+              exerciseService.getTopicExerciseTimer(userId, topicId)
+            ).spread((resp11, resp12, resp13, resp14, resp15) => {
               res.json({
                 status: true,
                 data: {
                   summaryAnswers: resultAnswers.data,
                   currentScore: resultAnswers.currentScore,
                   starsHTML: resp11.data,
+                  timersHTML: resp15.data,
                   ranking: resp14.data,
                   currentTimeFinish: resultAnswers.timeFinish,
                   currentRanking: resp12.data.count,

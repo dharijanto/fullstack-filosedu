@@ -9,6 +9,98 @@ var CRUDService = require(path.join(__dirname, 'crud-service'))
 
 const TAG = 'CourseService'
 class CourseService extends CRUDService {
+  _destroySingleGeneratedExercise (userId, exerciseId) {
+    return this._models['GeneratedExercise'].destroy({where: {userId, exerciseId, submitted: false}})
+  }
+
+  _createSingleGeneratedExercise (exerciseHash, data, userId, exerciseId) {
+    return this.create({
+      modelName: 'GeneratedExercise',
+      data: {
+        exerciseHash,
+        knowns: data.knowns,
+        unknowns: data.unknowns,
+        exerciseId,
+        userId,
+        idealTime: data.idealTime
+      }
+    })
+  }
+
+  destroyAndCreateGeneratedExercise (userId, data, exerciseHash) {
+    return this._destroySingleGeneratedExercise(userId, data.exerciseId).then(() => {
+      return this._createSingleGeneratedExercise(exerciseHash, data, userId, data.exerciseId)
+    })
+  }
+
+  generateExercise (exerciseHash, questions, exerciseId, userId) {
+    // Note: There's a case where exercise has to be generated again
+    // because the original question has change. Due to this, we need
+    // to delete previously generated exercise
+    return this._models['GeneratedExercise'].destroy({where: {userId, exerciseId, submitted: false}}).then(() => {
+      var knowns = []
+      var unknowns = []
+      questions.forEach(question => {
+        knowns.push(question.knowns)
+        unknowns.push(question.unknowns)
+      })
+      return this.create({
+        modelName: 'GeneratedExercise',
+        data: {
+          exerciseHash,
+          knowns: JSON.stringify(knowns),
+          unknowns: JSON.stringify(unknowns),
+          exerciseId,
+          userId
+        }
+      })
+    })
+  }
+
+  saveAndGetGeneratedExercise (generateExerciseId, userAnswer) {
+    return this.update({
+      modelName: 'GeneratedExercise',
+      data: {
+        id: generateExerciseId,
+        userAnswer,
+        submitted: true
+      }
+    }).then(resp => {
+      return this.read({modelName: 'GeneratedExercise', searchClause: {id: generateExerciseId}})
+    })
+  }
+
+  /*
+    Input:
+      id: 1,
+      score: 2,
+      userAnswer: '[{x: "3"}]',
+      submitted: true,
+      timeFinish: 23.09
+  */
+  updateGenerateExercise (data) {
+    return this.update({
+      modelName: 'GeneratedExercise',
+      data
+    })
+  }
+
+  // Get exercise that is curently active
+  getCurrentExercise ({userId, exerciseId}) {
+    return this.readOne({
+      modelName: 'GeneratedExercise',
+      searchClause: {userId, exerciseId, submitted: false}
+    })
+  }
+
+  // Get all exercises that have been submitted
+  getSubmittedExercises ({userId, exerciseId}) {
+    return this.read({
+      modelName: 'GeneratedExercise',
+      searchClause: {userId, exerciseId, submitted: true}
+    })
+  }
+
   getAllTopics () {
     return this._models['Topic'].findAll({order: [['topicNo', 'ASC']]}).then(resp => {
       return {status: true, data: resp}

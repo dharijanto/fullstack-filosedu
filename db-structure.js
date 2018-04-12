@@ -88,7 +88,8 @@ function addTables (sequelize, models) {
     userAnswer: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}]
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
     score: {type: Sequelize.FLOAT},
-    timeFinish: {type: Sequelize.FLOAT}
+    timeFinish: {type: Sequelize.FLOAT},
+    idealTime: {type: Sequelize.FLOAT}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
   models.GeneratedExercise.belongsTo(models.User)
@@ -123,7 +124,8 @@ function addTables (sequelize, models) {
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
     topicExerciseHash: {type: Sequelize.STRING},
-    exerciseDetail: {type: Sequelize.TEXT}
+    exerciseDetail: {type: Sequelize.TEXT},
+    idealTime: {type: Sequelize.FLOAT}
   })
   models.GeneratedTopicExercise.belongsTo(models.Topic)
   models.GeneratedTopicExercise.belongsTo(models.User)

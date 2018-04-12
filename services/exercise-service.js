@@ -21,7 +21,7 @@ class ExerciseService extends CRUDService {
   getTopicExercises (topicId) {
     log.verbose(TAG, `course.service.getExerciseRelatedWithTopicId.GET (topicId): ${topicId}`)
     return this._sequelize.query(`
-SELECT exercises.id, exercises.data
+SELECT exercises.id, exercises.data, subtopic.subtopic AS subtopicName
 FROM exercises AS exercises
 INNER JOIN subtopics AS subtopic ON exercises.subtopicId = subtopic.id AND subtopic.topicId = ${topicId}
 ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTypes.SELECT }
@@ -55,12 +55,14 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           knowns,  // Already stringified
           unknowns, // Already stringified
           userAnswer, // DONE
-          exerciseId
+          exerciseId: 40,
+          idealTime: 60,
+          subtopicName: 'Pengenalan Hasil Bilangan 1-5'
         }
         formatted: {
           renderedQuestions, // HTML-rendered question array
           unknowns, // Variable for inputs
-          userAnswer
+          subtopicName: 'Penjumlahan Hasil Bilangan 1-5'
         }
       }
     }
@@ -98,11 +100,14 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
             knowns: JSON.stringify(knowns),
             unknowns: JSON.stringify(answerUnknowns),
             userAnswer: [],
-            exerciseId: exercise.id
+            exerciseId: exercise.id,
+            idealTime: exerciseSolver.getIdealTimePerQuestion() * exerciseSolver.getQuestionQuantity(),
+            subtopicName: exercise.subtopicName
           },
           formatted: {
             renderedQuestions,
-            unknowns
+            unknowns,
+            subtopicName: exercise.subtopicName
           }
         }
       }
@@ -137,7 +142,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           renderedQuestions: ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"], // HTML-rendered question array
           unknowns: [["x"], ["x"]], // Variable for inputs
           userAnswer
-        }]
+        }],
+        idealTime: 50
       }
     }
   */
@@ -162,8 +168,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     }).then(results => {
       const exerciseData = []
       const formatted = []
+      var idealTime = 0
 
       results.filter(result => result != null).forEach(result => {
+        idealTime += result.exerciseData.idealTime
         exerciseData.push(result.exerciseData)
         formatted.push(result.formatted)
       })
@@ -172,7 +180,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         status: true,
         data: {
           exerciseData,
-          formatted
+          formatted,
+          idealTime
         }
       }
     })
@@ -184,7 +193,9 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
       unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
       userAnswer: [],
-      exerciseId: 14
+      exerciseId: 14,
+      subtopicName: 'Penjumlahan Hasil Bilangan 1-5',
+      idealTime: 40
     }]
 
   Output:
@@ -194,7 +205,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         formatted: [{
           renderedQuestions: ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"], // HTML-rendered question array
           unknowns: [["x"], ["x"]], // Variable for inputs
-          userAnswer
+          subtopicName: 'Penjumlahan Hasil Bilangan 1-5'
         }]
       }
     }]
@@ -216,7 +227,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
             return {
               renderedQuestions,
-              unknowns
+              unknowns,
+              subtopicName: generatedExercise.subtopicName
             }
           })
         } else {
@@ -264,11 +276,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         ],
         "unknowns": [
             ["x"],
-            ["x"],
-            ["x"],
-            ["x"],
-            ["x"],
-            ["x"]
         ]
       },
       "exerciseId": 34
@@ -292,6 +299,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         unknowns
       }
       data.exerciseId = generatedExercise.exerciseId
+      data.idealTime = exerciseSolver.getIdealTimePerQuestion()
       return data
     })
   }
@@ -482,6 +490,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   /*
+  Input:
     topicId: 3
     userId; 5,
     topicExerciseHash: 'kdkdkdk',
@@ -489,17 +498,18 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     [ { knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
         unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
         userAnswer: [],
-        exerciseId: 14 } ]
-
+        exerciseId: 14 } ],
+    idealTime: 50
   */
-  createGeneratedTopicExercise (topicId, userId, exerciseDetail, topicExerciseHash) {
+  createGeneratedTopicExercise (topicId, userId, exerciseDetail, topicExerciseHash, idealTime) {
     return this.create({
       modelName: 'GeneratedTopicExercise',
       data: {
         topicId,
         userId,
         exerciseDetail: JSON.stringify(exerciseDetail),
-        topicExerciseHash
+        topicExerciseHash,
+        idealTime
       }
     })
   }
@@ -516,20 +526,22 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           userAnswer: [],
           exerciseId: 14 } ],
     return: {
-      status: true
+      status: true,
+      createdAt
     }
   */
   updateGeneratedTopicExercise (generatedTopicExerciseId, exerciseDetail, topicExerciseHash) {
+    var createdAt = Date.now()
     return this.update({
       modelName: 'GeneratedTopicExercise',
       data: {
         id: generatedTopicExerciseId,
         exerciseDetail: JSON.stringify(exerciseDetail),
         topicExerciseHash,
-        createdAt: Date.now()
+        createdAt
       }
     }).then(resp => {
-      return resp
+      return Object.assign({createdAt}, resp)
     })
   }
 
@@ -664,6 +676,84 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         return {status: true, data: {stars}}
       })
     })
+  }
+
+  // Get user score of an exercise
+  //
+  // Return:
+  // 0 - 4: How many of the submitted scores are > 80%
+  _getExerciseTimers (userId, id, tableName) {
+    if (tableName === 'generatedTopicExercises') {
+      return this._sequelize.query(`
+  SELECT score FROM ${tableName}
+  WHERE submitted = 1 AND topicId = ${id} AND userId = ${userId}
+  ORDER BY score DESC LIMIT 4;`,
+      { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+        const timers = datas.reduce((acc, data) => {
+          if (parseInt(data.score) >= 80) {
+            return acc + 1
+          } else {
+            return acc
+          }
+        }, 0)
+        return {status: true, data: {timers}}
+      })
+    } else {
+      return this._sequelize.query(`
+  SELECT score FROM generatedExercises
+  WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${id}
+  AND timeFinish < idealTime AND score = 100
+  ORDER BY score DESC LIMIT 4;`,
+      { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+        const timers = datas.reduce((acc, data) => {
+          if (parseInt(data.score) >= 100) {
+            return acc + 1
+          } else {
+            return acc
+          }
+        }, 0)
+        return {status: true, data: {timers}}
+      })
+    }
+  }
+
+  _getUniversalExerciseTimers (userId, id, tableName, renderStar = true) {
+    return this._getExerciseTimers(userId, id, tableName).then(resp => {
+      if (resp.status) {
+        if (renderStar) {
+          const timers = resp.data.timers
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/timers.pug'), {timers})
+          return {status: true, data: html}
+        } else {
+          return resp
+        }
+      } else {
+        return (resp)
+      }
+    })
+  }
+
+  getSubtopicExerciseTimers (userId, subtopicId) {
+    return this.read({
+      modelName: 'Exercise', searchClause: {subtopicId}
+    }).then(resp => {
+      return Promise.map(resp.data || [], exercise => {
+        return this._getExerciseTimers(userId, exercise.id, 'generatedExercises')
+      }).then(datas => {
+        const timers = datas.reduce((acc, resp) => {
+          return acc + resp.data.timers
+        }, 0)
+        return {status: true, data: {timers}}
+      })
+    })
+  }
+
+  getSubtopicExerciseTimer (userId, exerciseId, renderStar = true) {
+    return this._getUniversalExerciseTimers(userId, exerciseId, 'generatedExercises', renderStar)
+  }
+
+  getTopicExerciseTimer (userId, topicId, renderStar = true) {
+    return this._getUniversalExerciseTimers(userId, topicId, 'generatedTopicExercises', renderStar)
   }
 
   // Get leaderboard data

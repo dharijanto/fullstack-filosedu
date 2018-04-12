@@ -2,7 +2,6 @@ var path = require('path')
 
 var log = require('npmlog')
 var Promise = require('bluebird')
-var pug = require('pug')
 
 var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 var BaseController = require(path.join(__dirname, 'base-controller'))
@@ -31,11 +30,12 @@ class ExerciseController extends BaseController {
       var subtopicId = req.params.subtopicId
       var topicId = req.params.topicId
       Promise.join(
-        exerciseService.getExercise(exerciseId),
-        courseService.getSubtopic(subtopicId),
-        courseService.getTopic(topicId),
-        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId)
-      ).spread((resp, resp2, resp3, resp4) => {
+        courseService.getSingleExercise(exerciseId),
+        courseService.getSingleSubtopic(subtopicId),
+        courseService.getSingleTopic(topicId),
+        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
+        exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId)
+      ).spread((resp, resp2, resp3, resp4, resp5) => {
         if (resp.status && resp2.status) {
           var exerciseHash = ExerciseGenerator.getHash(resp.data.data)
           var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
@@ -44,6 +44,13 @@ class ExerciseController extends BaseController {
           } else {
             res.locals.starsHTML = '<p style="color:red;"> Unable to retrieve stars... </p>'
           }
+
+          if (resp5.status) {
+            res.locals.timersHTML = resp5.data
+          } else {
+            res.locals.timersHTML = '<p style="color:red;"> Unable to retrieve timers... </p>'
+          }
+
           res.locals.subtopic = resp2.data
           res.locals.topic = resp3.data
           res.locals.bundle = this._assetBundle
@@ -57,25 +64,26 @@ class ExerciseController extends BaseController {
               if (resp2.data.exerciseHash === exerciseHash) {
                 log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
                 return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
-                  res.locals.formatted = data.formatted
-                  res.locals.exerciseId = data.exerciseId
+                  Object.assign(res.locals, data)
+                  res.locals.exercise = resp2.data
                   res.render('exercise')
                 })
               } else {
                 return exerciseService.generateExercise(resp.data).then(resp3 => {
                   if (resp3.status) {
-                    return exerciseService.updateExercise(
-                      req.user.id,
+                    return courseService.destroyAndCreateGeneratedExercise(req.user.id,
                       resp3.data.exerciseData,
                       exerciseHash).then(resp => {
-                        if (resp.status) {
-                          res.locals.exerciseId = exerciseId
-                          res.locals.formatted = resp3.data.formatted
-                          res.render('exercise')
-                        } else {
-                          throw new Error('Cannot create exercise:' + resp.errMessage)
-                        }
-                      })
+                      if (resp.status) {
+                        res.locals.exerciseId = exerciseId
+                        res.locals.formatted = resp3.data.formatted
+                        res.locals.exercise = resp3.data
+                        res.locals.idealTime = resp3.data.exerciseData.idealTime || 0
+                        res.render('exercise')
+                      } else {
+                        throw new Error('Cannot create exercise!')
+                      }
+                    })
                   } else {
                     throw new Error('Exercise does not exists:' + resp.errMessage)
                   }
@@ -99,27 +107,25 @@ class ExerciseController extends BaseController {
                 //             ],
                 //             "unknowns": [
                 //                 ["x"],
-                //                 ["x"],
-                //                 ["x"],
-                //                 ["x"],
-                //                 ["x"]
                 //             ]
                 //         }
                 //     }
                 // }
                 if (resp3.status) {
-                  return exerciseService.updateExercise(
+                  return courseService.destroyAndCreateGeneratedExercise(
                     req.user.id,
                     resp3.data.exerciseData,
-                    exerciseHash).then(resp => {
-                      if (resp.status) {
-                        res.locals.exerciseId = exerciseId
-                        res.locals.formatted = resp3.data.formatted
-                        res.render('exercise')
-                      } else {
-                        throw new Error('Cannot create exercise:' + resp.errMessage)
-                      }
-                    })
+                    exerciseHash).then(resp4 => {
+                    if (resp4.status) {
+                      res.locals.exerciseId = exerciseId
+                      res.locals.formatted = resp3.data.formatted
+                      res.locals.exercise = resp4.data
+                      res.locals.idealTime = resp3.data.exerciseData.idealTime || 0
+                      res.render('exercise')
+                    } else {
+                      throw new Error('Cannot create exercise!')
+                    }
+                  })
                 } else {
                   throw new Error('Exercise does not exists:' + resp.errMessage)
                 }
@@ -258,8 +264,9 @@ class ExerciseController extends BaseController {
                     exerciseService.getSubtopicExerciseStars(userId, exerciseId),
                     exerciseService.getExerciseLeaderboard(exerciseId, false),
                     exerciseService.getSubtopicCurrentRanking(timeFinish, exerciseId),
-                    exerciseService.getSubtopicTotalRanking(exerciseId)
-                  ).spread((resp2, resp3, resp4, resp5) => {
+                    exerciseService.getSubtopicTotalRanking(exerciseId),
+                    exerciseService.getSubtopicExerciseTimer(userId, exerciseId)
+                  ).spread((resp2, resp3, resp4, resp5, resp6) => {
                     res.json({
                       status: true,
                       data: {
@@ -268,6 +275,7 @@ class ExerciseController extends BaseController {
                         currentScore,
                         bestScore,
                         starsHTML: resp2.data,
+                        timersHTML: resp6.data,
                         ranking: resp3.data,
                         currentTimeFinish: timeFinish,
                         currentRanking: resp4.data.count,

@@ -26,9 +26,8 @@ block contents
 
         a.btn.btn-primary.exerciseButton(type="button" onclick='return false' href='#' data-href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
         if (isAuthenticated)
-          //- input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
           + renderExerciseStars(exercise.stars)
-
+          + renderTimerProgress(exercise.timers)
         br
       if !isAuthenticated
         br
@@ -39,5 +38,4 @@ block footer
   script(src="/assets/vendor/videojs/videojs-resolution-switcher.js")
   script(src="/assets/vendor/videojs/videojs.endcapCTA.js")
   script(src=`${bundle}`)
-  //- script(src="/js/subtopic-app-bundle.js")
     
