@@ -10,6 +10,7 @@ const CourseManagementController = require(path.join(__dirname, 'controllers/cou
 const AccountManagementController = require(path.join(__dirname, 'controllers/account-management-controller'))
 const SchoolManagementController = require(path.join(__dirname, 'controllers/school-management-controller'))
 const SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
+const SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 
 class MainController extends BaseController {
   constructor (initData) {
@@ -28,6 +29,7 @@ class MainController extends BaseController {
     this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
     this.routeHashlessUse((new SchoolManagementController(initData).getRouter()))
     this.routeHashlessUse((new SubtopicController(initData)).getRouter())
+    this.routeHashlessUse((new SyncController(initData)).getRouter())
   }
 
   // View path is under [templateName]/app/view

@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var log = require('npmlog')
 
 const TAG = 'CRUDService'
@@ -10,7 +11,7 @@ class CRUDService {
 
   create ({modelName, data}, trx = null) {
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
-    delete data.id // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
+    data = _.omit(data, 'id') // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
     if (!data) {
       throw new Error('data has to be specified!')
     }
