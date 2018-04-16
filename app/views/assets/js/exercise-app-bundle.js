@@ -76,7 +76,7 @@ $('.btn_submit_answer').on('click', function (e) {
     userAnswers.push($(value).serializeObject());
   });
 
-  axios.post('/exercise/submitAnswers', {
+  axios.post(window.location.href, {
     userAnswers: userAnswers,
     generatedExerciseId: $('input[name=generatedExerciseId]').val(),
     exerciseId: $('input[name=exerciseId]').val()
