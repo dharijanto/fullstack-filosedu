@@ -4,6 +4,7 @@ const TAG = 'Topic-Exercise-App'
 
 var axios = require('../libs/axios-wrapper')
 var log = require('../libs/logger')
+var Utils = require('../libs/utils')
 
 var pathName = window.location.pathname
 // to split and get topic id from url pathname
@@ -29,8 +30,18 @@ $('#leaderboard-button').on('click', function (e) {
 })
 
 $('.btn_submit_answer').on('click', function (e) {
+  const userAnswers = []
+
+  const jqueryForms = $('form[name="question"]')
+  for (var i = 0; i < jqueryForms.length; i++) {
+    const jqueryForm = $(jqueryForms[i])
+    // [{name: "X", value: "1"}, {name: "y", value: "2"}]
+    userAnswers.push(jqueryForm.serializeObject())
+  }
+
+  console.log(JSON.stringify(userAnswers))
   axios.post(window.location.href, {
-    userAnswers: $('form#topicQuestion').serialize()
+    userAnswers
   }).then(rawResp => {
     var resp = rawResp.data
     if (resp.status) {

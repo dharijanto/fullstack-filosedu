@@ -410,44 +410,43 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       unknowns: '[{"x":"Lima"},{"x":"Lima"},{"x":"Empat"}]',
       userAnswer: [],
       exerciseId: 31 } ]
-      userAnswers: [ 'x=1', 'x=2', 'x=3']
+  userAnswers: [{x: 3}, {x: 5}, {x: 4}, {x: 2}, {x: 5}, {x: 'lima'}, {x: 'lima'}, {x: 'empat'}]
   return: {
     status: true/false
     data: [
-      { isCorrect: false, userAnswer: '4', unknown: [Object] },
-      { isCorrect: false, userAnswer: '4', unknown: [Object] },
-      { isCorrect: true, userAnswer: '4', unknown: [Object] },
-      { isCorrect: false, userAnswer: '4', unknown: [Object] },
-      { isCorrect: false, userAnswer: '4', unknown: [Object] },
-      { isCorrect: false, userAnswer: '4314', unknown: [Object] },
-      { isCorrect: false, userAnswer: '', unknown: [Object] },
-      { isCorrect: false, userAnswer: '4', unknown: [Object] }
+      {isCorrect: false, unknown: {"x":3}},
+      {isCorrect: false, unknown: {"x":5}},
+      {isCorrect: true, unknown: {"x":"Lima"}},
+
     ]
   }
   */
   checkAnswer (exerciseDetails, userAnswers) {
-    // pointerIndex later tobe used as get answer when query with knowns
-    var pointerIndex = 0
-    return Promise.map(exerciseDetails, (exerciseDetail, index, length) => {
+    return Promise.map(exerciseDetails, (exerciseDetail, index) => {
       return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseDetail.exerciseId}}).then(resp => {
         if (resp.status) {
           const exercise = resp.data
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-          return JSON.parse(exerciseDetail.knowns).map((known, index2) => {
-            var userAnswer = userAnswers[pointerIndex].split('=')[1]
-            var isCorrect = exerciseSolver.isAnswer(known, {x: userAnswer})
-            pointerIndex++
-            return {isCorrect, userAnswer, unknown: JSON.parse(exerciseDetail.unknowns)[index2]}
+          const knowns = JSON.parse(exerciseDetail.knowns)
+          const unknowns = JSON.parse(exerciseDetail.unknowns)
+          return knowns.map((known, index) => {
+            return {known, unknown: unknowns[index], isAnswerFn: exerciseSolver.isAnswer.bind(exerciseSolver)}
           })
         } else {
-          return {status: false, errMessage: 'Exercise is not avaiable'}
+          throw new Error('Exercise with id=' + exerciseDetail.exerciseId + ' could not be found!')
         }
       })
     }).then(results => {
-      var resultAnswers = results.reduce((acc, currentValue) => {
-        return acc.concat(currentValue)
+      // [[{known: {a: 3}, unknown, isAnswerFn}, {known: {a: 5}, unknown, isAnswerFn: [Object]}], [{}, {}]] -> [{}, {}, {}, {}]
+      // [{known: {a: 3}, unknown, isAnswerFn: [Object]}, {known: {a: 5}, unknown, isAnswerFn: [Object]}]
+      const flattenedResults = results.reduce((acc, resultArr) => {
+        return acc.concat(resultArr)
       }, [])
-      return {status: true, data: resultAnswers}
+      const data = flattenedResults.map((result, index) => {
+        return {isCorrect: result.isAnswerFn(result.known, userAnswers[index]), unknown: result.unknown}
+      })
+
+      return {status: true, data}
     })
   }
 

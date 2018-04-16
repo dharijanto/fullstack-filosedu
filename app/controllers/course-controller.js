@@ -64,7 +64,7 @@ class CourseController extends BaseController {
       })
     })
 
-    this.routeGet('/topics/:topicId/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routeGet('/topics/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       var topicId = req.params.topicId
       var userId = req.user.id
 
@@ -146,10 +146,7 @@ class CourseController extends BaseController {
         {
           "formatted": [{
               "renderedQuestions": ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"],
-              "unknowns": [
-                  ["x"],
-                  ["x"]
-              ]
+              "unknowns": [["x"],["x"]]
           }]
           "topic": {
             id: 1
@@ -184,8 +181,9 @@ class CourseController extends BaseController {
       }
     })
 
-    this.routePost('/topics/:topicId/review', (req, res, next) => {
-      var userAnswers = req.body.userAnswers.split('&')
+    this.routePost('/topics/:topicId/:topicSlug/review', (req, res, next) => {
+      // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
+      var userAnswers = req.body.userAnswers
 
       var topicId = req.params.topicId
       var userId = req.user.id
@@ -215,11 +213,11 @@ class CourseController extends BaseController {
               var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
 
               // Adding userAnswer to existing content from exerciseDetail tobe saved in DB
-              var pointerIndex = 0
-              exerciseDetail.forEach((exercise, index) => {
-                JSON.parse(exercise.unknowns).forEach(unknown => {
-                  exercise.userAnswer.push({x: userAnswers[pointerIndex].split('=')[1] || ''})
-                  pointerIndex++
+              var index = 0
+              exerciseDetail.forEach((exercise) => {
+                JSON.parse(exercise.unknowns).forEach((val) => {
+                  exercise.userAnswer.push(userAnswers[index])
+                  index++
                 })
               })
 
@@ -265,7 +263,7 @@ class CourseController extends BaseController {
                   currentTimeFinish: resultAnswers.timeFinish,
                   currentRanking: resp12.data.count,
                   totalRanking: resp13.data.count,
-                  isPerfectScore: resultAnswers.currentScore === 100 ? true : false
+                  isPerfectScore: resultAnswers.currentScore === 100
                 }
               })
             })

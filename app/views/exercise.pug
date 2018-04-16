@@ -30,11 +30,12 @@ block contents
           form.QuestionSection(method="POST" onkeypress="return event.keyCode != 13;")
             .row
               | !{question}
-            .row.form-group(style="width: 40%; margin:auto")
-              .col-md-2
-                label.control-label(style="font-size: 150%") #{unknown}
-              .col-md-10
-                input.form-control.answerInput(name=`${formatted.unknowns[index]}` value="")
+            each unknown in formatted.unknowns[index]
+              .row.form-group(style="width: 40%; margin:auto")
+                .col-md-2
+                  label.control-label(style="font-size: 150%") #{unknown}
+                .col-md-10
+                  input.form-control.answerInput(name=`${unknown}` value="")
             div(class=`resultAnswer_${index}`)
             .row
               hr(style="height: 1px")

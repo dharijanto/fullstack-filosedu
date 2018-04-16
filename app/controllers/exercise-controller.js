@@ -64,7 +64,7 @@ class ExerciseController extends BaseController {
               } else {
                 return exerciseService.generateExercise(resp.data).then(resp3 => {
                   if (resp3.status) {
-                    return courseService.updateExercise(
+                    return exerciseService.updateExercise(
                       req.user.id,
                       resp3.data.exerciseData,
                       exerciseHash).then(resp => {

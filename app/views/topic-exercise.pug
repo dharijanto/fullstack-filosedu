@@ -23,21 +23,22 @@ block contents
       h4.text-center
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       div.text-center#questionSubmit
-        form.QuestionSection#topicQuestion(method="POST")
-          - var pointerIndex = 0
-          each formattedExercise, index in formattedExercises
+        - var pointerIndex = 0
+        each formattedExercise in formattedExercises
             //- if ((formattedExercise.renderedQuestions).length > 0)
-            each renderedQuestion, index2 in formattedExercise.renderedQuestions
-              .row
-                | !{renderedQuestion}
-              .row.form-group(style="width:40%; margin:auto;")
-                .col-md-2
-                  label.control-label(style="font-size: 150%") #{formattedExercise.unknowns[index2]}
-                .col-md-10
-                  input.form-control.answerInput(name=`${formattedExercise.unknowns[index2]}` value='')
-              div(class=`resultAnswer_${pointerIndex}`)
-              - pointerIndex++
-              br
+            each renderedQuestion, index in formattedExercise.renderedQuestions
+              form(name='question')
+                .row
+                  | !{renderedQuestion}
+                  for unknown in formattedExercise.unknowns[index]
+                    .row.form-group(style="width:40%; margin:auto;")
+                      .col-md-2
+                        label.control-label(style="font-size: 150%") #{unknown}
+                      .col-md-10
+                        input.form-control.answerInput(name=`${unknown}` value='')
+                div(class=`resultAnswer_${pointerIndex}`)
+                - pointerIndex++
+                br
             hr(style="height: 1px")
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection

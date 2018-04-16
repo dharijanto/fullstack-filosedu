@@ -14,7 +14,7 @@ block contents
           .panel-heading
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/review"` style='margin-right: 1%; margin-left: 1%') Review Soal
+              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review Soal
               span.pull-right
                + renderExerciseStars(parseInt(topic.stars), 15)
           .panel-collapse.collapse.in(id=`collapse_${index}`)
