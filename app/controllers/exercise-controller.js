@@ -31,9 +31,9 @@ class ExerciseController extends BaseController {
       var subtopicId = req.params.subtopicId
       var topicId = req.params.topicId
       Promise.join(
-        courseService.getSingleExercise(exerciseId),
-        courseService.getSingleSubtopic(subtopicId),
-        courseService.getSingleTopic(topicId),
+        exerciseService.getExercise(exerciseId),
+        courseService.getSubtopic(subtopicId),
+        courseService.getTopic(topicId),
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId)
       ).spread((resp, resp2, resp3, resp4) => {
         if (resp.status && resp2.status) {
@@ -52,12 +52,13 @@ class ExerciseController extends BaseController {
 
           // Check whether previous exercise has been submitted or not. If submitted,
           // we create new question for student otherwise, restore previous exercise.
-          return courseService.getCurrentExercise({userId: req.user.id, exerciseId}).then(resp2 => {
+          return exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}).then(resp2 => {
             if (resp2.status) {
               if (resp2.data.exerciseHash === exerciseHash) {
                 log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
                 return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
-                  Object.assign(res.locals, data)
+                  res.locals.formatted = data.formatted
+                  res.locals.exerciseId = data.exerciseId
                   res.render('exercise')
                 })
               } else {
@@ -67,14 +68,14 @@ class ExerciseController extends BaseController {
                       req.user.id,
                       resp3.data.exerciseData,
                       exerciseHash).then(resp => {
-                      if (resp.status) {
-                        res.locals.exerciseId = exerciseId
-                        res.locals.formatted = resp3.data.formatted
-                        res.render('exercise')
-                      } else {
-                        throw new Error('Cannot create exercise:' + resp.errMessage)
-                      }
-                    })
+                        if (resp.status) {
+                          res.locals.exerciseId = exerciseId
+                          res.locals.formatted = resp3.data.formatted
+                          res.render('exercise')
+                        } else {
+                          throw new Error('Cannot create exercise:' + resp.errMessage)
+                        }
+                      })
                   } else {
                     throw new Error('Exercise does not exists:' + resp.errMessage)
                   }
@@ -107,18 +108,18 @@ class ExerciseController extends BaseController {
                 //     }
                 // }
                 if (resp3.status) {
-                  return courseService.updateExercise(
+                  return exerciseService.updateExercise(
                     req.user.id,
                     resp3.data.exerciseData,
                     exerciseHash).then(resp => {
-                    if (resp.status) {
-                      res.locals.exerciseId = exerciseId
-                      res.locals.formatted = resp3.data.formatted
-                      res.render('exercise')
-                    } else {
-                      throw new Error('Cannot create exercise:' + resp.errMessage)
-                    }
-                  })
+                      if (resp.status) {
+                        res.locals.exerciseId = exerciseId
+                        res.locals.formatted = resp3.data.formatted
+                        res.render('exercise')
+                      } else {
+                        throw new Error('Cannot create exercise:' + resp.errMessage)
+                      }
+                    })
                 } else {
                   throw new Error('Exercise does not exists:' + resp.errMessage)
                 }
@@ -164,7 +165,7 @@ class ExerciseController extends BaseController {
       }
     })
 
-    this.routePost('/exercise/submitAnswers', (req, res, next) => {
+    this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
@@ -174,9 +175,9 @@ class ExerciseController extends BaseController {
         res.status(500).send('Request not authenticated!')
       } else {
         Promise.join(
-          courseService.getCurrentExercise({userId, exerciseId}), // Exercise that's currently being graded
-          courseService.getSubmittedExercises({userId, exerciseId}),
-          courseService.getSingleExercise(exerciseId)
+          exerciseService.getGeneratedExercise({userId, exerciseId}), // Exercise that's currently being graded
+          exerciseService.getSubmittedExercises({userId, exerciseId}),
+          exerciseService.getExercise(exerciseId)
         ).spread((geResp, sgeResp, eResp) => {
           if (!geResp.status) {
             log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
@@ -245,7 +246,7 @@ class ExerciseController extends BaseController {
               })
 
               const timeFinish = ExerciseHelper.countTimeFinish(generatedExercise.createdAt)
-              return courseService.updateGenerateExercise({
+              return exerciseService.updateGenerateExercise({
                 id: generatedExercise.id,
                 score: currentScore,
                 userAnswer: JSON.stringify(userAnswers),

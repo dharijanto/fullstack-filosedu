@@ -8,6 +8,7 @@ var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 
 var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
 
@@ -63,7 +64,7 @@ class CourseController extends BaseController {
       })
     })
 
-    this.routeGet('/topics/:topicId/review', (req, res, next) => {
+    this.routeGet('/topics/:topicId/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       var topicId = req.params.topicId
       var userId = req.user.id
 
@@ -82,10 +83,12 @@ class CourseController extends BaseController {
           throw new Error(resp3.errMessage)
         }
 
+        // Topic exercise has already been generated
         if (resp2.status) {
           const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
-
           // log.verbose(TAG, 'exercise.review.GET: resp4=' + JSON.stringify(resp4))
+
+          // Check if any of the building exercise has changed since we generate it
           if (topicExerciseHash === resp2.data.topicExerciseHash) {
             return exerciseService.formatExercises(generatedExercises).then(resp5 => {
               if (resp5.status) {
@@ -94,10 +97,9 @@ class CourseController extends BaseController {
                 throw new Error(resp5.errMessage)
               }
             })
-          } else {
+          } else { // If there are changes, we have to re-generate the exercise
             // Update the exercise if the hash is not valid
             const exercises = resp.data
-
             return exerciseService.generateExercises(exercises).then(resp5 => {
               if (resp5.status) {
                 const generatedExercises = resp5.data.exerciseData
@@ -115,10 +117,9 @@ class CourseController extends BaseController {
               }
             })
           }
-        } else {
+        } else { // No generated exercise, generate a new one
           if (resp.status) {
             const exercises = resp.data
-
             return exerciseService.generateExercises(exercises).then(resp4 => {
               if (resp4.status) {
                 const generatedExercises = resp4.data.exerciseData
@@ -156,6 +157,7 @@ class CourseController extends BaseController {
           }
         }
         */
+        console.log(JSON.stringify(formattedContent))
         res.locals.topicName = formattedContent.topicName
         res.locals.bundle = this._assetBundle
         res.locals.formattedExercises = formattedContent.formatted

@@ -22,14 +22,14 @@ block contents
         a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Kembali ke Video
       h4.text-center
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
-      hr
+      hr(style="height: 1px")
       input#exerciseId(type="hidden" name="exerciseId" value=`${exerciseId}`)
 
       div.text-center#questionSubmit
         each question, index in formatted.renderedQuestions
           form.QuestionSection(method="POST" onkeypress="return event.keyCode != 13;")
             .row
-              | !{marked(question)}
+              | !{question}
             .row.form-group(style="width: 40%; margin:auto")
               .col-md-2
                 label.control-label(style="font-size: 150%") #{unknown}
@@ -37,7 +37,7 @@ block contents
                 input.form-control.answerInput(name=`${formatted.unknowns[index]}` value="")
             div(class=`resultAnswer_${index}`)
             .row
-              hr
+              hr(style="height: 1px")
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection
           p.hidden(id='currentScore')

@@ -23,15 +23,16 @@ block contents
         - var exerciseUrl = `/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}/${exercise.id}/latihan-${index+1}`
         // There's no elegant way of having a button with href. If we use a however, it can't be disabled easily
         // TODO: Use 'a' with css to disable
-        if (!isAuthenticated)
-          input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
-        else
-          a.btn.btn-primary.exerciseButton(type="button" onclick='return false' href='#' data-href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
+
+        a.btn.btn-primary.exerciseButton(type="button" onclick='return false' href='#' data-href=exerciseUrl style="margin-top:10px;")= `Latihan ${index+1}`
+        if (isAuthenticated)
+          //- input.btn.btn-primary(type="button" value=`Latihan ${index+1}` href=exerciseUrl style="margin-top:10px;" disabled="disabled")
           + renderExerciseStars(exercise.stars)
+
         br
       if !isAuthenticated
         br
-        h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan.
+        h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan dan melihat nilai
 
 block footer
   script(src="/assets/vendor/videojs/video.js")

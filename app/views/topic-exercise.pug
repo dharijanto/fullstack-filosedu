@@ -16,27 +16,29 @@ block contents
             button.btn.btn-secondary(type='button', data-dismiss='modal') Close
 
     div.container
-      h1.text-center Review Topics
+      h1.text-center Review Topic
       h4.text-center #{topicName}
+      h4.text-center
+        a(href='/') Kembali
       h4.text-center
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       div.text-center#questionSubmit
         form.QuestionSection#topicQuestion(method="POST")
           - var pointerIndex = 0
           each formattedExercise, index in formattedExercises
-            if ((formattedExercise.renderedQuestions).length > 0)
-              each val, index2 in formattedExercise.renderedQuestions
-                .row
-                  | !{marked(val)}
-                .row.form-group(style="width:40%; margin:auto;")
-                  .col-md-2
-                    label.control-label(style="font-size: 150%") #{formattedExercise.unknowns[index2]}
-                  .col-md-10
-                    input.form-control.answerInput(name=`${formattedExercise.unknowns[index2]}` value='')
-                div(class=`resultAnswer_${pointerIndex}`)
-                - pointerIndex++
+            //- if ((formattedExercise.renderedQuestions).length > 0)
+            each renderedQuestion, index2 in formattedExercise.renderedQuestions
+              .row
+                | !{renderedQuestion}
+              .row.form-group(style="width:40%; margin:auto;")
+                .col-md-2
+                  label.control-label(style="font-size: 150%") #{formattedExercise.unknowns[index2]}
+                .col-md-10
+                  input.form-control.answerInput(name=`${formattedExercise.unknowns[index2]}` value='')
+              div(class=`resultAnswer_${pointerIndex}`)
+              - pointerIndex++
               br
-              hr
+            hr(style="height: 1px")
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection
           p.hidden(id='currentScore')

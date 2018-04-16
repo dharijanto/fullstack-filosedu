@@ -30,6 +30,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
+  getExercise (exerciseId) {
+    return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseId}})
+  }
+
   /*
     exercise: {
       id: 13,
@@ -236,7 +240,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   /*
-    Input of generatedExercise
+    generatedExercise:
     {
       id: 140,
       exerciseHash: '306e75a560185c08fa9937e1095d9af3',
@@ -252,7 +256,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       userId: 99
     }
 
-    Output of formatExercise
+    return:
     {
       "formatted": {
         "renderedQuestions": [
@@ -324,43 +328,77 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       })
     })
   }
-  /*
-    Return whether the topicExercise given is still valid or not.
-    Not valid if:
-      1. Any of the exercise has changed
-      2. Any of the exercise has been deleted
 
-    exercises: [{
-      id: 1,
-      data: 'code nodejs'
-    }]
-    topicExerciseHash: 'kdkdkdkd'
-    return:
-      {status: true}
-  */
-  checkHash (exercises, topicExerciseHash) {
-    return new Promise((resolve, reject) => {
-      var tempHash = ''
-      exercises.forEach(exercise => {
-        var exerciseHash = ExerciseGenerator.getHash(exercise.data)
-        // log.verbose(TAG, `checkHash(): exerciseHash=${exerciseHash} topicExercise.exerciseHash=${topicExerciseHash}`)
-        tempHash += exerciseHash
-      })
+  _destroySingleGeneratedExercise (userId, exerciseId) {
+    return this._models['GeneratedExercise'].destroy({where: {userId, exerciseId, submitted: false}})
+  }
 
-      var hashCollectedExercise = ExerciseGenerator.getHash(tempHash)
-      log.verbose(TAG, `checkHash(): hashCollectedExercise=${hashCollectedExercise} topicExercise.exerciseHash=${topicExerciseHash}`)
-      if (hashCollectedExercise === topicExerciseHash) {
-        resolve({status: true})
-      } else {
-        resolve({status: false})
+  _createSingleGeneratedExercise (exerciseHash, data, userId, exerciseId) {
+    return this.create({
+      modelName: 'GeneratedExercise',
+      data: {
+        exerciseHash,
+        knowns: data.knowns,
+        unknowns: data.unknowns,
+        exerciseId,
+        userId
       }
     })
   }
 
+  updateExercise (userId, data, exerciseHash) {
+    return this._destroySingleGeneratedExercise(userId, data.exerciseId).then(() => {
+      return this._createSingleGeneratedExercise(exerciseHash, data, userId, data.exerciseId)
+    })
+  }
+
+  saveAndGetGeneratedExercise (generateExerciseId, userAnswer) {
+    return this.update({
+      modelName: 'GeneratedExercise',
+      data: {
+        id: generateExerciseId,
+        userAnswer,
+        submitted: true
+      }
+    }).then(resp => {
+      return this.read({modelName: 'GeneratedExercise', searchClause: {id: generateExerciseId}})
+    })
+  }
+
   /*
-  Input:
-    exerciseDetails:
-      [ { knowns: '[{"a":3},{"a":5},{"a":4},{"a":2}]',
+    Input:
+      id: 1,
+      score: 2,
+      userAnswer: '[{x: "3"}]',
+      submitted: true,
+      timeFinish: 23.09
+  */
+  updateGenerateExercise (data) {
+    return this.update({
+      modelName: 'GeneratedExercise',
+      data
+    })
+  }
+
+  // Get exercise that is curently active
+  getGeneratedExercise ({userId, exerciseId}) {
+    return this.readOne({
+      modelName: 'GeneratedExercise',
+      searchClause: {userId, exerciseId, submitted: false}
+    })
+  }
+
+  // Get all exercises that have been submitted
+  getSubmittedExercises ({userId, exerciseId}) {
+    return this.read({
+      modelName: 'GeneratedExercise',
+      searchClause: {userId, exerciseId, submitted: true}
+    })
+  }
+
+  /*
+  exerciseDetails:
+  [ { knowns: '[{"a":3},{"a":5},{"a":4},{"a":2}]',
       unknowns: '[{"x":3},{"x":5},{"x":4},{"x":2}]',
       userAnswer: [],
       exerciseId: 23 },
@@ -372,8 +410,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       unknowns: '[{"x":"Lima"},{"x":"Lima"},{"x":"Empat"}]',
       userAnswer: [],
       exerciseId: 31 } ]
-    userAnswers: [ 'x=1', 'x=2', 'x=3']
-  Output:
+      userAnswers: [ 'x=1', 'x=2', 'x=3']
+  return: {
     status: true/false
     data: [
       { isCorrect: false, userAnswer: '4', unknown: [Object] },
@@ -385,6 +423,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       { isCorrect: false, userAnswer: '', unknown: [Object] },
       { isCorrect: false, userAnswer: '4', unknown: [Object] }
     ]
+  }
   */
   checkAnswer (exerciseDetails, userAnswers) {
     // pointerIndex later tobe used as get answer when query with knowns
