@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var log = require('npmlog')
 
 const TAG = 'CRUDService'
@@ -8,13 +9,14 @@ class CRUDService {
     this._models = models
   }
 
-  create ({modelName, data}) {
+  create ({modelName, data}, trx = null) {
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
-    delete data.id // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
+    data = _.omit(data, 'id') // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
     if (!data) {
       throw new Error('data has to be specified!')
     }
-    return this._models[modelName].create(data).then(createdData => {
+
+    return this._models[modelName].create(data, {transaction: trx}).then(createdData => {
       return {status: true, data: createdData.get({plain: true})}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
@@ -56,12 +58,13 @@ class CRUDService {
     })
   }
 
-  update ({modelName, data}) {
+  update ({modelName, data}, trx = null) {
     if (!('id' in data)) {
       throw new Error('data needs to have id!')
     }
     log.verbose(TAG, `update(): modelName=${modelName} data=${JSON.stringify(data)}`)
-    return this._models[modelName].update(data, {where: {id: data.id}}).spread((count) => {
+
+    return this._models[modelName].update(data, {where: {id: data.id}, transaction: trx}).spread((count) => {
       return {status: true}
     }).catch(err => {
       if (err.name === 'SequelizeUniqueConstraintError') {
