@@ -47,6 +47,5 @@ module.exports = {
   VIEWS_APP_PATH: path.join(__dirname, 'app/views'),
   VIEWS_CMS_PATH: path.join(__dirname, 'cms/views'),
   LOCAL_SCHOOL_INFORMATION,
-  CLOUD_INFORMATION,
-  DEBUG_MODE: true
+  CLOUD_INFORMATION
 }

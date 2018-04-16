@@ -170,7 +170,7 @@ class SyncService extends CRUDService {
           if (resp3.status) {
             return cloudId
           } else {
-            throw new Error('Failed to update user table:' + resp.errMessage)
+            throw new Error('Failed to update user table:' + resp3.errMessage)
           }
         })
       } else {
@@ -182,16 +182,15 @@ class SyncService extends CRUDService {
               if (resp4.status) {
                 return resp4.data.cloudId
               } else {
-                throw new Error('Failed to insert sync table:' + resp.errMessage)
+                throw new Error('Failed to insert sync table:' + resp4.errMessage)
               }
             })
           } else {
-            throw new Error('Failed to insert to user table: ' + resp.errMessage)
+            throw new Error('Failed to insert to user table: ' + resp3.errMessage)
           }
         })
       }
     }).catch(err => {
-      console.error(err)
       throw new Error(err)
     })
   }

@@ -79,8 +79,7 @@ class SyncController extends BaseController {
       return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => {
         if (resp.status) {
           var schoolId = resp.data.id
-
-          this.getDb().sequelize.transaction(trx => {
+          return this.getDb().sequelize.transaction(trx => {
             // TODO: Pas read, mau di kasi trx juga
             return Promise.each(postData.datas, (data, index) => {
               return syncService.processUser(data['user'], schoolIdentifier, schoolId, trx).then(userId => {
@@ -111,12 +110,12 @@ class SyncController extends BaseController {
                               tableName,
                               resp3.data.id,
                               trx).then(resp4 => {
-                              if (resp4.status) {
-                                return true
-                              } else {
-                                throw new Error(`Failed to insert sync table: ${resp4.errMessage}`)
-                              }
-                            })
+                                if (resp4.status) {
+                                  return true
+                                } else {
+                                  throw new Error(`Failed to insert sync table: ${resp4.errMessage}`)
+                                }
+                              })
                           } else {
                             throw new Error(`Failed to insert ${tableName} table: ${resp3.errMessage}`)
                           }
@@ -130,14 +129,12 @@ class SyncController extends BaseController {
           }).then(commitSuccess => {
             res.json({status: true})
           }).catch(err => {
-            console.error(err)
             throw new Error(err)
           })
         } else {
           res.json({status: false, errMessage: 'Unrecognized school'})
         }
       }).catch(err => {
-        console.error(err)
         return {status: false, errMessage: err.message}
       })
     })

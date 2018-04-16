@@ -53,7 +53,6 @@ class SyncController extends BaseController {
             })
           }).then(results => {
             var processedData = {
-              status: true,
               data: {
                 school: {
                   identifier: schoolIdentifier
@@ -61,7 +60,7 @@ class SyncController extends BaseController {
                 datas: results
               }
             }
-
+            log.verbose(TAG, 'syncController; GET(): processedData=' + JSON.stringify(processedData))
             return syncService.sendData(processedData).then(resp => {
               if (resp.status) {
                 res.send('Data success integrated with the cloud')
