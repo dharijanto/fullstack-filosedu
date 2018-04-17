@@ -437,7 +437,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         }
       })
     }).then(results => {
-      // [[{known: {a: 3}, unknown, isAnswerFn}, {known: {a: 5}, unknown, isAnswerFn: [Object]}], [{}, {}]] -> [{}, {}, {}, {}]
+      // [[{known: {a: 3}, unknown, isAnswerFn}, {known: {a: 5}, unknown, isAnswerFn: [Object]}], [[{}, {}]. [{}, {}]] -> [{}, {}, {}, {}]]
       // [{known: {a: 3}, unknown, isAnswerFn: [Object]}, {known: {a: 5}, unknown, isAnswerFn: [Object]}]
       const flattenedResults = results.reduce((acc, resultArr) => {
         return acc.concat(resultArr)
@@ -660,7 +660,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }).then(datas => {
         const stars = datas.reduce((acc, resp) => {
           return acc + resp.data.stars
-        }, 0)
+        }, 0) / datas.length
         return {status: true, data: {stars}}
       })
     })
@@ -670,17 +670,18 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   _getExerciseRanking (id, tableName) {
     if (tableName === 'generatedTopicExercises') {
       return this._sequelize.query(
-        `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
-    FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
-    WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+`SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
+ FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
+ WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`,
+      { type: Sequelize.QueryTypes.SELECT }).then(resp => {
         return {status: true, data: resp}
       })
     } else {
       return this._sequelize.query(
-        `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
-    FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
-    WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`,
-        { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+`SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
+ FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
+ WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish);`,
+      { type: Sequelize.QueryTypes.SELECT }).then(resp => {
         return {status: true, data: resp}
       })
     }
@@ -725,13 +726,12 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   GROUP BY userId
   ORDER BY MIN(timeFinish)) AS totalrow;`
       }
-
       return this._sequelize.query(queryDB,
         { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        resolve({status: true, data: {count: resp[0].total}})
-      }).catch(err => {
-        reject(err)
-      })
+          resolve({status: true, data: {count: resp[0].total}})
+        }).catch(err => {
+          reject(err)
+        })
     })
   }
 
@@ -760,10 +760,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }
       return this._sequelize.query(queryDB,
         { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        resolve({status: true, data: {count: resp[0].total}})
-      }).catch(err => {
-        reject(err)
-      })
+          resolve({status: true, data: {count: resp[0].total}})
+        }).catch(err => {
+          reject(err)
+        })
     })
   }
 

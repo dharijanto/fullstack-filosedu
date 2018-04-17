@@ -33,7 +33,7 @@ class CourseController extends BaseController {
         res.locals.topics = topicResp.data || []
 
         if (req.isAuthenticated()) {
-          Promise.join(
+          return Promise.join(
             Promise.map(res.locals.subtopics, subtopic => {
               return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
