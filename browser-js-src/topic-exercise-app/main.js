@@ -4,7 +4,7 @@ const TAG = 'Topic-Exercise-App'
 
 var axios = require('../libs/axios-wrapper')
 var log = require('../libs/logger')
-var Promise = require('bluebird')
+var Utils = require('../libs/utils')
 
 var pathName = window.location.pathname
 // to split and get topic id from url pathname
@@ -49,8 +49,16 @@ $('#resetQuestion').on('click', function (e) {
 
 function postAnswer () {
   return new Promise((resolve, reject) => {
+    const userAnswers = []
+    const jqueryForms = $('form[name="question"]')
+    for (var i = 0; i < jqueryForms.length; i++) {
+      const jqueryForm = $(jqueryForms[i])
+      // [{name: "X", value: "1"}, {name: "y", value: "2"}]
+      userAnswers.push(jqueryForm.serializeObject())
+    }
+
     axios.post(window.location.href, {
-      userAnswers: $('form#topicQuestion').serialize()
+      userAnswers
     }).then(rawResp => {
       var resp = rawResp.data
       if (resp.status) {

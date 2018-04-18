@@ -30,9 +30,9 @@ class ExerciseController extends BaseController {
       var subtopicId = req.params.subtopicId
       var topicId = req.params.topicId
       Promise.join(
-        courseService.getSingleExercise(exerciseId),
-        courseService.getSingleSubtopic(subtopicId),
-        courseService.getSingleTopic(topicId),
+        exerciseService.getExercise(exerciseId),
+        courseService.getSubtopic(subtopicId),
+        courseService.getTopic(topicId),
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
         exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId)
       ).spread((resp, resp2, resp3, resp4, resp5) => {
@@ -71,7 +71,8 @@ class ExerciseController extends BaseController {
               } else {
                 return exerciseService.generateExercise(resp.data).then(resp3 => {
                   if (resp3.status) {
-                    return courseService.destroyAndCreateGeneratedExercise(req.user.id,
+                    return exerciseService.updateExercise(
+                      req.user.id,
                       resp3.data.exerciseData,
                       exerciseHash).then(resp => {
                       if (resp.status) {
@@ -112,7 +113,7 @@ class ExerciseController extends BaseController {
                 //     }
                 // }
                 if (resp3.status) {
-                  return courseService.destroyAndCreateGeneratedExercise(
+                  return exerciseService.updateExercise(
                     req.user.id,
                     resp3.data.exerciseData,
                     exerciseHash).then(resp4 => {

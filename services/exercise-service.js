@@ -349,7 +349,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         knowns: data.knowns,
         unknowns: data.unknowns,
         exerciseId,
-        userId
+        userId,
+        idealTime: data.idealTime
       }
     })
   }
@@ -687,6 +688,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       return this._sequelize.query(`
   SELECT score FROM ${tableName}
   WHERE submitted = 1 AND topicId = ${id} AND userId = ${userId}
+  AND timeFinish < idealTime AND score = 100
   ORDER BY score DESC LIMIT 4;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const timers = datas.reduce((acc, data) => {
