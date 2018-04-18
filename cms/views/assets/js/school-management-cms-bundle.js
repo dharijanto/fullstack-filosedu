@@ -229,7 +229,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":11,"./../core/settle":14,"./../helpers/btoa":18,"./../helpers/buildURL":19,"./../helpers/cookies":21,"./../helpers/isURLSameOrigin":23,"./../helpers/parseHeaders":25,"./../utils":27,"_process":98}],5:[function(require,module,exports){
+},{"../core/createError":11,"./../core/settle":14,"./../helpers/btoa":18,"./../helpers/buildURL":19,"./../helpers/cookies":21,"./../helpers/isURLSameOrigin":23,"./../helpers/parseHeaders":25,"./../utils":27,"_process":99}],5:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -778,7 +778,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":4,"./adapters/xhr":4,"./helpers/normalizeHeaderName":24,"./utils":27,"_process":98}],17:[function(require,module,exports){
+},{"./adapters/http":4,"./adapters/xhr":4,"./helpers/normalizeHeaderName":24,"./utils":27,"_process":99}],17:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -1623,7 +1623,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":36,"./../core/settle":39,"./../helpers/btoa":43,"./../helpers/buildURL":44,"./../helpers/cookies":46,"./../helpers/isURLSameOrigin":48,"./../helpers/parseHeaders":50,"./../utils":52,"_process":98}],30:[function(require,module,exports){
+},{"../core/createError":36,"./../core/settle":39,"./../helpers/btoa":43,"./../helpers/buildURL":44,"./../helpers/cookies":46,"./../helpers/isURLSameOrigin":48,"./../helpers/parseHeaders":50,"./../utils":52,"_process":99}],30:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"./cancel/Cancel":31,"./cancel/CancelToken":32,"./cancel/isCancel":33,"./core/Axios":34,"./defaults":41,"./helpers/bind":42,"./helpers/spread":51,"./utils":52,"dup":5}],31:[function(require,module,exports){
 arguments[4][6][0].apply(exports,arguments)
@@ -1892,7 +1892,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":29,"./adapters/xhr":29,"./helpers/normalizeHeaderName":49,"./utils":52,"_process":98}],42:[function(require,module,exports){
+},{"./adapters/http":29,"./adapters/xhr":29,"./helpers/normalizeHeaderName":49,"./utils":52,"_process":99}],42:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
 },{"dup":17}],43:[function(require,module,exports){
 arguments[4][18][0].apply(exports,arguments)
@@ -7857,7 +7857,7 @@ module.exports = ret;
 },{"./es5":13}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":98}],54:[function(require,module,exports){
+},{"_process":99}],54:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -8101,7 +8101,7 @@ var Model = function () {
 
       return new Promise(function (resolve, reject) {
         axios.post(_this2._deleteURL + '?publicId=' + publicId).then(function (response) {
-          resolve(response);
+          resolve(response.data);
         }).catch(function (err) {
           reject(err);
         });
@@ -8269,7 +8269,7 @@ var View = function () {
     this._modalUploadSuccess = $('<div id="___fileuploadsuccess" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Success</h4> </div><div class="modal-body"> <div class="info_result text-center hidden"> <p>Success upload your file ! Below is your link : </p> <!-- <img src="" class="img-responsive result_image" style="margin:0 auto;"> <input type="text" readonly value="" class="form-control result_image_text"> --> </div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
     this._modalUploadFailed = $('<div id="___fileuploadfailed" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Failed</h4> </div><div class="modal-body"> <div class="info_result text-center"> <p class="text_message_failed">Failed upload your file !</p></div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
 
-    this._publicId = '';
+    this._publicId = null;
     this._imgThumbnail = '';
     $(this._modalDelete).find('button.btn-delete').on('click', function (e) {
       _this._onDeleteClicked(_this._publicId).then(function (resp) {
@@ -8350,7 +8350,7 @@ var View = function () {
       var textImage = $('<div class="text-center textImage" style=""></div>');
       var overlayImage = $('<div class="overlay" > </div>');
       var imageSrc = $('<img src="' + imageURL + '" class="img-responsive" style="max-height:100%">');
-      var btnDeleteImage = $('<div class="btn btn-danger btn-close" style="float:right" data-toggle="modal" data-target="#___deletepicture" data-public-id="\'' + imagePublicId + '\'"> <span>X</span> </div>');
+      var btnDeleteImage = $('<div class="btn btn-danger btn-close" style="float:right" data-toggle="modal" data-target="#___deletepicture" data-public-id="' + imagePublicId + '"> <span>X</span> </div>');
       var imageHref = $('<a href="javascript:void(0);" class="data-image-url" data-url="' + imageURL + '" data-public-id="' + imagePublicId + '">Select Image</a>');
 
       textImage.append(imageHref);
@@ -8469,7 +8469,7 @@ $.fn.NCInputLibrary = function (conf) {
 arguments[4][3][0].apply(exports,arguments)
 },{"./lib/axios":64,"dup":3}],63:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"../core/createError":70,"./../core/settle":73,"./../helpers/btoa":77,"./../helpers/buildURL":78,"./../helpers/cookies":80,"./../helpers/isURLSameOrigin":82,"./../helpers/parseHeaders":84,"./../utils":86,"_process":98,"dup":29}],64:[function(require,module,exports){
+},{"../core/createError":70,"./../core/settle":73,"./../helpers/btoa":77,"./../helpers/buildURL":78,"./../helpers/cookies":80,"./../helpers/isURLSameOrigin":82,"./../helpers/parseHeaders":84,"./../utils":86,"_process":99,"dup":29}],64:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"./cancel/Cancel":65,"./cancel/CancelToken":66,"./cancel/isCancel":67,"./core/Axios":68,"./defaults":75,"./helpers/bind":76,"./helpers/spread":85,"./utils":86,"dup":5}],65:[function(require,module,exports){
 arguments[4][6][0].apply(exports,arguments)
@@ -8493,7 +8493,7 @@ arguments[4][39][0].apply(exports,arguments)
 arguments[4][15][0].apply(exports,arguments)
 },{"./../utils":86,"dup":15}],75:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"./adapters/http":63,"./adapters/xhr":63,"./helpers/normalizeHeaderName":83,"./utils":86,"_process":98,"dup":41}],76:[function(require,module,exports){
+},{"./adapters/http":63,"./adapters/xhr":63,"./helpers/normalizeHeaderName":83,"./utils":86,"_process":99,"dup":41}],76:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
 },{"dup":17}],77:[function(require,module,exports){
 arguments[4][18][0].apply(exports,arguments)
@@ -55709,6 +55709,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var axios = require('axios');
 var log = require('../lib/logger');
 
+var Promise = require('bluebird');
+
 var TAG = 'Model';
 
 var Model = function () {
@@ -55757,7 +55759,7 @@ var Model = function () {
 
 module.exports = Model;
 
-},{"../lib/logger":60,"axios":62}],96:[function(require,module,exports){
+},{"../lib/logger":60,"axios":62,"bluebird":98}],96:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -55946,6 +55948,7 @@ require('select2')($);
 var moment = require('moment');
 // var moment = null
 var NProgress = require('nprogress');
+var Promise = require('bluebird');
 
 var log = require('../lib/logger');
 
@@ -56540,7 +56543,9 @@ var View = function () {
 module.exports = View;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../lib/logger":60,"datatables.net-responsive":87,"eonasdan-bootstrap-datetimepicker":89,"moment":92,"nprogress":93,"select2":94}],98:[function(require,module,exports){
+},{"../lib/logger":60,"bluebird":98,"datatables.net-responsive":87,"eonasdan-bootstrap-datetimepicker":89,"moment":92,"nprogress":93,"select2":94}],98:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"_process":99,"dup":53}],99:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -56726,7 +56731,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 (function (global){
 /*
  * Toastr
@@ -57165,7 +57170,7 @@ process.umask = function() { return 0; };
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -57191,7 +57196,7 @@ $(document).ready(function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../nc-image-picker":1,"../nc-input-library/main":61,"./nc-input-manager":101}],101:[function(require,module,exports){
+},{"../nc-image-picker":1,"../nc-input-library/main":61,"./nc-input-manager":102}],102:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -57276,4 +57281,4 @@ var tableConfig = {
 module.exports = { initializeEditors: initializeEditors };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"toastr":99}]},{},[100]);
+},{"toastr":100}]},{},[101]);
