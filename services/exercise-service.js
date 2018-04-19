@@ -641,7 +641,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         }
       }
   */
-  _getExerciseStarsUniversal (userId, id, tableName, renderStar = true) {
+  _getUniversalExerciseStars (userId, id, tableName, renderStar = true) {
     return this._getExerciseStars(userId, id, tableName).then(resp => {
       if (resp.status) {
         if (renderStar) {
@@ -652,17 +652,33 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           return resp
         }
       } else {
-        return (resp)
+        return resp
       }
     })
   }
 
   getSubtopicExerciseStars (userId, id, renderStar = true) {
-    return this._getExerciseStarsUniversal(userId, id, 'generatedExercises', renderStar)
+    return this._getUniversalExerciseStars(userId, id, 'generatedExercises', renderStar)
   }
 
   getTopicExerciseStars (userId, id, renderStar = true) {
-    return this._getExerciseStarsUniversal(userId, id, 'generatedTopicExercises', renderStar)
+    return this._getUniversalExerciseStars(userId, id, 'generatedTopicExercises', renderStar)
+  }
+
+  getTopicExerciseCheckmark (userId, topicId, render) {
+    return this._sequelize.query(`
+SELECT score FROM generatedTopicExercises
+WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId} AND score > 80
+ORDER BY score DESC LIMIT 1;`,
+    { type: Sequelize.QueryTypes.SELECT }).then(datas => {
+      const isChecked = datas.length > 0
+      if (render) {
+        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ceckmark.pug'), {isChecked})
+        return {status: true, data: html}
+      } else {
+        return {status: true, data: {isChecked}}
+      }
+    })
   }
 
   // Specially called from course controller
@@ -691,7 +707,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   SELECT score FROM ${tableName}
   WHERE submitted = 1 AND topicId = ${id} AND userId = ${userId}
   AND timeFinish < idealTime AND score = 100
-  ORDER BY score DESC LIMIT 4;`,
+  ORDER BY score DESC LIMIT 1;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const timers = datas.reduce((acc, data) => {
           if (parseInt(data.score) >= 80) {
@@ -699,7 +715,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           } else {
             return acc
           }
-        }, 0) / (datas.length || 1)
+        }, 0)
 
         return {status: true, data: {timers}}
       })

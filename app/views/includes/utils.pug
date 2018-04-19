@@ -24,10 +24,16 @@ mixin renderExerciseRanking (data)
           td #{val.grade}
           td #{val.timeFinish} detik
 
-mixin renderTimerProgress (numTimers, size)
+mixin renderTimerProgress (numTimers, size, maxTimers = 4)
   - var timers = numTimers
-  - var emptyTimers = 4 - timers
+  - var emptyTimers = maxTimers - timers
   while timers-- > 0
     img(src="/assets/img/timer.png" width=size || 30)
   while emptyTimers-- > 0
     img(src="/assets/img/timer_empty.png" width=size || 30)
+
+mixin renderCheckmark (isChecked, size)
+  if (isChecked)
+    img(src="/assets/img/checked.png" width=size || 30)
+  else
+    img(src="/assets/img/unchecked.png" width=size || 30)

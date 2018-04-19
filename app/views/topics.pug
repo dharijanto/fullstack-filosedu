@@ -14,10 +14,10 @@ block contents
           .panel-heading
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review Soal
-              span.pull-right
-                + renderExerciseStars(parseInt(topic.stars), 15)
-                + renderTimerProgress(parseInt(topic.timers), 15)
+              span.pull-right(style="margin-right: 2%")
+                + renderCheckmark(topic.isChecked, 20)
+                + renderTimerProgress(parseInt(topic.timers), 20, 1)
+              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
           .panel-collapse.collapse.in(id=`collapse_${index}`)
             ul.list-group
               - var numbering = 0;

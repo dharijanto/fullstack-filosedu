@@ -38,7 +38,7 @@ class CourseController extends BaseController {
               return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
             Promise.map(res.locals.topics, topic => {
-              return exerciseService.getTopicExerciseStars(req.user.id, topic.id, false)
+              return exerciseService.getTopicExerciseCheckmark(req.user.id, topic.id)
             }),
             Promise.map(res.locals.subtopics, subtopic => {
               return exerciseService.getSubtopicExerciseTimers(req.user.id, subtopic.id)
@@ -46,13 +46,14 @@ class CourseController extends BaseController {
             Promise.map(res.locals.topics, topic => {
               return exerciseService.getTopicExerciseTimer(req.user.id, topic.id, false)
             })
-          ).spread((subtopicstars, topicstars, subtopicTimers, topicTimers) => {
+          ).spread((subtopicstars, topicCheckmarks, subtopicTimers, topicTimers) => {
+            log.verbose(TAG, '/: topicCheckmarks=' + JSON.stringify(topicCheckmarks))
             subtopicstars.forEach((resp, index) => {
               res.locals.subtopics[index].stars = resp.data.stars
             })
 
-            topicstars.forEach((resp, index) => {
-              res.locals.topics[index].stars = resp.data.stars
+            topicCheckmarks.forEach((resp, index) => {
+              res.locals.topics[index].isChecked = resp.data.isChecked
             })
 
             subtopicTimers.forEach((resp, index) => {
