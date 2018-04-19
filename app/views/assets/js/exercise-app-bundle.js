@@ -217,9 +217,7 @@ function postAnswer() {
 $('#resetQuestion').on('click', function (e) {
   postAnswer().then(function (resp) {
     if (resp.status) {
-      setTimeout(function () {
-        window.location.reload();
-      }, 2000);
+      window.location.reload();
     } else {
       window.location.reload();
     }
