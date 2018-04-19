@@ -7,5 +7,6 @@ input(type='hidden' name="idealTime" value=`${idealTime}`)
     .timer-count
       span#timer
     .timer-text(style="font-size: 0.75em")
+      if idealTime > 0
         span#targetTime(style="{color: black !important}") Ideal: #{idealTime} detik
     button.btn.btn-primary#resetQuestion RESET
