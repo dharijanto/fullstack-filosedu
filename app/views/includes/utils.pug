@@ -2,11 +2,9 @@ mixin renderExerciseStars(numStars, size)
   - var stars = numStars
   - var emptyStars = 4 - stars
   while stars-- > 0
-    span 
-      img(src="/assets/img/star.png" width=size || 30)
+    img(src="/assets/img/star.png" width=size || 30)
   while emptyStars-- > 0
-    span 
-      img(src="/assets/img/star_empty.png" width=size || 30)
+    img(src="/assets/img/star_empty.png" width=size || 30)
 
 mixin renderExerciseRanking (data)
   table.table.table-bordered
@@ -30,8 +28,6 @@ mixin renderTimerProgress (numTimers, size)
   - var timers = numTimers
   - var emptyTimers = 4 - timers
   while timers-- > 0
-    span
-      img(src="/assets/img/timer.png" width=size || 30)
+    img(src="/assets/img/timer.png" width=size || 30)
   while emptyTimers-- > 0
-    span
-      img(src="/assets/img/timer_empty.png" width=size || 30)
+    img(src="/assets/img/timer_empty.png" width=size || 30)

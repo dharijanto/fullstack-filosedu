@@ -1,0 +1,11 @@
+input(type='hidden' name="createdAt" value=`${createdAt}`)
+input(type='hidden' name="idealTime" value=`${idealTime}`)
+.col-md-2.col-sm-3.col-xs-3(style="position:fixed")
+  .thumbnail.text-center
+    .progress#progressBar
+      .progress-bar.progress-bar-info.progress-bar-striped.active(role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%;")
+    .timer-count
+      span#timer
+    .timer-text(style="font-size: 0.75em")
+        span#targetTime(style="{color: black !important}") Ideal: #{idealTime} detik
+    button.btn.btn-primary#resetQuestion RESET

@@ -124,14 +124,14 @@ class CourseController extends BaseController {
               if (resp5.status) {
                 const generatedExercises = resp5.data.exerciseData
                 const formattedExercises = resp5.data.formatted
-                const idealTimeExercises = resp5.data.idealTime
+                const idealTime = resp5.data.idealTime
 
                 return exerciseService.updateGeneratedTopicExercise(resp2.data.id, generatedExercises, topicExerciseHash).then(resp6 => {
                   if (resp6.status) {
                     return {
                       formatted: formattedExercises,
                       topicName: resp7.data.topic,
-                      idealTime: idealTimeExercises,
+                      idealTime: idealTime,
                       createdAt: resp6.createdAt
                     }
                   } else {

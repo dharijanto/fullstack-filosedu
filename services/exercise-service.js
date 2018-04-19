@@ -101,7 +101,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
             unknowns: JSON.stringify(answerUnknowns),
             userAnswer: [],
             exerciseId: exercise.id,
-            idealTime: exerciseSolver.getIdealTimePerQuestion() * exerciseSolver.getQuestionQuantity(),
+            idealTime: exerciseSolver.getExerciseIdealTime(),
             subtopicName: exercise.subtopicName
           },
           formatted: {
@@ -264,6 +264,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       timeFinish: null,
       createdAt: 2018-04-10T02:26:51.000Z,
       updatedAt: 2018-04-10T02:26:51.000Z,
+      idealTime: 15,
       exerciseId: 34,
       userId: 99
     }
@@ -279,6 +280,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         ]
       },
       "exerciseId": 34
+      "idealTime": 5
     }
   */
   formatExercise (generatedExercise, exerciseSolver) {
@@ -299,7 +301,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         unknowns
       }
       data.exerciseId = generatedExercise.exerciseId
-      data.idealTime = exerciseSolver.getIdealTimePerQuestion()
+      data.idealTime = generatedExercise.idealTime
       return data
     })
   }
@@ -673,7 +675,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }).then(datas => {
         const stars = datas.reduce((acc, resp) => {
           return acc + resp.data.stars
-        }, 0) / datas.length
+        }, 0) / (datas.length || 1)
         return {status: true, data: {stars}}
       })
     })
@@ -697,7 +699,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           } else {
             return acc
           }
-        }, 0)
+        }, 0) / (datas.length || 1)
+
         return {status: true, data: {timers}}
       })
     } else {

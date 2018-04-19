@@ -75,16 +75,16 @@ class ExerciseController extends BaseController {
                       req.user.id,
                       resp3.data.exerciseData,
                       exerciseHash).then(resp => {
-                      if (resp.status) {
-                        res.locals.exerciseId = exerciseId
-                        res.locals.formatted = resp3.data.formatted
-                        res.locals.exercise = resp3.data
-                        res.locals.idealTime = resp3.data.exerciseData.idealTime || 0
-                        res.render('exercise')
-                      } else {
-                        throw new Error('Cannot create exercise!')
-                      }
-                    })
+                        if (resp.status) {
+                          res.locals.exerciseId = exerciseId
+                          res.locals.formatted = resp3.data.formatted
+                          res.locals.exercise = resp3.data
+                          res.locals.idealTime = resp3.data.exerciseData.idealTime
+                          res.render('exercise')
+                        } else {
+                          throw new Error('Cannot create exercise: ' + resp.errMessage)
+                        }
+                      })
                   } else {
                     throw new Error('Exercise does not exists:' + resp.errMessage)
                   }
@@ -117,16 +117,16 @@ class ExerciseController extends BaseController {
                     req.user.id,
                     resp3.data.exerciseData,
                     exerciseHash).then(resp4 => {
-                    if (resp4.status) {
-                      res.locals.exerciseId = exerciseId
-                      res.locals.formatted = resp3.data.formatted
-                      res.locals.exercise = resp4.data
-                      res.locals.idealTime = resp3.data.exerciseData.idealTime || 0
-                      res.render('exercise')
-                    } else {
-                      throw new Error('Cannot create exercise!')
-                    }
-                  })
+                      if (resp4.status) {
+                        res.locals.exerciseId = exerciseId
+                        res.locals.formatted = resp3.data.formatted
+                        res.locals.exercise = resp4.data
+                        res.locals.idealTime = resp3.data.exerciseData.idealTime
+                        res.render('exercise')
+                      } else {
+                        throw new Error('Cannot create exercise: ' + resp4.errMessage)
+                      }
+                    })
                 } else {
                   throw new Error('Exercise does not exists:' + resp.errMessage)
                 }
@@ -281,7 +281,7 @@ class ExerciseController extends BaseController {
                         currentTimeFinish: timeFinish,
                         currentRanking: resp4.data.count,
                         totalRanking: resp5.data.count,
-                        isPerfectScore: parseInt(currentScore) === 100 ? true : false
+                        isPerfectScore: parseInt(currentScore) === 100
                       }
                     })
                   })

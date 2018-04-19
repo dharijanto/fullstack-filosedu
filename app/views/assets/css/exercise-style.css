@@ -10,3 +10,13 @@ table.image-repeat {
 #submissionError {
   color: red;
 }
+
+/* Enlarge exercise font size*/
+.rendered-question {
+  font-size: 1.5em;
+}
+
+/* Reduce the gap between bootstrap progress bar and what's below it */
+#progressBar {
+  margin-bottom: 10px !important;
+}
