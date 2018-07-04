@@ -31,6 +31,7 @@ class Controller extends BaseController {
       res.locals.site = req.site
       res.locals.user = req.user
       res.locals.loggedIn = req.isAuthenticated()
+      res.locals.cloudServer = AppConfig.CLOUD_SERVER
       next()
     })
 
