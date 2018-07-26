@@ -1,4 +1,5 @@
 var path = require('path')
+var ip = require('ip')
 
 const MYSQL_CONF = {
   username: 'root',
@@ -30,12 +31,12 @@ const LOCAL_SCHOOL_INFORMATION = {
 }
 
 const CLOUD_INFORMATION = {
-  HOST: 'http://app-filosedu.nusantara-local.com:8080/synchronization'
+  HOST: 'http://www.filosedu.com/synchronization'
 }
 
 module.exports = {
   SQL_DB: `mysql://${MYSQL_CONF.username}:${MYSQL_CONF.password}@localhost:3306/${MYSQL_CONF.dbName}`, // Only used by sync script
-  BASE_URL: 'http://app-filosedu.nusantara-local.com',
+  BASE_URL: ip.address(), //'http://app-filosedu.nusantara-local.com',
   CLOUD_SERVER: true,
   IMAGE_PATH: path.join(__dirname, 'images'),
   VIDEO_PATH: path.join(__dirname, 'videos'),
