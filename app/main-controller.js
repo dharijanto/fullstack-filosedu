@@ -4,6 +4,7 @@ var express = require('express')
 var getSlug = require('speakingurl')
 var log = require('npmlog')
 var marked = require('marked')
+var moment = require('moment-timezone')
 var Promise = require('bluebird')
 
 var AppConfig = require(path.join(__dirname, '../app-config'))
@@ -21,6 +22,9 @@ class Controller extends BaseController {
   constructor (initData) {
     super(initData)
     PassportManager.initialize()
+    // Since the SQL server is configured to store the date in UTC format, we
+    // do everything in UTC as well
+    moment.tz.setDefault('UTC')
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)

@@ -21,7 +21,7 @@ mixin renderExerciseRanking (data)
           td #{index+1}
           td #{val.fullName}
           td #{val.schoolName}
-          td #{val.grade}
+          td #{val.grade || '-'}
           td #{val.timeFinish} detik
 
 mixin renderTimerProgress (numTimers, size, maxTimers = 4)

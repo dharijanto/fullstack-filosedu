@@ -1,5 +1,7 @@
 var path = require('path')
 
+var moment = require('moment-timezone')
+
 var log = require('npmlog')
 var Promise = require('bluebird')
 
@@ -11,6 +13,8 @@ var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generat
 var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+var Utils = require(path.join(__dirname, '../utils/utils'))
+
 const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
@@ -24,7 +28,9 @@ class ExerciseController extends BaseController {
       next()
     })
 
-    // route to get exercise table
+    // TODO: We should refactor this to look like topic-exercise (see course-controller) which is much
+    // cleaner and easier to manage
+    // Exercise page
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       var exerciseId = req.params.exerciseId
       var subtopicId = req.params.subtopicId
@@ -57,15 +63,16 @@ class ExerciseController extends BaseController {
 
           log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
 
-          // Check whether previous exercise has been submitted or not. If submitted,
-          // we create new question for student otherwise, restore previous exercise.
           return exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}).then(resp2 => {
+            // Check if there's unsubmitted exercise to continue
             if (resp2.status) {
+              // The unsubmitted exercise can't be continued because exercise has changed
               if (resp2.data.exerciseHash === exerciseHash) {
                 log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
                 return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
                   Object.assign(res.locals, data)
                   res.locals.exercise = resp2.data
+                  res.locals.elapsedTime = Utils.getElapsedTime(resp2.data.createdAt)
                   res.render('exercise')
                 })
               } else {
@@ -80,6 +87,7 @@ class ExerciseController extends BaseController {
                           res.locals.formatted = resp3.data.formatted
                           res.locals.exercise = resp3.data
                           res.locals.idealTime = resp3.data.exerciseData.idealTime
+                          res.locals.elapsedTime = Utils.getElapsedTime(resp3.data.createdAt)
                           res.render('exercise')
                         } else {
                           throw new Error('Cannot create exercise: ' + resp.errMessage)
@@ -90,7 +98,7 @@ class ExerciseController extends BaseController {
                   }
                 })
               }
-            } else {
+            } else { // Create new exercise
               log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
               return exerciseService.generateExercise(resp.data).then(resp3 => {
                 // {
@@ -121,6 +129,7 @@ class ExerciseController extends BaseController {
                         res.locals.exerciseId = exerciseId
                         res.locals.formatted = resp3.data.formatted
                         res.locals.exercise = resp4.data
+                        res.locals.elapsedTime = Utils.getElapsedTime(resp4.data.createdAt)
                         res.locals.idealTime = resp3.data.exerciseData.idealTime
                         res.render('exercise')
                       } else {
@@ -172,6 +181,7 @@ class ExerciseController extends BaseController {
       }
     })
 
+    // Grading
     this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId

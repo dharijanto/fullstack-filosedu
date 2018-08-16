@@ -68,7 +68,7 @@ function addTables (sequelize, models) {
     username: {type: Sequelize.STRING}, // The pair of (username, schoolId) should be unique, we should use MySQL composite key for this
     saltedPass: {type: Sequelize.STRING},
     salt: {type: Sequelize.STRING},
-    email: {type: Sequelize.STRING, unique: true},
+    email: {type: Sequelize.STRING},
     fullName: {type: Sequelize.STRING},
     grade: {type: Sequelize.STRING}
   })

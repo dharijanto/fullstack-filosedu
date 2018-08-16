@@ -18,5 +18,10 @@ table.image-repeat {
 
 /* Reduce the gap between bootstrap progress bar and what's below it */
 #progressBar {
-  margin-bottom: 10px !important;
+  margin-bottom: 5px !important;
+}
+
+#resetQuestion {
+  width: 100%;
+  padding: 0;
 }

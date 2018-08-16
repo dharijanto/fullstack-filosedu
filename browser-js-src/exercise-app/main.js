@@ -217,34 +217,25 @@ $('#resetQuestion').on('click', function (e) {
   })
 })
 
-// remember to get Exercise date. not subtopic
-var createdAt = $('input[name=createdAt]').val()
-var timerElapsed = (new Date(createdAt)).getTime()
-var idealTime = $('input[name=idealTime]').val()
-var worstTime = idealTime * 3
-
-$('#timer').timer({
-  format: '%M:%S',
-  seconds: (Date.now() - timerElapsed) / 1000,
-  repeat: true
-})
-
-// call the function every 5 seconds
-window.setInterval(function () {
-  changeProgressBar()
+// ---------------- EXERCISE TIMER CODE -----------------
+// TODO: Refactor this so that exercise and topic-exercise share the same code
+// How long since the exercise was generated
+setInterval(() => {
+  window['elapsedTime'] += 1
+  updateProgressBar()
 }, 1000)
 
-function changeProgressBar () {
+function updateProgressBar () {
   // Get current value of progress bar
-  var currentValueProgressBar = $('#timer').data('seconds')
-  if (currentValueProgressBar <= idealTime) {
-    // do nothing
-  } else {
-    var valueProgressBarToBeApllied = 100 - ((currentValueProgressBar - idealTime) * (100 / (worstTime - idealTime)))
-    // Set the width of progress bar
-    $('.progress-bar').css('width', valueProgressBarToBeApllied + '%')
+  if (window['idealTime']) {
+    console.log(`idealTime=${window['idealTime']} elapsedTime=${window['elapsedTime']}`)
+    const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
+    $('.progress-bar').css('width', currentPercent + '%')
   }
+  $('#elapsedTime').html(`Elapsed: <strong> ${elapsedTime} detik</strong>`)
 }
 
 // when page first load, first call only
-changeProgressBar()
+updateProgressBar()
+// ------------------------------------------------------
+// ------------------------------------------------------

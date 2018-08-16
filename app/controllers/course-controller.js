@@ -9,6 +9,7 @@ var CourseService = require(path.join(__dirname, '../../services/course-service'
 var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+var Utils = require(path.join(__dirname, '../utils/utils'))
 
 var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
 
@@ -112,7 +113,7 @@ class CourseController extends BaseController {
                   formatted: resp5.data.formatted,
                   topicName: resp7.data.topic,
                   idealTime: resp2.data.idealTime,
-                  createdAt: resp2.data.createdAt
+                  elapsedTime: Utils.getElapsedTime(resp2.data.createdAt)
                 }
               } else {
                 throw new Error(resp5.errMessage)
@@ -133,7 +134,7 @@ class CourseController extends BaseController {
                       formatted: formattedExercises,
                       topicName: resp7.data.topic,
                       idealTime: idealTime,
-                      createdAt: resp6.createdAt
+                      elapsedTime: Utils.getElapsedTime(resp6.data.createdAt)
                     }
                   } else {
                     throw new Error(resp6.errMessage)
@@ -158,7 +159,7 @@ class CourseController extends BaseController {
                       formatted: formattedExercises,
                       topicName: resp7.data.topic,
                       idealTime: idealTimeExercises,
-                      createdAt: resp5.data.createdAt
+                      elapsedTime: Utils.getElapsedTime(resp5.data.createdAt)
                     }
                   } else {
                     throw new Error(resp5.errMessage)
@@ -192,8 +193,8 @@ class CourseController extends BaseController {
           "subtopicContent": [ArrayofObject]
         }
         */
-        res.locals.createdAt = formattedContent.createdAt
         res.locals.idealTime = formattedContent.idealTime
+        res.locals.elapsedTime = formattedContent.elapsedTime
         res.locals.topicName = formattedContent.topicName
         res.locals.bundle = this._assetBundle
         res.locals.formattedExercises = formattedContent.formatted

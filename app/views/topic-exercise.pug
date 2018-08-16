@@ -56,6 +56,9 @@ block contents
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
 append scripts
+  script().
+    window['elapsedTime'] = !{elapsedTime}
+    window['idealTime'] = !{idealTime}
   script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
   script(src="/assets/vendor/jquery-timer/timer.jquery.js")
   script(src=`${bundle}`)

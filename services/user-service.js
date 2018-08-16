@@ -50,65 +50,89 @@ class UserService {
     })
   }
 
-  // Quirks: siteId is -1 for CMS registration
-  // TODO: Check if username is already taken
-  register (credential, active = true) {
-    const username = (credential.username || '').toLowerCase()
+  validateRegistrationCredential (credential, isPasswordOptional = false, isExistingUser = false) {
+    const username = credential.username
     const password = credential.password
     const passwordConfirm = credential.passwordConfirm
-    const email = (credential.email || '').toLowerCase()
-    const siteId = credential.siteId
+    const email = credential.email
     const fullName = credential.fullName
     const schoolId = credential.schoolId
     const grade = credential.grade
 
-    log.verbose(TAG, 'register(): credential=' + JSON.stringify(credential))
+    log.verbose(TAG, 'validateRegistrationCredential(): credential=' + JSON.stringify(credential))
+    // If either password or confirm password is entered, they have to match in order
+    // for anything to be updated
     return new Promise((resolve, reject) => {
-      if (!username || !password || !passwordConfirm || !email || !schoolId) {
-        resolve({status: false, errMessage: 'Incomplete credentials!', errCode: 1})
+      const errMessages = []
+      const data = {}
+      if (!Formatter.validateUsername(username)) {
+        errMessages.push('Username harus dimulai dengan huruf antara 5-16 karakter')
       } else {
+        data.username = username.toLowerCase()
+      }
+
+      if (!isPasswordOptional) {
         if (password !== passwordConfirm) {
-          resolve({status: false, errMessage: 'Passwords do not match', errCode: 2})
-        } else if (!Formatter.validateEmail(email)) {
-          resolve({status: false, errMessage: 'Invalid email format', errCode: 2})
+          errMessages.push('Password tidak sama!')
+        } else if (password.length < 4) {
+          errMessages.push('Password minimal 4 karakter!')
         } else {
-          const activationKey = Crypto.genSaltedPass(username).passwordHash
           const salted = Crypto.genSaltedPass(password)
-          const data = {
-            username: username,
-            active,
-            activationKey,
-            saltedPass: salted.passwordHash,
-            salt: salted.salt,
-            email: email,
-            fullName: fullName,
-            schoolId,
-            grade
-          }
-          if (siteId) {
-            data.siteId = siteId
-          }
-          this._models.User.findOne({where: Sequelize.and(Sequelize.or({username}, {email}), {schoolId})}).then(user => {
-            if (!user) {
-              return this._models.User.create(data).then(user => {
-                resolve({status: true, user})
-              }).catch(err => {
-                console.error(err)
-                if (err.name === 'SequelizeUniqueConstraintError') {
-                  resolve({status: false, errMessage: err.message})
-                } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-                  resolve({status: false, errMessage: err.message})
-                } else {
-                  throw err
-                }
-              })
-            } else {
-              resolve({status: false, errMessage: 'Username / Email is already used.', errCode: 3})
-            }
-          }).catch(err => {
-            reject(err)
-          })
+          data.saltedPass = salted.passwordHash
+          data.salt = salted.salt
         }
+      }
+
+      if (email) {
+        if (!Formatter.validateEmail(email)) {
+          errMessages.push('Format email salah')
+        } else {
+          data.email = email
+        }
+      }
+
+      if (!fullName) {
+        errMessages.push('Nama lengkap harus diisi')
+      } else {
+        data.fullName = fullName
+      }
+
+      if (!schoolId) {
+        errMessages.push('Sekolah harus dipilih')
+      } else {
+        data.schoolId = schoolId
+      }
+
+      if (!grade) {
+        errMessages.push('Kelas harus dipilih')
+      } else {
+        data.grade = grade
+      }
+
+      const whereClause = isExistingUser ? {id: credential.id} : Sequelize.and({username}, {schoolId})
+      return this._models.User.findOne({where: whereClause}).then(user => {
+        if (isExistingUser && !user) {
+          errMessages.push('Username tidak ditemukan')
+        } else if (!isExistingUser && user){
+          errMessages.push('Username sudah terdaftar')
+        }
+        if (errMessages.length) {
+          resolve({status: false, errMessage: errMessages.join(', ')})
+        } else {
+          resolve({status: true, data})
+        }
+      })
+    })
+  }
+
+  register (credential, active = true) {
+    return this.validateRegistrationCredential(credential, false).then(resp => {
+      if (resp.status) {
+        return this._models.User.create(resp.data).then(user => {
+          return {status: true, user}
+        })
+      } else {
+        return resp
       }
     })
   }
@@ -132,64 +156,23 @@ class UserService {
   // TODO: We shouldn't allow edit so that the user
   // have the same username and schoolId as an existing user. Should use SQL composite key
   updateCredential (credential) {
-    const username = credential.username
-    const password = credential.password
-    const passwordConfirm = credential.passwordConfirm
-    const email = credential.email
-    const fullName = credential.fullName
-    const schoolId = credential.schoolId
-    const grade = credential.grade
-
-    log.verbose(TAG, 'updateCredential(): credential=' + JSON.stringify(credential))
-    return new Promise((resolve, reject) => {
-      // If either password or confirm password is entered, they have to match in order
-      // for anything to be updated
-      if (password || passwordConfirm) {
-        if (!username || !password || !passwordConfirm || !email || !schoolId) {
-          resolve({status: false, errMessage: 'Incomplete credentials!', errCode: 1})
-        } else {
-          if (password !== passwordConfirm) {
-            resolve({status: false, errMessage: 'Passwords do not match', errCode: 2})
-          } else if (!Formatter.validateEmail(email)) {
-            resolve({status: false, errMessage: 'Invalid email format', errCode: 2})
-          } else {
-            const salted = Crypto.genSaltedPass(password)
-            const data = {
-              username: username,
-              saltedPass: salted.passwordHash,
-              salt: salted.salt,
-              email: email,
-              fullName: fullName,
-              schoolId,
-              grade
-            }
-            return this._models.User.update(data, {where: {id: credential.id}}).then(resp => {
-              resolve({status: true, data: resp})
-            }).catch(err => {
-              console.error(err)
-              if (err.name === 'SequelizeUniqueConstraintError') {
-                resolve({status: false, errMessage: err.message})
-              } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-                resolve({status: false, errMessage: err.message})
-              } else {
-                throw err
-              }
-            })
-          }
-        }
-      } else {
-        const data = {
-          username: username,
-          email: email,
-          fullName: fullName,
-          schoolId,
-          grade
-        }
-        this._models.User.update(data, {where: {id: credential.id}}).then(resp => {
-          resolve({status: true, data: resp})
+    const isPasswordOptional = !('password' in credential && (credential.password.length > 0))
+    return this.validateRegistrationCredential(credential, isPasswordOptional, true).then(resp => {
+      if (resp.status) {
+        return this._models.User.update(resp.data, {where: {id: credential.id}}).then(resp => {
+          return {status: true, data: resp}
         }).catch(err => {
           console.error(err)
+          if (err.name === 'SequelizeUniqueConstraintError') {
+            resolve({status: false, errMessage: err.message})
+          } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+            resolve({status: false, errMessage: err.message})
+          } else {
+            throw err
+          }
         })
+      } else {
+        return resp
       }
     })
   }
