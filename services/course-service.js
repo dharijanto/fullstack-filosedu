@@ -64,6 +64,32 @@ class CourseService extends CRUDService {
   getTopic (topicId) {
     return this.readOne({modelName: 'Topic', searchClause: {id: topicId}})
   }
+
+  getExercises (subtopicId) {
+    return this.read({modelName: 'Exercise', searchClause: {subtopicId}, order: [['id', 'ASC']]})
+  }
+
+  getPreviousAndNextExercise (subtopicId, exerciseId) {
+    this.getExercises(subtopicId).then(resp => {
+      if (resp.status) {
+        const exercises = resp.data
+        let position
+        exercises.forEach((exercise, index) => {
+          if (exercise.id === exerciseId) {
+            position = index
+          }
+        })
+
+        return {
+          status: true,
+          prev: position > 0 ? exercises[position - 1] : null,
+          next: position < exercises.length - 1 ? exercises[position + 1] : null
+        }
+      } else {
+
+      }
+    })
+  }
 }
 
 module.exports = CourseService

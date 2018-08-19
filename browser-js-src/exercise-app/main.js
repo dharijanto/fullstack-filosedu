@@ -165,9 +165,10 @@ function postAnswer () {
         } else {
           $('.rankingScore').append(`<p>Soal diselesaikan dalam 
             <b>${currentTimeFinish} detik</b>. 
-            Hanya nilai 100 yang masuk penilaian. </p>`)
+            Hanya nilai 100 yang masuk penilaian ranking. </p>`)
         }
 
+        // TODO: This message and conditional checking should be from backend
         if (parseInt(currentScore) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
         }

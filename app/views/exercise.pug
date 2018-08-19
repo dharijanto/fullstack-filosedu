@@ -51,8 +51,11 @@ block contents
             | !{timersHTML}
         div.rankingScore
           | !{ranking}
-        button.btn.btn-primary.btn_submit_answer() Submit
-        a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+        span
+          button.btn.btn-primary(style="margin-right: 20px") <
+          button.btn.btn-primary.btn_submit_answer() Masukan Jawaban
+          a.btn.btn-primary.btn_retry_question.hidden(href="") Latihan Lagi
+          button.btn.btn-primary(style="margin-left: 20px") >
 
 append scripts
   script().

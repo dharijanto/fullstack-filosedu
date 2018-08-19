@@ -28,125 +28,96 @@ class ExerciseController extends BaseController {
       next()
     })
 
-    // TODO: We should refactor this to look like topic-exercise (see course-controller) which is much
-    // cleaner and easier to manage
-    // Exercise page
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       var exerciseId = req.params.exerciseId
       var subtopicId = req.params.subtopicId
       var topicId = req.params.topicId
       Promise.join(
         exerciseService.getExercise(exerciseId),
-        courseService.getSubtopic(subtopicId),
+        exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}),
+        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
+        exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId),
+        courseService.getPreviousAndNextExercise(subtopicId, exerciseId),
         courseService.getTopic(topicId),
+        courseService.getSubtopic(subtopicId),
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
         exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId)
-      ).spread((resp, resp2, resp3, resp4, resp5) => {
-        if (resp.status && resp2.status) {
-          var exerciseHash = ExerciseGenerator.getHash(resp.data.data)
-          var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
-          if (resp4.status) {
-            res.locals.starsHTML = resp4.data
-          } else {
-            res.locals.starsHTML = '<p style="color:red;"> Unable to retrieve stars... </p>'
-          }
+      ).spread((resp, resp2, resp4, resp5, resp6, resp7, resp8, resp9, resp10) => {
+        if (resp.status && resp7.status && resp8.status) {
+          const exerciseHash = ExerciseGenerator.getHash(resp.data.data)
+          const exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
+          const starsHTML = resp9.status ? resp9.data : '<p style="color:red;"> Unable to retrieve stars... </p>'
+          const timersHTML = resp10.status? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
+          const topic = resp7.data
+          const subtopic = resp8.data
 
-          if (resp5.status) {
-            res.locals.timersHTML = resp5.data
-          } else {
-            res.locals.timersHTML = '<p style="color:red;"> Unable to retrieve timers... </p>'
-          }
-
-          res.locals.subtopic = resp2.data
-          res.locals.topic = resp3.data
-          res.locals.bundle = this._assetBundle
-
-          log.verbose(TAG, `exercise.GET: exerciseHash=${exerciseHash}`)
-
-          return exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}).then(resp2 => {
-            // Check if there's unsubmitted exercise to continue
-            if (resp2.status) {
-              // The unsubmitted exercise can't be continued because exercise has changed
-              if (resp2.data.exerciseHash === exerciseHash) {
-                log.verbose(TAG, 'exercise.GET: exercise already generated, restoring...')
-                return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
-                  Object.assign(res.locals, data)
-                  res.locals.exercise = resp2.data
-                  res.locals.elapsedTime = Utils.getElapsedTime(resp2.data.createdAt)
-                  res.render('exercise')
-                })
-              } else {
-                return exerciseService.generateExercise(resp.data).then(resp3 => {
-                  if (resp3.status) {
-                    return exerciseService.updateExercise(
-                      req.user.id,
-                      resp3.data.exerciseData,
-                      exerciseHash).then(resp => {
-                        if (resp.status) {
-                          res.locals.exerciseId = exerciseId
-                          res.locals.formatted = resp3.data.formatted
-                          res.locals.exercise = resp3.data
-                          res.locals.idealTime = resp3.data.exerciseData.idealTime
-                          res.locals.elapsedTime = Utils.getElapsedTime(resp3.data.createdAt)
-                          res.render('exercise')
-                        } else {
-                          throw new Error('Cannot create exercise: ' + resp.errMessage)
-                        }
-                      })
+          // If there's exercise to be restored and it's still valid
+          if (resp2.status && resp2.data.exerciseHash === exerciseHash) {
+            return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
+              return Object.assign({
+                elapsedTime: Utils.getElapsedTime(resp2.data.createdAt)
+              }, {
+                formatted: data.formatted,
+                exerciseId: data.exerciseId,
+                idealTime: data.idealTime,
+                topic,
+                subtopic,
+                starsHTML,
+                timersHTML
+              })
+            })
+          } else if ((resp2.status && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
+            // If there's no exercise or there's but already expired
+            return exerciseService.generateExercise(resp.data).then(resp3 => {
+              if (resp3.status) {
+                return exerciseService.saveGeneratedExercise(
+                  req.user.id,
+                  resp3.data.exerciseData,
+                  exerciseHash
+                ).then(resp4 => {
+                  if (resp4.status) {
+                    return Object.assign({
+                      elapsedTime: Utils.getElapsedTime(resp3.data.createdAt),
+                    }, {
+                      formatted: resp3.data.formatted,
+                      exerciseId: resp.data.id,
+                      idealTime: resp3.data.exerciseData.idealTime,
+                      topic,
+                      subtopic,
+                      starsHTML,
+                      timersHTML
+                    })
                   } else {
-                    throw new Error('Exercise does not exists:' + resp.errMessage)
+                    throw new Error('Could not create new generatedExercise!')
                   }
                 })
+              } else {
+                throw new Error('Exercise does not exists:' + resp4.errMessage)
               }
-            } else { // Create new exercise
-              log.verbose(TAG, 'exercise.GET: exercise does not exist or changed, restoring...')
-              return exerciseService.generateExercise(resp.data).then(resp3 => {
-                // {
-                //     "status": true,
-                //     "data": {
-                //         "exerciseData": {
-                //             "knowns": "[{\"a\":1},{\"a\":2},{\"a\":4},{\"a\":3},{\"a\":5}]",
-                //             "unknowns": "[{\"x\":1},{\"x\":2},{\"x\":4},{\"x\":3},{\"x\":5}]",
-                //             "userAnswer": [],
-                //             "exerciseId": 22
-                //         },
-                //         "formatted": {
-                //             "renderedQuestions": [
-                //                 "\n<table class=\"image-repeat\" style=\"width: 30%;\"><tbody><tr><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519265726137_fresh-apple-red-delicious-v-500-g.png\" width=\"100%\"/></td></tr></tbody></table>\nAda berapa buah apel? (dalam angka)\n",
-                //             ],
-                //             "unknowns": [
-                //                 ["x"],
-                //             ]
-                //         }
-                //     }
-                // }
-                if (resp3.status) {
-                  return exerciseService.updateExercise(
-                    req.user.id,
-                    resp3.data.exerciseData,
-                    exerciseHash).then(resp4 => {
-                      if (resp4.status) {
-                        res.locals.exerciseId = exerciseId
-                        res.locals.formatted = resp3.data.formatted
-                        res.locals.exercise = resp4.data
-                        res.locals.elapsedTime = Utils.getElapsedTime(resp4.data.createdAt)
-                        res.locals.idealTime = resp3.data.exerciseData.idealTime
-                        res.render('exercise')
-                      } else {
-                        throw new Error('Cannot create exercise: ' + resp4.errMessage)
-                      }
-                    })
-                } else {
-                  throw new Error('Exercise does not exists:' + resp.errMessage)
-                }
-              })
-            }
-          })
+            })
+          } else {
+            throw new Error('Unknown error!')
+          }
         } else {
-          next()
+          throw new Error(`exercseId${req.params.exerciseId} or subtopicId=${subtopicId} or topicId=${topicId} does not exist!`)
         }
-      }).catch(err => {
-        next(err)
+      }).then(preparedExercise => {
+        /*
+          preparedExercise: {
+            topic,
+            subtopic,
+            exerciseId,
+            formatted,
+            idealTime,
+            elapsedTime,
+            starsHTML,
+            timersHTML
+          }
+        */
+
+        Object.assign(res.locals, preparedExercise)
+        res.locals.bundle = this._assetBundle
+        res.render('exercise')
       })
     })
 

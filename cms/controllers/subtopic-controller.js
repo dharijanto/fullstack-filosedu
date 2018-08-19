@@ -35,7 +35,7 @@ class SubtopicController extends BaseController {
       const subtopicId = req.params.id
       return Promise.join(
         courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-        courseService.read({modelName: 'Exercise', searchClause: {subtopicId}})
+        courseService.getExercises(subtopicId)
       ).spread((sResp, eResp) => {
         if (sResp.status) {
           res.locals.subtopic = sResp.data[0]

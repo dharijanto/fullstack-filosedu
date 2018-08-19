@@ -7,7 +7,7 @@ const log = require('npmlog')
 var AppConfig = require(path.join(__dirname, '../../app-config'))
 
 class BaseController {
-  constructor ({site, user, socketIO, db, logTag}) {
+  constructor ({site, user, socketIO, db, logTag, baseDir}) {
     this._siteHash = site.hash
     // Since the path is prefixed with /:hash/, we don't wanna handle it manually everytime, hence we use two routers
     this._logTag = logTag
@@ -20,6 +20,7 @@ class BaseController {
     this._subRouter.use('/assets', express.static(assetsPath))
 
     this._subRouter.locals.rootifyPath = this.rootifyPath.bind(this)
+    this._subRouter.locals.basedir = baseDir
 
     this._subRouter.set('views', AppConfig.VIEWS_CMS_PATH)
     this._subRouter.set('view engine', 'pug')

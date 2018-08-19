@@ -34,6 +34,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseId}})
   }
 
+  // TODO: Should call formatExercise()
   /*
     exercise: {
       id: 13,
@@ -114,6 +115,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
+  // TODO: Should call formatExercise()
   /*
     This is like generateExercise, but skips exercise that doesn't have any questions
 
@@ -159,6 +161,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
               formatted: resp.data.formatted
             }
           } else {
+            // Skip over empty questions
             return null
           }
         } else {
@@ -210,6 +213,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }
     }]
   */
+  // TODO: this should return status
   formatExercises (generatedExercises) {
     return Promise.map(generatedExercises, generatedExercise => {
       return this.readOne({modelName: 'Exercise', searchClause: {id: generatedExercise.exerciseId}}).then(resp => {
@@ -339,40 +343,25 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  _destroySingleGeneratedExercise (userId, exerciseId) {
-    return this._models['GeneratedExercise'].destroy({where: {userId, exerciseId, submitted: false}})
-  }
-
-  _createSingleGeneratedExercise (exerciseHash, data, userId, exerciseId) {
-    return this.create({
-      modelName: 'GeneratedExercise',
-      data: {
-        exerciseHash,
-        knowns: data.knowns,
-        unknowns: data.unknowns,
-        exerciseId,
-        userId,
-        idealTime: data.idealTime
-      }
-    })
-  }
-
-  updateExercise (userId, data, exerciseHash) {
-    return this._destroySingleGeneratedExercise(userId, data.exerciseId).then(() => {
-      return this._createSingleGeneratedExercise(exerciseHash, data, userId, data.exerciseId)
-    })
-  }
-
-  saveAndGetGeneratedExercise (generateExerciseId, userAnswer) {
-    return this.update({
-      modelName: 'GeneratedExercise',
-      data: {
-        id: generateExerciseId,
-        userAnswer,
-        submitted: true
-      }
-    }).then(resp => {
-      return this.read({modelName: 'GeneratedExercise', searchClause: {id: generateExerciseId}})
+  // Given a generated exercise data, create an entry in generatedExercise table
+  // If the user already has a generatedExercise, delete it first before adding a new entry
+  saveGeneratedExercise (userId, generatedExercise, exerciseHash) {
+    return this._models['GeneratedExercise'].destroy({where: {
+      userId,
+      exerciseId: generatedExercise.exerciseId,
+      submitted: false
+    }}).then(() => {
+      return this.create({
+        modelName: 'GeneratedExercise',
+        data: {
+          exerciseHash,
+          knowns: generatedExercise.knowns,
+          unknowns: generatedExercise.unknowns,
+          exerciseId: generatedExercise.exerciseId,
+          userId,
+          idealTime: generatedExercise.idealTime
+        }
+      })
     })
   }
 
@@ -496,55 +485,33 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   Input:
     topicId: 3
     userId; 5,
-    topicExerciseHash: 'kdkdkdk',
     exerciseDetail:
     [ { knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
         unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
         userAnswer: [],
         exerciseId: 14 } ],
-    idealTime: 50
-  */
-  createGeneratedTopicExercise (topicId, userId, exerciseDetail, topicExerciseHash, idealTime) {
-    return this.create({
-      modelName: 'GeneratedTopicExercise',
-      data: {
-        topicId,
-        userId,
-        exerciseDetail: JSON.stringify(exerciseDetail),
-        topicExerciseHash,
-        idealTime
-      }
-    })
-  }
-
-  /*
-    Get generatedTopicExercise that is not yet submitted, and uppdate its
-    exercise detail.
-
-    generatedTopicExerciseId: 5,
     topicExerciseHash: 'kdkdkdk',
-    exerciseDetail:
-      [ { knowns: '[{"a":2,"b":2},{"a":2,"b":1}]',
-          unknowns: '[{"x":"Empat"},{"x":"Tiga"}]',
-          userAnswer: [],
-          exerciseId: 14 } ],
-    return: {
-      status: true,
-      createdAt
-    }
+    idealTime: 50
+
+    If there's already unsubmitted generatedTopicExercise, remove it first. Then
+    save generatedTopicExercise of a user to database
   */
-  updateGeneratedTopicExercise (generatedTopicExerciseId, exerciseDetail, topicExerciseHash) {
-    var createdAt = Date.now()
-    return this.update({
-      modelName: 'GeneratedTopicExercise',
-      data: {
-        id: generatedTopicExerciseId,
-        exerciseDetail: JSON.stringify(exerciseDetail),
-        topicExerciseHash,
-        createdAt
-      }
-    }).then(resp => {
-      return Object.assign({data: {createdAt}}, resp)
+  saveGeneratedTopicExercise (topicId, userId, exerciseDetail, topicExerciseHash, idealTime) {
+    return this._models['GeneratedTopicExercise'].destroy({where: {
+      topicId,
+      userId,
+      submitted: false
+    }}).then(() => {
+      return this.create({
+        modelName: 'GeneratedTopicExercise',
+        data: {
+          topicId,
+          userId,
+          exerciseDetail: JSON.stringify(exerciseDetail),
+          topicExerciseHash,
+          idealTime
+        }
+      })
     })
   }
 

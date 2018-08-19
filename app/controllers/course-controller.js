@@ -93,20 +93,12 @@ class CourseController extends BaseController {
       ).spread((resp, resp2, resp3, resp7) => {
         // log.verbose(TAG, 'exercise.review.GET: resp=' + JSON.stringify(resp))
         // log.verbose(TAG, 'exercise.review.GET: resp2=' + JSON.stringify(resp2))
-        var topicExerciseHash = null
-        if (resp3.status) {
-          topicExerciseHash = resp3.data.topicExerciseHash
-        } else {
-          throw new Error(resp3.errMessage)
-        }
-
-        // Topic exercise has already been generated
-        if (resp2.status) {
-          const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
-          // log.verbose(TAG, 'exercise.review.GET: resp4=' + JSON.stringify(resp4))
-
-          // Check if any of the building exercise has changed since we generate it
-          if (topicExerciseHash === resp2.data.topicExerciseHash) {
+        if (resp3.status && resp7.status) {
+          const topic = resp7.data
+          const topicExerciseHash = resp3.data.topicExerciseHash
+          // If there's valid exercise to be restored
+          if (resp2.status && resp2.data.topicExerciseHash === topicExerciseHash) {
+            const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
             return exerciseService.formatExercises(generatedExercises).then(resp5 => {
               if (resp5.status) {
                 return {
@@ -116,62 +108,35 @@ class CourseController extends BaseController {
                   elapsedTime: Utils.getElapsedTime(resp2.data.createdAt)
                 }
               } else {
-                throw new Error(resp5.errMessage)
+                throw new Error('Could not formatExercise: ' + resp5.errMessage)
               }
             })
-          } else { // If there are changes, we have to re-generate the exercise
-            // Update the exercise if the hash is not valid
+          } else if ((resp2.status && resp2.data.topicExerciseHash !== topicExerciseHash) || !resp2.status) {
+            // If there's expired generated exercise or no generated exercise to be restored
             const exercises = resp.data
             return exerciseService.generateExercises(exercises).then(resp5 => {
               if (resp5.status) {
                 const generatedExercises = resp5.data.exerciseData
                 const formattedExercises = resp5.data.formatted
-                const idealTime = resp5.data.idealTime
-
-                return exerciseService.updateGeneratedTopicExercise(resp2.data.id, generatedExercises, topicExerciseHash).then(resp6 => {
+                return exerciseService.saveGeneratedTopicExercise(topicId, req.user.id, generatedExercises, topicExerciseHash, resp5.data.idealTime).then(resp6 => {
                   if (resp6.status) {
                     return {
                       formatted: formattedExercises,
-                      topicName: resp7.data.topic,
-                      idealTime: idealTime,
+                      topicName: topic.topic,
+                      idealTime: resp5.data.idealTime,
                       elapsedTime: Utils.getElapsedTime(resp6.data.createdAt)
                     }
                   } else {
-                    throw new Error(resp6.errMessage)
+                    throw new Error('Could not saveGeneratedTopicExercise: ' + resp6.errMessage)
                   }
                 })
               } else {
-                throw new Error(resp5.errMessage)
+                throw new Error('Could not generateExercise: ' + resp5.errMessage)
               }
             })
           }
-        } else { // No generated exercise, generate a new one
-          if (resp.status) {
-            const exercises = resp.data
-            return exerciseService.generateExercises(exercises).then(resp4 => {
-              if (resp4.status) {
-                const generatedExercises = resp4.data.exerciseData
-                const formattedExercises = resp4.data.formatted
-                const idealTimeExercises = resp4.data.idealTime
-                return exerciseService.createGeneratedTopicExercise(topicId, userId, generatedExercises, topicExerciseHash, idealTimeExercises).then(resp5 => {
-                  if (resp5.status) {
-                    return {
-                      formatted: formattedExercises,
-                      topicName: resp7.data.topic,
-                      idealTime: idealTimeExercises,
-                      elapsedTime: Utils.getElapsedTime(resp5.data.createdAt)
-                    }
-                  } else {
-                    throw new Error(resp5.errMessage)
-                  }
-                })
-              } else {
-                throw new Error(resp4.errMessage)
-              }
-            })
-          } else {
-            next(new Error(resp.errMessage))
-          }
+        } else {
+          throw new Error(`Could not retrieve topic or topicExerciseHash for topicId=${topicId}`)
         }
       }).then(formattedContent => {
         /*
@@ -204,6 +169,7 @@ class CourseController extends BaseController {
         next(err)
       })
     })
+
 
     this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
       var topicId = req.params.topicId
