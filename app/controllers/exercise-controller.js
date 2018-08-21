@@ -13,6 +13,8 @@ var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generat
 var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+
+var Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
 var Utils = require(path.join(__dirname, '../utils/utils'))
 
 const TAG = 'ExerciseController'
@@ -35,21 +37,27 @@ class ExerciseController extends BaseController {
       Promise.join(
         exerciseService.getExercise(exerciseId),
         exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}),
+        courseService.getPreviousAndNextExercise(subtopicId, exerciseId),
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
         exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId),
-        courseService.getPreviousAndNextExercise(subtopicId, exerciseId),
-        courseService.getTopic(topicId),
-        courseService.getSubtopic(subtopicId),
-        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
-        exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId)
-      ).spread((resp, resp2, resp4, resp5, resp6, resp7, resp8, resp9, resp10) => {
-        if (resp.status && resp7.status && resp8.status) {
+        courseService.getPreviousAndNextSubtopic(subtopicId)
+      ).spread((resp, resp2, resp6, resp9, resp10, resp11) => {
+        if (resp.status) {
           const exerciseHash = ExerciseGenerator.getHash(resp.data.data)
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
-          const starsHTML = resp9.status ? resp9.data : '<p style="color:red;"> Unable to retrieve stars... </p>'
+          const starsHTML = resp9.status ? resp9.data.html : '<p style="color:red;"> Unable to retrieve stars... </p>'
+          const stars = resp9.status ? resp9.data.stars : 0
           const timersHTML = resp10.status? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
-          const topic = resp7.data
-          const subtopic = resp8.data
+          const topic = resp.data.subtopic.topic
+          const subtopic = resp.data.subtopic
+          const prevAndNextExercise = resp6.data
+          const prevAndNextSubtopic = resp11.data
+          const prevLink = prevAndNextExercise && prevAndNextExercise.prev
+              ? Formatter.getExerciseURL(prevAndNextExercise.prev)
+              : (prevAndNextSubtopic && prevAndNextSubtopic.prev ? Formatter.getSubtopicURL(prevAndNextSubtopic.prev) : null)
+          const nextLink = prevAndNextExercise && prevAndNextExercise.next
+              ? Formatter.getExerciseURL(prevAndNextExercise.next)
+              : (prevAndNextSubtopic &&  prevAndNextSubtopic.next ? Formatter.getSubtopicURL(prevAndNextSubtopic.next) : null)
 
           // If there's exercise to be restored and it's still valid
           if (resp2.status && resp2.data.exerciseHash === exerciseHash) {
@@ -63,7 +71,10 @@ class ExerciseController extends BaseController {
                 topic,
                 subtopic,
                 starsHTML,
-                timersHTML
+                stars,
+                timersHTML,
+                prevLink,
+                nextLink
               })
             })
           } else if ((resp2.status && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
@@ -85,7 +96,10 @@ class ExerciseController extends BaseController {
                       topic,
                       subtopic,
                       starsHTML,
-                      timersHTML
+                      stars,
+                      timersHTML,
+                      prevLink,
+                      nextLink
                     })
                   } else {
                     throw new Error('Could not create new generatedExercise!')
@@ -256,7 +270,7 @@ class ExerciseController extends BaseController {
                         isAnswerCorrect,
                         currentScore,
                         bestScore,
-                        starsHTML: resp2.data,
+                        starsHTML: resp2.data.html,
                         timersHTML: resp6.data,
                         ranking: resp3.data,
                         currentTimeFinish: timeFinish,

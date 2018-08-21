@@ -58,7 +58,7 @@ class CourseService extends CRUDService {
   }
 
   getSubtopic (subtopicId) {
-    return this.readOne({modelName: 'Subtopic', searchClause: {id: subtopicId}})
+    return this.readOne({modelName: 'Subtopic', searchClause: {id: subtopicId}, include: this._models['Topic']})
   }
 
   getTopic (topicId) {
@@ -70,23 +70,66 @@ class CourseService extends CRUDService {
   }
 
   getPreviousAndNextExercise (subtopicId, exerciseId) {
-    this.getExercises(subtopicId).then(resp => {
-      if (resp.status) {
-        const exercises = resp.data
-        let position
-        exercises.forEach((exercise, index) => {
-          if (exercise.id === exerciseId) {
-            position = index
+    return Promise.join(
+      this.readOne({
+        modelName: 'Exercise',
+        searchClause: {
+          [Sequelize.Op.and]: {
+            id: {
+              [Sequelize.Op.lt]: exerciseId
+            },
+            subtopicId
           }
-        })
-
+        },
+        order: [['id', 'DESC']],
+        include: {model: this._models['Subtopic'], include: {model: this._models['Topic']}}
+      }),
+      this.readOne({
+        modelName: 'Exercise',
+        searchClause: {
+          [Sequelize.Op.and]: {
+            id: {
+              [Sequelize.Op.gt]: exerciseId
+            },
+            subtopicId
+          }
+        },
+        order: [['id', 'ASC']],
+        include: {model: this._models['Subtopic'], include: {model: this._models['Topic']}}
+      })).spread((resp1, resp2) => {
         return {
           status: true,
-          prev: position > 0 ? exercises[position - 1] : null,
-          next: position < exercises.length - 1 ? exercises[position + 1] : null
+          data: {
+            prev: resp1.data,
+            next: resp2.data
+          }
         }
-      } else {
+      })
+  }
 
+  getPreviousAndNextSubtopic (subtopicId) {
+    return this.getSubtopic(subtopicId).then(resp => {
+      if (resp.status) {
+        const topic = resp.data.topic
+        const subtopicNo = resp.data.subtopicNo
+        return Promise.join(
+          this.readOne({
+            modelName: 'Subtopic',
+            searchClause: {subtopicNo: { [Sequelize.Op.lt]: subtopicNo }},
+            include: {model: this._models['Topic']},
+            order: [['subtopicNo', 'DESC']],
+            limit: 1}),
+          this.readOne({
+            modelName: 'Subtopic',
+            searchClause: {subtopicNo: { [Sequelize.Op.gt]: subtopicNo }},
+            include: {model: this._models['Topic']},
+            order: [['subtopicNo', 'ASC']],
+            limit: 1})
+        ).spread((resp2, resp3) => {
+          return {status: true, data: {prev: resp2.data, next: resp3.data}}
+        })
+      } else {
+        return {status: false, errMessage: 'Subtopic not found!'}
       }
     })
   }

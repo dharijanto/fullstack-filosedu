@@ -34,12 +34,12 @@ class CRUDService {
   //
   // If there's no data:
   // {status: false, errCode: ..., errMessage: ..., errData}
-  read ({modelName, searchClause, order = []}) {
+  read ({modelName, searchClause, order = [], include, limit}) {
     if (!searchClause) {
       throw new Error('searchClause has to be specified!')
     }
     log.verbose(TAG, `read(): modelName=${modelName} searchClause=${JSON.stringify(searchClause)}`)
-    return this._models[modelName].findAll({where: searchClause, order}).then(readData => {
+    return this._models[modelName].findAll({where: searchClause, order, include, limit}).then(readData => {
       if (readData.length > 0) {
         return {status: true, data: readData.map(data => data.get({plain: true}))}
       } else {
@@ -48,8 +48,8 @@ class CRUDService {
     })
   }
 
-  readOne ({modelName, searchClause}) {
-    return this.read({modelName, searchClause}).then(resp => {
+  readOne ({modelName, searchClause, order, include}) {
+    return this.read({modelName, searchClause, order, include}).then(resp => {
       if (resp.status) {
         return {status: true, data: resp.data[0]}
       } else {

@@ -52,10 +52,10 @@ block contents
         div.rankingScore
           | !{ranking}
         span
-          button.btn.btn-primary(style="margin-right: 20px") <
+          a.btn.btn-primary#prevButton(style=`${prevLink ? '' : 'display: none'}` href=`${prevLink || ''}`) <
           button.btn.btn-primary.btn_submit_answer() Masukan Jawaban
           a.btn.btn-primary.btn_retry_question.hidden(href="") Latihan Lagi
-          button.btn.btn-primary(style="margin-left: 20px") >
+          a.btn.btn-primary#nextButton(style=`${nextLink ? '' : 'display: none;'}${stars < 4 ? 'background-color: grey;' : ''}` href=`${nextLink || ''}`) >
 
 append scripts
   script().

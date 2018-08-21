@@ -31,7 +31,14 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   getExercise (exerciseId) {
-    return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseId}})
+    return this.readOne({
+      modelName: 'Exercise',
+      searchClause: {id: exerciseId},
+      include: {
+        model: this._models['Subtopic'],
+        include: {model: this._models['Topic']}
+      }
+})
   }
 
   // TODO: Should call formatExercise()
@@ -598,13 +605,16 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     if renderStar is true
       will return {
         status: true,
-        data: '<span><img /></span>'
+        data: {
+          html: ' <span><img /></span>'
+          stars: 0-4
+        }
       }
     else
       {
         status: true,
         data: {
-          stars: 0.25 / 1 / 0
+          stars: 0-4
         }
       }
   */
@@ -614,7 +624,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         if (renderStar) {
           const stars = resp.data.stars
           const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), {stars})
-          return {status: true, data: html}
+          return {status: true, data: {html, stars}}
         } else {
           return resp
         }

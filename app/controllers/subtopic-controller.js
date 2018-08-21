@@ -8,6 +8,7 @@ var BaseController = require(path.join(__dirname, 'base-controller'))
 var CourseService = require(path.join(__dirname, '../../services/course-service'))
 var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
 var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+var Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
 var VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'SubtopicController'
@@ -45,10 +46,13 @@ class SubtopicController extends BaseController {
           courseService.readOne({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
           courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
           courseService.readOne({modelName: 'Topic', searchClause: {id: topicId}}),
-          videoService.getVideo(subtopicId)
-        ).spread((resp, resp2, resp3, resp4) => {
+          videoService.getVideo(subtopicId),
+          courseService.getPreviousAndNextSubtopic(subtopicId)
+        ).spread((resp, resp2, resp3, resp4, resp5) => {
           if (resp.status && resp3.status && resp4.status) {
             const subtopic = resp.data
+            res.locals.prevLink = resp5.status && resp5.data.prev ? Formatter.getSubtopicURL(resp5.data.prev) : null
+            res.locals.nextLink = resp5.status && resp5.data.next ? Formatter.getSubtopicURL(resp5.data.next) : null
             res.locals.topic = resp3.data
             res.locals.subtopic = subtopic
             // Information about subtopic is stored as JSON in 'data' column

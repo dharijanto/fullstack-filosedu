@@ -173,9 +173,10 @@ function postAnswer() {
         if (isPerfectScore) {
           $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di \n            urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
         } else {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + currentTimeFinish + ' detik</b>. \n            Hanya nilai 100 yang masuk penilaian. </p>');
+          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + currentTimeFinish + ' detik</b>. \n            Hanya nilai 100 yang masuk penilaian ranking. </p>');
         }
 
+        // TODO: This message and conditional checking should be from backend
         if (parseInt(currentScore) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
         }

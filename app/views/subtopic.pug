@@ -11,7 +11,10 @@ block contents
     h1.text-center #{topic.topic} - #{subtopic.subtopic}
     h4.text-center #{subtopic.description}
     h3.text-center
-      a(href='/') Kembali ke Topik
+      span
+        a.btn.btn-primary#prevButton(href=`${prevLink || ''}` style=`${prevLink ? '' : 'display: none'}`) <
+        a(href='/') Kembali ke Topik
+        a.btn.btn-primary#nextButton(href=`${nextLink || ''}` style=`${nextLink ? '' : 'display: none;'}`) >
     hr
     p !{subtopicData.detail}
     //- #ytPlayerContainer
