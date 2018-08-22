@@ -1,9 +1,10 @@
 const path = require('path')
 
-var axios = require('axios')
+const axios = require('axios')
+const Sequelize = require('sequelize')
 
-var AppConfig = require(path.join(__dirname, '../app-config'))
-var CRUDService = require(path.join(__dirname, 'crud-service'))
+const AppConfig = require(path.join(__dirname, '../app-config'))
+const CRUDService = require(path.join(__dirname, 'crud-service'))
 
 const KEY_TO_TABLE = {
   user: {
@@ -26,11 +27,11 @@ const KEY_TO_TABLE = {
 
 const TAG = 'SyncService'
 class SyncService extends CRUDService {
-  findAllUser (identifier) {
+  findAllUser (schoolIdentifier) {
     return this.readOne({
       modelName: 'School',
       searchClause: {
-        identifier
+        identifier: schoolIdentifier
       }
     }).then(resp => {
       if (resp.status) {
@@ -46,30 +47,51 @@ class SyncService extends CRUDService {
     })
   }
 
-  findAnalytics (userId) {
+  // userId: [number]
+  // lastUpdatedAt: '2018-07-04 hh:mm:ss'
+  findAnalytics (userId, startTime, endTime) {
     return this.read({
       modelName: 'Analytics',
       searchClause: {
-        userId
-      }
+        userId,
+        updatedAt: {
+          [Sequelize.Op.and]: {
+            [Sequelize.Op.gte]: startTime,
+            [Sequelize.Op.lte]: endTime
+          }
+        }
+      },
+      order: [['updatedAt', 'DESC']]
     })
   }
 
-  findSubmittedGeneratedExercises (userId) {
+  findSubmittedGeneratedExercises (userId, startTime, endTime) {
     return this.read({
       modelName: 'GeneratedExercise',
       searchClause: {
         userId,
+        updatedAt: {
+          [Sequelize.Op.and]: {
+            [Sequelize.Op.gte]: startTime,
+            [Sequelize.Op.lte]: endTime
+          }
+        },
         submitted: true
       }
     })
   }
 
-  findSubmittedGeneratedTopicExercises (userId) {
+  findSubmittedGeneratedTopicExercises (userId, startTime, endTime) {
     return this.read({
       modelName: 'GeneratedTopicExercise',
       searchClause: {
         userId,
+        updatedAt: {
+          [Sequelize.Op.and]: {
+            [Sequelize.Op.gte]: startTime,
+            [Sequelize.Op.lte]: endTime
+          }
+        },
         submitted: true
       }
     })
@@ -104,7 +126,7 @@ class SyncService extends CRUDService {
     })
   }
 
-  insertTable (data, modelName, schoolId, userCloudId = null, trx) {
+  insertRow (data, modelName, schoolId, userCloudId = null, trx) {
     var modifiedData = null
     if (modelName === 'User') {
       modifiedData = Object.assign({}, data, {schoolId})
@@ -139,11 +161,19 @@ class SyncService extends CRUDService {
   }
 
   getTableName (key) {
-    return KEY_TO_TABLE[key].tableName
+    if (KEY_TO_TABLE[key]) {
+      return KEY_TO_TABLE[key].tableName
+    } else {
+      throw new Error('Unknown key=' + key)
+    }
   }
 
   getModelName (key) {
-    return KEY_TO_TABLE[key].modelName
+    if (KEY_TO_TABLE[key]) {
+      return KEY_TO_TABLE[key].modelName
+    } else {
+      throw new Error('Unknown key=' + key)
+    }
   }
 
   /*
@@ -159,8 +189,8 @@ class SyncService extends CRUDService {
       schoolId: 1
   */
   processUser (data, schoolIdentifier, schoolId, trx) {
-    var tableName = 'users'
-    var modelName = 'User'
+    const tableName = 'users'
+    const modelName = 'User'
 
     return this.getSingleSynchronization(data.id, schoolIdentifier, tableName).then(resp => {
       if (resp.status) {
@@ -176,7 +206,7 @@ class SyncService extends CRUDService {
       } else {
         var userCloudId = null
 
-        return this.insertTable(data, modelName, schoolId, userCloudId, trx).then(resp3 => {
+        return this.insertRow(data, modelName, schoolId, userCloudId, trx).then(resp3 => {
           if (resp3.status) {
             return this.insertToSyncTable(data.id, schoolIdentifier, tableName, resp3.data.id, trx).then(resp4 => {
               if (resp4.status) {
@@ -193,6 +223,14 @@ class SyncService extends CRUDService {
     }).catch(err => {
       throw new Error(err)
     })
+  }
+
+  getLastSyncHistory () {
+    return this.readOne({modelName: 'SyncHistory', searchClause: {}, order: [['createdAt', 'DESC']]})
+  }
+
+  saveSyncHistory (time) {
+    return this.create({modelName: 'SyncHistory', data: {time}})
   }
 }
 

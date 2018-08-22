@@ -137,6 +137,11 @@ function addTables (sequelize, models) {
     tableName: {type: Sequelize.STRING}
   })
 
+  models.SyncHistory = sequelize.define('syncHistories', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    time: {type: Sequelize.DATE} // Until what time had data been synchronized to
+  })
+
   return models
 }
 
