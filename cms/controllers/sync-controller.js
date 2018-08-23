@@ -70,7 +70,7 @@ class SyncController extends BaseController {
                   datas: usersData
                 }
               }
-              log.verbose(TAG, 'syncController; GET(): processedData=' + JSON.stringify(processedData))
+              log.verbose(TAG, 'syncController.GET(): processedData=' + JSON.stringify(processedData))
               return syncService.sendData(processedData).then(resp => {
                 if (resp.status) {
                   return syncService.saveSyncHistory(endTime).then(resp2 => {

@@ -114,7 +114,9 @@ class SyncService extends CRUDService {
               'Content-Type': 'application/json',
               'Content-Encoding': 'gzip'
             }
-          }).then(resolve).catch(reject)
+          }).then(resp => {
+            resolve(resp.data)
+          }).catch(reject)
         }
       })
     })
