@@ -212,7 +212,7 @@ class SyncService extends CRUDService {
     return this.readOne({modelName: 'User', searchClause: {username: data.username, schoolId}}).then(resp => {
       // User already existed in the database, we just need to update it
       if (resp.status) {
-        var cloudId = resp.data.cloudId
+        var cloudId = resp.data.id
         // if exists
         return this.updateTable(data, modelName, cloudId, trx).then(resp3 => {
           if (resp3.status) {

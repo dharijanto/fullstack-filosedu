@@ -140,6 +140,7 @@ class SyncController extends BaseController {
         })
       }).then(commitSuccess => {
         res.json({status: true})
+        log.info(TAG, 'synchronization.POST(): Success!')
       }).catch(err => {
         log.error(TAG, err)
         res.json({status: false, errMessage: err.message})
