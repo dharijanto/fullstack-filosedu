@@ -81,13 +81,12 @@ class SyncController extends BaseController {
     */
     this.routePost('/synchronization', (req, res, next) => {
       var postData = req.body.data
-
       log.verbose(TAG, `synchronization.POST(): ${JSON.stringify(postData)}`)
-      const schoolIdentifier = postData.school.identifier
-      return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => {
-        if (resp.status) {
-          const schoolId = resp.data.id
-          return this.getDb().sequelize.transaction(trx => {
+      return this.getDb().sequelize.transaction(trx => {
+        const schoolIdentifier = postData.school.identifier
+        return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => {
+          if (resp.status) {
+            const schoolId = resp.data.id
             // TODO: Pas read, mau di kasi trx juga
             return Promise.each(postData.datas, (data, index) => {
               return syncService.processUser(data['user'], schoolIdentifier, schoolId, trx).then(userId => {
@@ -135,12 +134,12 @@ class SyncController extends BaseController {
                 })
               })
             })
-          }).then(commitSuccess => {
-            res.json({status: true})
-          })
-        } else {
-          res.json({status: false, errMessage: 'Unrecognized school'})
-        }
+          } else {
+            res.json({status: false, errMessage: 'Unrecognized school'})
+          }
+        })
+      }).then(commitSuccess => {
+        res.json({status: true})
       }).catch(err => {
         log.error(TAG, err)
         res.json({status: false, errMessage: err.message})

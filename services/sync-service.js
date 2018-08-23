@@ -1,4 +1,5 @@
 const path = require('path')
+const zlib = require('zlib')
 
 const axios = require('axios')
 const Sequelize = require('sequelize')
@@ -98,11 +99,24 @@ class SyncService extends CRUDService {
   }
 
   sendData (processedData) {
-    return axios.post(AppConfig.CLOUD_INFORMATION.HOST, {
-      status: processedData.status,
-      data: processedData.data
-    }).then(resp => {
-      return resp
+    return new Promise((resolve, reject) => {
+      const buffer = new Buffer(JSON.stringify({
+        status: processedData.status,
+        data: processedData.data
+      }), 'utf-8')
+
+      zlib.gzip(buffer, function(err, result) {
+        if (err) {
+          reject(err)
+        } else {
+          axios.post(AppConfig.CLOUD_INFORMATION.HOST, result , {
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Encoding': 'gzip'
+            }
+          }).then(resolve).catch(reject)
+        }
+      })
     })
   }
 
@@ -192,7 +206,9 @@ class SyncService extends CRUDService {
     const tableName = 'users'
     const modelName = 'User'
 
-    return this.getSingleSynchronization(data.id, schoolIdentifier, tableName).then(resp => {
+    // Check if the user is already in database
+    return this.readOne({modelName: 'User', searchClause: {username: data.username, schoolId}}).then(resp => {
+      // User already existed in the database, we just need to update it
       if (resp.status) {
         var cloudId = resp.data.cloudId
         // if exists
@@ -204,24 +220,36 @@ class SyncService extends CRUDService {
           }
         })
       } else {
-        var userCloudId = null
-
-        return this.insertRow(data, modelName, schoolId, userCloudId, trx).then(resp3 => {
-          if (resp3.status) {
-            return this.insertToSyncTable(data.id, schoolIdentifier, tableName, resp3.data.id, trx).then(resp4 => {
-              if (resp4.status) {
-                return resp4.data.cloudId
+        return this.getSingleSynchronization(data.id, schoolIdentifier, tableName).then(resp => {
+          if (resp.status) {
+            var cloudId = resp.data.cloudId
+            // if exists
+            return this.updateTable(data, modelName, cloudId, trx).then(resp3 => {
+              if (resp3.status) {
+                return cloudId
               } else {
-                throw new Error('Failed to insert sync table:' + resp4.errMessage)
+                throw new Error('Failed to update user table:' + resp3.errMessage)
               }
             })
           } else {
-            throw new Error('Failed to insert to user table: ' + resp3.errMessage)
+            var userCloudId = null
+
+            return this.insertRow(data, modelName, schoolId, userCloudId, trx).then(resp3 => {
+              if (resp3.status) {
+                return this.insertToSyncTable(data.id, schoolIdentifier, tableName, resp3.data.id, trx).then(resp4 => {
+                  if (resp4.status) {
+                    return resp4.data.cloudId
+                  } else {
+                    throw new Error('Failed to insert sync table:' + resp4.errMessage)
+                  }
+                })
+              } else {
+                throw new Error('Failed to insert to user table: ' + resp3.errMessage)
+              }
+            })
           }
         })
       }
-    }).catch(err => {
-      throw new Error(err)
     })
   }
 

@@ -44,7 +44,7 @@ class SyncController extends BaseController {
           var startTime = syncHistoryResp.data.time
           log.verbose(TAG, 'Previous sync history is found. startTime=' + startTime)
         }
-        syncService.findAllUser(schoolIdentifier).then(resp => {
+        return syncService.findAllUser(schoolIdentifier).then(resp => {
           if (resp.status) {
             const users = resp.data
             const currentTime = moment().format('YYYY-MM-DD hh:mm:ss')
