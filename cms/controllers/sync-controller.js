@@ -22,7 +22,11 @@ class SyncController extends BaseController {
     })
 
     this.routeGet('/synchronization', (req, res, next) => {
-      res.render('sync-management')
+      if (AppConfig.CLOUD_SERVER) {
+        res.status(403).send('This page can only be accessed by local server!')
+      } else {
+        res.render('sync-management')
+      }
     })
 
     this.routeGet('/synchronization/histories' , (req, res, next) => {
