@@ -18,6 +18,10 @@ const modules = [
     output: 'cms'
   },
   {
+    input: 'sync-management-cms',
+    output: 'cms'
+  },
+  {
     input: 'subtopic-cms',
     output: 'cms'
   },

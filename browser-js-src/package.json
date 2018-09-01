@@ -35,12 +35,12 @@
     "lodash": "^4.17.4",
     "marked": "^0.3.6",
     "moment": "^2.20.1",
+    "nc-input-library": "^1.4.0",
     "nprogress": "^0.2.0",
     "select2": "^4.0.6-rc.1",
     "summernote": "^0.8.8",
     "toastr": "^2.1.2",
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
-  },
-  "dependencies": {}
+  }
 }

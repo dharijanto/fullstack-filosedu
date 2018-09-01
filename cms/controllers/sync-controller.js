@@ -7,7 +7,7 @@ const moment = require('moment')
 const BaseController = require(path.join(__dirname, 'base-controller'))
 
 const AppConfig = require(path.join(__dirname, '../../app-config'))
-var SyncService = require(path.join(__dirname, '../../services/sync-service'))
+var SyncService = require(path.join(__dirname, '../../services/sync-client-service'))
 
 const TAG = 'SyncController'
 
@@ -21,6 +21,16 @@ class SyncController extends BaseController {
       next()
     })
 
+    this.routeGet('/synchronization', (req, res, next) => {
+      res.render('sync-management')
+    })
+
+    this.routeGet('/synchronization/histories' , (req, res, next) => {
+      syncService.getSyncHistories().then(resp => {
+        res.json(resp)
+      }).catch(next)
+    })
+
     /*
       This is client side of the synchronization mechanism. This path is called on the client side
 
@@ -31,62 +41,45 @@ class SyncController extends BaseController {
          only those whose updatedAt is larger than last synchronization time
       4. Send them to the server
       5. If server suceeds, update synchronizationHistories table so that we don't have to re-sync what's already sent.
-
     */
-    this.routeGet('/synchronization', (req, res, next) => {
+    this.routePost('/synchronization/start', (req, res, next) => {
       log.verbose(TAG, `syncController:GET(): HOMEPAGE`)
-      var schoolIdentifier = AppConfig.LOCAL_SCHOOL_INFORMATION.identifier
-
-      syncService.getLastSyncHistory().then(syncHistoryResp => {
-        var startTime = '2000-01-01'
-        var endTime = moment().format('YYYY-MM-DD hh:mm:ss')
-        if (syncHistoryResp.status) {
-          var startTime = syncHistoryResp.data.time
-          log.verbose(TAG, 'Previous sync history is found. startTime=' + startTime)
+      syncService.isServerReadyToSync().then(resp => {
+        if (resp.status) {
+          // Sync only data newer than last synced
+          const startTime = resp.data.lastSync
+          const endTime = moment().format('YYYY-MM-DD hh:mm:ss')
+          return syncService.findAllUser().then(resp => {
+            if (resp.status) {
+              const users = resp.data
+              const currentTime = moment().format('YYYY-MM-DD hh:mm:ss')
+              return Promise.map(users, user => {
+                return Promise.join(
+                  syncService.findAnalytics(user.id, startTime, endTime),
+                  syncService.findSubmittedGeneratedExercises(user.id, startTime, endTime),
+                  syncService.findSubmittedGeneratedTopicExercises(user.id, startTime, endTime)
+                ).spread((respAnalytics, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises) => {
+                  return {
+                    user,
+                    analytics: respAnalytics.status ? respAnalytics.data : [],
+                    submittedGeneratedExercises: respSubmittedGeneratedExercises.status ? respSubmittedGeneratedExercises.data : [],
+                    submittedGeneratedTopicExercises:  respSubmittedGeneratedTopicExercises.status ? respSubmittedGeneratedTopicExercises.data : []
+                  }
+                })
+              }).then(usersData => {
+                log.verbose(TAG, 'syncController.GET(): processedData=' + JSON.stringify(usersData))
+                return syncService.sendData(usersData, endTime).then(resp => {
+                  res.json(resp)
+                })
+              })
+            } else {
+              res.json(resp)
+            }
+          })
+        } else {
+          res.json(resp)
         }
-        return syncService.findAllUser(schoolIdentifier).then(resp => {
-          if (resp.status) {
-            const users = resp.data
-            const currentTime = moment().format('YYYY-MM-DD hh:mm:ss')
-            return Promise.map(users, user => {
-              return Promise.join(
-                syncService.findAnalytics(user.id, startTime, endTime),
-                syncService.findSubmittedGeneratedExercises(user.id, startTime, endTime),
-                syncService.findSubmittedGeneratedTopicExercises(user.id, startTime, endTime)
-              ).spread((respAnalytics, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises) => {
-                return {
-                  user,
-                  analytics: respAnalytics.status ? respAnalytics.data : [],
-                  submittedGeneratedExercises: respSubmittedGeneratedExercises.status ? respSubmittedGeneratedExercises.data : [],
-                  submittedGeneratedTopicExercises:  respSubmittedGeneratedTopicExercises.status ? respSubmittedGeneratedTopicExercises.data : []
-                }
-              })
-            }).then(usersData => {
-              const processedData = {
-                data: {
-                  school: {
-                    identifier: schoolIdentifier
-                  },
-                  datas: usersData
-                }
-              }
-              log.verbose(TAG, 'syncController.GET(): processedData=' + JSON.stringify(processedData))
-              return syncService.sendData(processedData).then(resp => {
-                if (resp.status) {
-                  return syncService.saveSyncHistory(endTime).then(resp2 => {
-                    res.send('Data successfully integrated into the cloud!')
-                  })
-                } else {
-                  res.send(resp.errMessage)
-                }
-              })
-            })
-          } else {
-            res.status(500).send('This school does not have any users!')
-          }
-        })
       }).catch(err => {
-        console.error(err)
         next(err)
       })
     })

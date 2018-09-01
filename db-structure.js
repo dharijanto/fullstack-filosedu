@@ -139,7 +139,9 @@ function addTables (sequelize, models) {
 
   models.SyncHistory = sequelize.define('syncHistories', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    time: {type: Sequelize.DATE} // Until what time had data been synchronized to
+    schoolIdentifier: {type: Sequelize.STRING},
+    status: {type: Sequelize.ENUM(['Syncing', 'Success', 'Failed'])},
+    date: {type: Sequelize.DATE} // Until what time had data been synchronized to
   })
 
   return models

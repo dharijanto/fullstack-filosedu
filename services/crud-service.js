@@ -1,3 +1,5 @@
+var util = require('util')
+
 var _ = require('lodash')
 var log = require('npmlog')
 
@@ -9,7 +11,7 @@ class CRUDService {
     this._models = models
   }
 
-  create ({modelName, data}, trx = null) {
+  create ({modelName, data, trx}) {
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
     data = _.omit(data, 'id') // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate
     if (!data) {
@@ -34,12 +36,12 @@ class CRUDService {
   //
   // If there's no data:
   // {status: false, errCode: ..., errMessage: ..., errData}
-  read ({modelName, searchClause, order = [], include, limit}) {
+  read ({modelName, searchClause, order = [], include, limit, trx}) {
     if (!searchClause) {
       throw new Error('searchClause has to be specified!')
     }
     log.verbose(TAG, `read(): modelName=${modelName} searchClause=${JSON.stringify(searchClause)}`)
-    return this._models[modelName].findAll({where: searchClause, order, include, limit}).then(readData => {
+    return this._models[modelName].findAll({where: searchClause, order, include, limit, transaction: trx}).then(readData => {
       if (readData.length > 0) {
         return {status: true, data: readData.map(data => data.get({plain: true}))}
       } else {
@@ -48,8 +50,8 @@ class CRUDService {
     })
   }
 
-  readOne ({modelName, searchClause, order, include}) {
-    return this.read({modelName, searchClause, order, include}).then(resp => {
+  readOne ({modelName, searchClause, order, include, trx}) {
+    return this.read({modelName, searchClause, order, include, trx}).then(resp => {
       if (resp.status) {
         return {status: true, data: resp.data[0]}
       } else {
@@ -58,7 +60,7 @@ class CRUDService {
     })
   }
 
-  update ({modelName, data}, trx = null) {
+  update ({modelName, data, trx}) {
     if (!('id' in data)) {
       throw new Error('data needs to have id!')
     }

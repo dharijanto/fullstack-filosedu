@@ -3,10 +3,11 @@ var path = require('path')
 var _ = require('lodash')
 var log = require('npmlog')
 var Promise = require('bluebird')
+var Sequelize = require('sequelize')
 
 var BaseController = require(path.join(__dirname, 'base-controller'))
 
-var SyncService = require(path.join(__dirname, '../../services/sync-service'))
+var SyncService = require(path.join(__dirname, '../../services/sync-server-service'))
 
 const TAG = 'SyncController'
 
@@ -17,6 +18,30 @@ class SyncController extends BaseController {
 
     this.addInterceptor((req, res, next) => {
       next()
+    })
+
+    this.routeGet('/synchronization/histories', (req, res, next) => {
+      const schoolIdentifier = req.query.schoolIdentifier
+      syncService.getSyncHistories(schoolIdentifier).then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        next(err)
+      })
+    })
+
+    /*
+      The client send a GET request to this path and we return whether we're ready to sync or not.
+      We're ready if:
+      1. We check on the last syncHistories table entry
+      2. If it's empty, this school has never synced. We're good
+      3. If there's entry. We're ready to sync if status !== 'Syncing' (i.e Failed or Ready)
+
+    */
+    this.routeGet('/synchronization/readyToSync', (req, res, next) => {
+      const schoolIdentifier = req.query.schoolIdentifier
+      syncService.isReadyToSync(schoolIdentifier).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
 
     /*
@@ -79,71 +104,40 @@ class SyncController extends BaseController {
       7. Respond to client
 
     */
-    this.routePost('/synchronization', (req, res, next) => {
-      var postData = req.body.data
-      log.verbose(TAG, `synchronization.POST(): ${JSON.stringify(postData)}`)
-      return this.getDb().sequelize.transaction(trx => {
-        const schoolIdentifier = postData.school.identifier
-        return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => {
+    this.routePost('/synchronization/start', (req, res, next) => {
+      var syncData = req.body.data
+      log.verbose(TAG, `synchronization.POST(): ${JSON.stringify(syncData)}`)
+      return this.getDb().sequelize.transaction({isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE}, trx => {
+        const schoolIdentifier = syncData.school.identifier
+        return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => { 
           if (resp.status) {
             const schoolId = resp.data.id
-            // TODO: Pas read, mau di kasi trx juga
-            return Promise.each(postData.datas, (data, index) => {
-              return syncService.processUser(data['user'], schoolIdentifier, schoolId, trx).then(userId => {
-                // This is where we trying to remove data that contain object user.
-                // Remember that we process data sorted by user first
-                data = _.omit(data, 'user')
-                return Promise.map(Object.keys(data), key => {
-                  log.verbose(TAG, `synchronization.POST(): processing key=${key}`)
-                  const tableName = syncService.getTableName(key)
-                  const modelName = syncService.getModelName(key)
-                  return Promise.each(data[key], data => {
-                    return syncService.getSingleSynchronization(data.id, schoolIdentifier, tableName).then(resp2 => {
-                      if (resp2.status) {
-                        var cloudId = resp2.data.cloudId
-                        // if exists
-                        return syncService.updateTable(data, modelName, cloudId, trx, userId).then(resp3 => {
-                          if (resp3.status) {
-                            return true
-                          } else {
-                            throw new Error(`Failed to update ${tableName} table: ${resp3.errMessage}`)
-                          }
-                        })
-                      } else {
-                        return syncService.insertRow(data, modelName, schoolId, userId, trx).then(resp3 => {
-                          if (resp3.status) {
-                            return syncService.insertToSyncTable(
-                              data.id,
-                              schoolIdentifier,
-                              tableName,
-                              resp3.data.id,
-                              trx).then(resp4 => {
-                                if (resp4.status) {
-                                  return true
-                                } else {
-                                  throw new Error(`Failed to insert sync table: ${resp4.errMessage}`)
-                                }
-                              })
-                          } else {
-                            throw new Error(`Failed to insert ${tableName} table: ${resp3.errMessage}`)
-                          }
-                        })
-                      }
+            return syncService.isReadyToSync(schoolIdentifier, trx).then(resp => {
+              if (resp.status) {
+                return syncService.createSyncHistory(schoolIdentifier, syncData.syncTime).then(resp => {
+                  const syncHistoryId = resp.data.id
+                  res.json({status: true})
+                  // TODO: Pas read, mau di kasi trx juga
+                  return syncService.syncData(schoolId, syncData, trx).then(() => {
+                    return syncService.updateSyncHistory(syncHistoryId, true)
+                  }).catch(err => {
+                    return syncService.updateSyncHistory(syncHistoryId, false).then(() => {
+                      throw err
                     })
                   })
                 })
-              })
+              } else {
+                return resp
+              }
             })
           } else {
-            res.json({status: false, errMessage: 'Unrecognized school'})
+            throw new Error(resp.errMessage)
           }
         })
-      }).then(commitSuccess => {
-        res.json({status: true})
+      }).then(() => {
         log.info(TAG, 'synchronization.POST(): Success!')
       }).catch(err => {
         log.error(TAG, err)
-        res.json({status: false, errMessage: err.message})
       })
     })
   }
