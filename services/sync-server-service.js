@@ -70,7 +70,7 @@ class SyncService extends CRUDService {
     if (modelName === 'User') {
       modifiedData = Object.assign({}, data, {schoolId})
     } else {
-      modifiedData = Object.assign({}, data, {userId: userCloudId})
+      modifiedData = Object.assign({}, data, {userId: userCloudId, onCloud: true})
     }
 
     return this.create({
@@ -81,7 +81,7 @@ class SyncService extends CRUDService {
   }
 
   updateTable (data, modelName, cloudId, trx, userId = null) {
-    const modifiedData = Object.assign({}, data, {id: cloudId, userId})
+    const modifiedData = Object.assign({}, data, {id: cloudId, userId, onCloud: true})
     return this.update({
       modelName,
       data: modifiedData,

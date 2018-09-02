@@ -5,6 +5,7 @@ var Promise = require('bluebird')
 var pug = require('pug')
 var Sequelize = require('sequelize')
 
+const AppConfig = require(path.join(__dirname, '../app-config'))
 var CRUDService = require(path.join(__dirname, 'crud-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 
@@ -356,7 +357,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     return this._models['GeneratedExercise'].destroy({where: {
       userId,
       exerciseId: generatedExercise.exerciseId,
-      submitted: false
+      submitted: false,
+      onCloud: AppConfig.CLOUD_SERVER
     }}).then(() => {
       return this.create({
         modelName: 'GeneratedExercise',
@@ -366,7 +368,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           unknowns: generatedExercise.unknowns,
           exerciseId: generatedExercise.exerciseId,
           userId,
-          idealTime: generatedExercise.idealTime
+          idealTime: generatedExercise.idealTime,
+          onCloud: AppConfig.CLOUD_SERVER
         }
       })
     })
@@ -391,7 +394,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   getGeneratedExercise ({userId, exerciseId}) {
     return this.readOne({
       modelName: 'GeneratedExercise',
-      searchClause: {userId, exerciseId, submitted: false}
+      searchClause: {userId, exerciseId, submitted: false, onCloud: AppConfig.CLOUD_SERVER}
     })
   }
 
@@ -483,7 +486,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       searchClause: {
         userId,
         topicId,
-        submitted: false
+        submitted: false,
+        onCloud: AppConfig.CLOUD_SERVER
       }
     })
   }
@@ -507,7 +511,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     return this._models['GeneratedTopicExercise'].destroy({where: {
       topicId,
       userId,
-      submitted: false
+      submitted: false,
+      onCloud: AppConfig.CLOUD_SERVER
     }}).then(() => {
       return this.create({
         modelName: 'GeneratedTopicExercise',
@@ -516,7 +521,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           userId,
           exerciseDetail: JSON.stringify(exerciseDetail),
           topicExerciseHash,
-          idealTime
+          idealTime,
+          onCloud: AppConfig.CLOUD_SERVER
         }
       })
     })
@@ -535,6 +541,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       data: {
         id: generatedTopicId,
         submitted: true,
+        onCloud: AppConfig.CLOUD_SERVER,
         score,
         timeFinish,
         exerciseDetail

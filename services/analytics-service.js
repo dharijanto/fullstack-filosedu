@@ -1,6 +1,7 @@
 var path = require('path')
 var Promise = require('bluebird')
 
+const AppConfig = require(path.join(__dirname, '../app-config'))
 var CRUDService = require(path.join(__dirname, 'crud-service'))
 
 const TAG = 'AnalyticsService'
@@ -40,7 +41,8 @@ class AnalyticsService extends CRUDService {
             value,
             type: 'video',
             userId,
-            videoId
+            videoId,
+            onCloud: AppConfig.CLOUD_SERVER
           }
         }).then(resp => {
           resolve(resp)
@@ -86,7 +88,8 @@ class AnalyticsService extends CRUDService {
             value,
             type: 'exercise',
             userId,
-            exerciseId
+            exerciseId,
+            onCloud: AppConfig.CLOUD_SERVER
           }
         }).then(resp => {
           resolve(resp)

@@ -47,7 +47,8 @@ class SyncService extends CRUDService {
             [Sequelize.Op.gte]: startTime,
             [Sequelize.Op.lte]: endTime
           }
-        }
+        },
+        onCloud: false
       },
       order: [['updatedAt', 'DESC']]
     })
@@ -64,7 +65,8 @@ class SyncService extends CRUDService {
             [Sequelize.Op.lte]: endTime
           }
         },
-        submitted: true
+        submitted: true,
+        onCloud: false
       }
     })
   }
@@ -80,7 +82,8 @@ class SyncService extends CRUDService {
             [Sequelize.Op.lte]: endTime
           }
         },
-        submitted: true
+        submitted: true,
+        onCloud: false
       }
     })
   }

@@ -89,7 +89,8 @@ function addTables (sequelize, models) {
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
-    idealTime: {type: Sequelize.FLOAT}
+    idealTime: {type: Sequelize.FLOAT},
+    onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
   })
   models.GeneratedExercise.belongsTo(models.Exercise)
   models.GeneratedExercise.belongsTo(models.User)
@@ -115,7 +116,8 @@ function addTables (sequelize, models) {
     value: {type: Sequelize.INTEGER},
     userId: Sequelize.INTEGER,
     videoId: Sequelize.INTEGER,
-    exerciseId: Sequelize.INTEGER
+    exerciseId: Sequelize.INTEGER,
+    onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
   })
 
   models.GeneratedTopicExercise = sequelize.define('generatedTopicExercises', {
@@ -125,7 +127,8 @@ function addTables (sequelize, models) {
     timeFinish: {type: Sequelize.FLOAT},
     topicExerciseHash: {type: Sequelize.STRING},
     exerciseDetail: {type: Sequelize.TEXT},
-    idealTime: {type: Sequelize.FLOAT}
+    idealTime: {type: Sequelize.FLOAT},
+    onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
   })
   models.GeneratedTopicExercise.belongsTo(models.Topic)
   models.GeneratedTopicExercise.belongsTo(models.User)
