@@ -10,6 +10,16 @@ var CRUDService = require(path.join(__dirname, 'crud-service'))
 var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
 
 const TAG = 'ExerciseService'
+
+/*
+  Important Note:
+    generatedExercises and generatedTopicExercises has 'onCloud' column
+    which indicate that the data is already on the cloud and we don't need to
+    send them again when syncing. Since all rows with onCloud === true
+    wouldn't be synced to the server, we shouldn't restore generatedExercises
+    or generatedTopicExercises whose onCloud != AppConfig.CLOUD_SERVER.
+    Remember to set the value properly!
+*/
 class ExerciseService extends CRUDService {
   /*
     return:

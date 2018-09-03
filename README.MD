@@ -16,14 +16,14 @@ client_max_body_size 50M;
   * Afterwards, we'll implement custom code for this.
 * Local is stateless.
   * Meaning that if server for school X is broken, we can deploy new machine to replace it,
-	with source of truth taken from cloud
+  with source of truth taken from cloud
 * Tables to sync
-	* users
-	* analytics
-	* generatedTopicExercises
-	* generatedTopicExercises
-	* Although other tables, such as topic, subtopic, and exercises are modifiable from CMS
-	  they're not going to be synced to cloud. They're modifable just for convinience
+  * users
+  * analytics
+  * generatedTopicExercises
+  * generatedTopicExercises
+  * Although other tables, such as topic, subtopic, and exercises are modifiable from CMS
+    they're not going to be synced to cloud. They're modifable just for convinience
 
 
 ## Implementation
@@ -31,24 +31,34 @@ client_max_body_size 50M;
 * Query the server to get last recorded sync date
 * Get data to sync from their respective tables, where schoolIdentifier = localSchoolIdentifier
   * We can't just send everything but have to check for the schoolIdentifier because the
-	source of truth for this local server is from cloud. Meaning data for other school
-	will also be here.
-  * We retrieve only the data whose updatedAt > last recorded sync date returned by the server
+    source of truth for this local server is from cloud. Meaning data for other school
+    will also be here.
+  * We retrieve only the data whose updatedAt > lastSync date returned by the server to avoid
+    re-processing data that has already been processed before.
 * Send this data to cloud
 * Cloud does some verification
   * schoolIdentifier is valid
   * Cloud returns immediately, then begin syncing. The reason is because We don't wanna
-	have client block on us while waiting for the sync to complete,
-	which can take up to 5 minutes depending on how big the data is.
+    have client block on us while waiting for the sync to complete,
+    which can take up to 5 minutes depending on how big the data is.
 * Server creates new entry in syncHistories table, whose status is Syncing
   * Server uses synchronizations table to create mapping between client id and server id
-	* Synchronization: localId, cloudId, tableName, schoolIdentifier
-	* localId is the row id on the local server, while cloudId is to what id it maps to local server.
-	* For each data to insert, we check there's entry where data.id = localId, data.tableName = tableName and
-	  localSchoolIdentifier = schoolIdentifier.
-	* If there's entry, that means that data has been added to the database, and we just need to update.
-	* If there's no entry, that means this is a new data. We insert it to the respective table, than
-	  add the mapping from localId to cloudId to synchronzitions table
+    * synchronizations.schoolIdentifier: 
+    * synchronizations.
+    * Column:
+      * localId -> source id on local server
+      * cloudId -> destionation id on cloud server
+      * tableName ->  what table this belongs to
+      * schoolIdentifier -> identifies a specific school server
+      * localServerHash-> identify a specific version of school server.
+        * On the local server, this is implemented by creating it once: md5(current date). When
+          we sync from cloud to local, this is gone, so local has to create a new one, hence invalidating
+          the old synchronizationas mapping.
+  * For each data to insert, we check there's entry where data.id = localId, data.tableName = tableName,
+    localSchoolIdentifier = schoolIdentifier, and localServerHash = serverHash
+  * If there's entry, that means that data has been added to the database, and we just need to update.
+  * If there's no entry, that means this is a new data. We insert it to the respective table, than
+    add the mapping from localId to cloudId to synchronzitions table
   * Local can check this sycnHistories throug GET request.
   * Server refuses any other request to sync, while this syncing is progressing
 * When server finished the syncing, it updates the entry on syncHistories with
@@ -58,31 +68,70 @@ client_max_body_size 50M;
 #### Phase 1 - Using MySQLDump
 * All rows that is created in cloud has column onCloud = true
   * Without this, if we refresh a local server with cloud database as its new database,
-	when we sync, localId of existing data changes. Hence they'll be duplicated when added.
+  when we sync, localId of existing data changes. Hence they'll be duplicated when added.
   * In other words, onCloud = true is a flag that means the row comes from cloud, hence
-	we don't need to sync it again.
+  we don't need to sync it again.
   * There is edge case: when we modify data where onCloud
-	locally. We should handle this more gracefully, but we can live for now?
+  locally. We should handle this more gracefully, but we can live for now?
 * When syncing to server,
 
 #### Phase 2
 
-# Testing
+## Functional Testing
 ## Synchronization
-### Checking Client Code
-Simply enable verbose logging and data that is to be sent to the cloud server is going to be printed
-in the terminal. Check if the data is as expected (i.e. according to what's on DB)
 
-### Checking Server Server
-Use data printed from before, post it to /synchronization, check that database is updated.
+### Setting up
+* Create two filosedu server by adding 2 entries in sites database. Modify the CLOUD_SERVER flag so that one is:
+  * Local server
+  * Cloud server
+* Enable sequelize verbose logging, through app-config so that we can see database logs.
 
-### Testing
+### Test Cases
+#### Local-to-Cloud Sync
+1. First-time sync
+  a. Delete generatedExercises, generatedTopicExercises, and analytics rows on the cloud where schoolId = local.schoolId
+  b. Sync to cloud
+  c. Check if the number of rows where schoolId is appropriate, is the same on cloud and on the server
+2. Sync without making any changes
+  a. Sync again
+  b. Check that row count on cloud doesn't change
+3. Subsequent sync
+  a. Do exercises so we have more generatedExercises and generatedTopicExercises
+  b. Sync to cloud
+  c. Check if the number of rows in cloud is updated to reflect the update on local server
+4. Sync after deleting syncHistories -> check that synchronizations mapping work as expected
+  a. Check row count on cloud where schoolId = local.schoolId
+  b. Delete syncHistories where schoolId = local.schoolId
+  c. Sync
+  d. Check that row count is the same as (a)
+
+#### Cloud-to-Local Sync
+1. First-time restore
+  a. Do mysqldump of cloud, restore it in local server
+  b. Check if restored data is accessible in local server
+2. Sync immediately after first-time restore
+  a. Do (1)
+  b. Check number of rows in generatedExercises, generatedTopicExercises, and analytics on cloud server
+     and note it.
+  c. Sync from local to cloud
+  d. Do (b) again, make sure it is the same as we don't add new data. -> This is to check onCloud flag on the table is working as expected.
+3. Sync immediately after first-time restore, with syncHistories cleaned
+  a. Like (2), but before syncing, remove syncHistories from cloud
+4. Sync after first-time restore
+  a. Do (1)
+  b. Finish some exercises so that we have new entries in generatedExercises, generatedTopicExercises, and analytics
+  c. Check number of rows in generatedExercises, generatedTopicExercises, and analytics on cloud and local server
+     and note it.
+  d. Sync from local to cloud
+  e. Check number of rows in cloud
+
+
 1. Check that the following queries is the same in the server and in the client:
-	```
-	select count(*) from users where schoolId = 3);
-	select count(*) from analytics where userId in (select id from users where schoolId = 3);
-	select count(*) from generatedExercises where userId in (select id from users where schoolId = 3);
-	select count(*) from generatedTopicExercises where userId in (select id from users where schoolId = 3);
-	```
+  ```
+  select count(*) from users where schoolId = 3);
+  select count(*) from analytics where userId in (select id from users where schoolId = 3);
+  select count(*) from generatedExercises where userId in (select id from users where schoolId = 3);
+  select count(*) from generatedTopicExercises where userId in (select id from users where schoolId = 3);
+  ```
 2. Create two instances of filos app, using ln -s to share the code. But separate the database of the two
    (i.e. create two sites with different names). Have one to sync to the other

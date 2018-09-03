@@ -2,11 +2,11 @@ const path = require('path')
 const zlib = require('zlib')
 
 const axios = require('axios')
+const md5 = require('md5')
 const Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
 const CRUDService = require(path.join(__dirname, 'crud-service'))
-
 
 const TAG = 'SyncService'
 class SyncService extends CRUDService {
@@ -90,29 +90,38 @@ class SyncService extends CRUDService {
 
   sendData (users, syncTime) {
     return new Promise((resolve, reject) => {
-      const buffer = new Buffer(JSON.stringify({
-        data: {
-          school: {
-            identifier: this.schoolIdentifier
-          },
-          users,
-          syncTime
-        }
-      }), 'utf-8')
-
-      zlib.gzip(buffer, function(err, result) {
-        if (err) {
-          reject(err)
-        } else {
-          axios.post(`${AppConfig.CLOUD_INFORMATION.HOST}/synchronization/start`, result , {
-            headers: {
-              'Content-Type': 'application/json',
-              'Content-Encoding': 'gzip'
+      this.getServerHash().then (resp => {
+        if (resp.status) {
+          const buffer = new Buffer(JSON.stringify({
+            data: {
+              school: {
+                identifier: this.schoolIdentifier,
+                serverHash: resp.data.serverHash
+              },
+              users,
+              syncTime
             }
-          }).then(resp => {
-            resolve(resp.data)
-          }).catch(reject)
+          }), 'utf-8')
+
+          zlib.gzip(buffer, function(err, result) {
+            if (err) {
+              reject(err)
+            } else {
+              axios.post(`${AppConfig.CLOUD_INFORMATION.HOST}/synchronization/start`, result , {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Content-Encoding': 'gzip'
+                }
+              }).then(resp => {
+                resolve(resp.data)
+              }).catch(reject)
+            }
+          })
+        } else {
+          resolve(resp)
         }
+      }).catch(err => {
+        reject(err)
       })
     })
   }
@@ -135,6 +144,43 @@ class SyncService extends CRUDService {
           return {status: false, errMessage: 'Server does not return lastSync date!'}
         } else {
           return {status: true, data: {lastSync}}
+        }
+      } else {
+        return resp
+      }
+    })
+  }
+
+  /*
+    Get a persistent hash that is destroyed only when there's a cloud-to-local sync using
+    mysqldump. This persistent hash is send to server so that server knows which sync mapping
+    to use when processing the data.
+  */
+  getServerHash () {
+    return this.readOne({
+      modelName: 'LocalMetaData',
+      searchClause: {
+        key: 'SERVER_HASH'
+      }
+    }).then(resp => {
+      if (resp.status) {
+        return resp
+      } else {
+        return this.create({
+          modelName: 'LocalMetaData',
+          data: {
+            key: 'SERVER_HASH',
+            value: md5('' + new Date())
+          }
+        })
+      }
+    }).then(resp => {
+      if (resp.status) {
+        const serverHash = resp.data.value
+        if (!serverHash) {
+          throw new Error('Server hash is expected but not found!')
+        } else {
+          return {status: true, data: {serverHash}}
         }
       } else {
         return resp

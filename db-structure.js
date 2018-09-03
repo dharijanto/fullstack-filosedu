@@ -134,7 +134,8 @@ function addTables (sequelize, models) {
   models.GeneratedTopicExercise.belongsTo(models.User)
 
   models.Synchronization = sequelize.define('synchronization', {
-    schoolIdentifier: {type: Sequelize.STRING},
+    schoolIdentifier: {type: Sequelize.STRING}, // Identify which school
+    serverHash: {type: Sequelize.STRING}, // Identify which version of school server
     localId: {type: Sequelize.INTEGER},
     cloudId: {type: Sequelize.INTEGER},
     tableName: {type: Sequelize.STRING}
@@ -145,6 +146,22 @@ function addTables (sequelize, models) {
     schoolIdentifier: {type: Sequelize.STRING},
     status: {type: Sequelize.ENUM(['Syncing', 'Success', 'Failed'])},
     date: {type: Sequelize.DATE} // Until what time had data been synchronized to
+  })
+
+  // Information that belongs only to local server and never synced to cloud.
+  // When we sync from cloud to local, we essentially do mysql dump and then
+  // restore it on the local server, hence this table is empty again on a newly synced local.
+  /*
+    Currently this is used to store:
+    {
+      key: 'SERVER_HASH'
+      value: [hash_value]
+    }
+  */
+  models.LocalMetaData = sequelize.define('localMetaData', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    key: {type: Sequelize.STRING, unique: true},
+    value: {type: Sequelize.STRING}
   })
 
   return models

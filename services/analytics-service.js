@@ -6,6 +6,14 @@ var CRUDService = require(path.join(__dirname, 'crud-service'))
 
 const TAG = 'AnalyticsService'
 
+/*
+  Important Note:
+    analytics has 'onCloud' column
+    which indicate that the data is already on the cloud and we don't need to
+    send them again when syncing.
+
+    Remember to set the value properly!
+*/
 class AnalyticsService extends CRUDService {
   /*
     type: 'feedback':
