@@ -50893,7 +50893,7 @@ var syncNCInput = $('#syncManagement').NCInputLibrary({
   },
   buttons: {
     conf: {
-      networkTimeOut: 10000
+      networkTimeout: 10000
     },
     ui: [{ id: 'sync', desc: 'Sync', postTo: rootPath + '/synchronization/start' }]
   }
