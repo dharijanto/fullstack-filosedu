@@ -10,7 +10,7 @@ const syncNCInput = $('#syncManagement').NCInputLibrary({
     ui: [
       {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
       {id: 'status', desc: 'Status', dataTable: true, input: 'hidden'},
-      {id: 'date', desc: 'Sync Date', dataTable: true, input: 'hidden'},
+      {id: 'date', desc: 'Sync Date (GMT+0)', dataTable: true, input: 'hidden'},
       {id: 'createdAt', desc: 'Created At', dataTable: true, input: 'hidden'},
       {id: 'updatedAt', desc: 'Updated At', dataTable: true, input: 'hidden'}
     ],
