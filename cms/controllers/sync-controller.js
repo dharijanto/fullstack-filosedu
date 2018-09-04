@@ -52,7 +52,7 @@ class SyncController extends BaseController {
         if (resp.status) {
           // Sync only data newer than last synced
           const startTime = resp.data.lastSync
-          const endTime = moment.utc().format('YYYY-MM-DD hh:mm:ss')
+          const endTime = moment.utc().format('YYYY-MM-DD HH:mm:ss')
           return syncService.findAllUser().then(resp => {
             if (resp.status) {
               const users = resp.data

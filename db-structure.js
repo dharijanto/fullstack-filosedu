@@ -145,7 +145,7 @@ function addTables (sequelize, models) {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     schoolIdentifier: {type: Sequelize.STRING},
     status: {type: Sequelize.ENUM(['Syncing', 'Success', 'Failed'])},
-    date: {type: Sequelize.DATE} // Until what time had data been synchronized to
+    date: {type: Sequelize.STRING} // Until what time had data been synchronized to
   })
 
   // Information that belongs only to local server and never synced to cloud.
