@@ -33,6 +33,7 @@ const CONCURRENT_DOWNLOAD = 3
 
 var download = function (url, dest) {
   return new Promise((resolve, reject) => {
+    console.log('Downloading: url=' + url)
     return fs.access(dest, fs.F_CONSTANT_OK, (err) => {
       if (err) {
         var file = fs.createWriteStream(dest)
@@ -99,7 +100,7 @@ Promise.join(
   fetchVideoFromS3(),
   fetchImageFromS3()
 ).then(resp => {
-  console.log('done!')
+  console.log('Finished downloading videos and images!')
   sequelize.close()
 }).catch(err => {
   console.error(err)

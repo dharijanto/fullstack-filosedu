@@ -757,7 +757,7 @@ ORDER BY score DESC LIMIT 1;`,
       }).then(datas => {
         const timers = datas.reduce((acc, resp) => {
           return acc + resp.data.timers
-        }, 0)
+        }, 0) / (datas.length || 1)
         return {status: true, data: {timers}}
       })
     })

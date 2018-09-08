@@ -1,10 +1,11 @@
 var path = require('path')
 var ip = require('ip')
 
+// Used by script/video-and-images-sync.js
 const MYSQL_CONF = {
   username: 'root',
   password: '',
-  dbName: 'filosedu_test'
+  dbName: 'app_filosedu'
 }
 
 const AWS_VIDEO_CONF = {
@@ -31,7 +32,7 @@ const LOCAL_SCHOOL_INFORMATION = {
 }
 
 const CLOUD_INFORMATION = {
-  HOST: 'http://www.filosedu.com/synchronization'
+  HOST: 'https://www.filosedu.com'
 }
 
 module.exports = {
