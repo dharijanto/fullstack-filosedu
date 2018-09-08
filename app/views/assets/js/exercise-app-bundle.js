@@ -3,7 +3,7 @@
 
 module.exports = {
   // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 5000
+  NETWORK_TIMEOUT: 15000
 };
 
 },{}],2:[function(require,module,exports){
@@ -208,7 +208,7 @@ function postAnswer() {
     }).catch(function (err) {
       $('.btn_submit_answer').removeAttr('disabled');
       $('#submissionError').removeClass('hidden');
-      $('#submissionError').text('Gagal memasukan jawaban: server mengalami kendala');
+      $('#submissionError').text('Gagal memasukan jawaban: server mengalami kendala: ' + err.message);
       console.error(err);
       reject(err);
     });

@@ -287,7 +287,8 @@ class ExerciseController extends BaseController {
             }
           }
         }).catch(err => {
-          next(err)
+          log.error(TAG, err)
+          res.json({status: false, errMessage: err.message})
         })
       }
     })

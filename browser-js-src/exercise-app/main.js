@@ -201,7 +201,7 @@ function postAnswer () {
     }).catch(err => {
       $('.btn_submit_answer').removeAttr('disabled')
       $('#submissionError').removeClass('hidden')
-      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
+      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala: ` + err.message)
       console.error(err)
       reject(err)
     })

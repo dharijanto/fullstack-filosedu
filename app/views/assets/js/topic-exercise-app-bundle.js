@@ -3,7 +3,7 @@
 
 module.exports = {
   // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 5000
+  NETWORK_TIMEOUT: 15000
 };
 
 },{}],2:[function(require,module,exports){
