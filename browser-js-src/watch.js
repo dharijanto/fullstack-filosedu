@@ -14,6 +14,10 @@ const modules = [
     output: 'cms'
   },
   {
+    input: 'student-monitor-cms',
+    output: 'cms'
+  },
+  {
     input: 'account-management-cms',
     output: 'cms'
   },

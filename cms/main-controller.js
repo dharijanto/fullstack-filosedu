@@ -9,6 +9,7 @@ const BaseController = require(path.join(__dirname, 'controllers/base-controller
 const CourseManagementController = require(path.join(__dirname, 'controllers/course-management-controller'))
 const AccountManagementController = require(path.join(__dirname, 'controllers/account-management-controller'))
 const SchoolManagementController = require(path.join(__dirname, 'controllers/school-management-controller'))
+const StudentMonitorController = require(path.join(__dirname, 'controllers/student-monitor-controller'))
 const SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 const SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 
@@ -28,6 +29,7 @@ class MainController extends BaseController {
     this.routeHashlessUse((new AccountManagementController(initData)).getRouter())
     this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
     this.routeHashlessUse((new SchoolManagementController(initData).getRouter()))
+    this.routeHashlessUse((new StudentMonitorController(initData).getRouter()))
     this.routeHashlessUse((new SubtopicController(initData)).getRouter())
     this.routeHashlessUse((new SyncController(initData)).getRouter())
   }

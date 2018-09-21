@@ -1,0 +1,17 @@
+extends /layout.pug
+
+include includes/sidebar.pug
+
+append links
+  link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css")
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/style.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/nprogress.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/toastr.min.css'))
+
+block content
+  #stats
+
+append scripts
+  script.
+    var rootPath = "#{rootifyPath('')}"
+  script(type="text/javascript" src=rootifyPath('/assets/js/student-monitor-cms-bundle.js'))
