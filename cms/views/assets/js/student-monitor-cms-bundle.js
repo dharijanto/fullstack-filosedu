@@ -50900,7 +50900,7 @@ $(document).ready(function () {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeOut: 20000
       },
       ui: [{ id: 'add', desc: 'Add', postTo: '' }, { id: 'edit', desc: 'Edit', postTo: '' }, { id: 'delete', desc: 'Delete', postTo: '' }]
     }
