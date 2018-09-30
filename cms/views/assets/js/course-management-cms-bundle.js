@@ -1,4 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  // Max time before a POST/GET request is aborted
+  NETWORK_TIMEOUT: 15000
+};
+
+},{}],2:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -12,11 +20,12 @@ $(document).ready(function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./nc-input-manager":2,"nc-input-library":13}],2:[function(require,module,exports){
+},{"./nc-input-manager":3,"nc-input-library":14}],3:[function(require,module,exports){
 (function (global){
 'use strict';
 
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var Config = require('../config');
 var rootPath = (typeof window !== "undefined" ? window['rootPath'] : typeof global !== "undefined" ? global['rootPath'] : null);
 var toastr = require('toastr');
 
@@ -151,7 +160,7 @@ var tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [{ id: 'add', desc: 'Add', postTo: postTo.subject.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subject.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subject.delete }]
     }
@@ -171,7 +180,7 @@ var tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [{ id: 'add', desc: 'Add', postTo: postTo.topic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topic.delete }]
     }
@@ -190,7 +199,7 @@ var tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [{ id: 'add', desc: 'Add', postTo: postTo.topicDependency.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topicDependency.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topicDependency.delete }]
     }
@@ -210,7 +219,7 @@ var tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [{ id: 'add', desc: 'Add', postTo: postTo.subtopic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subtopic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subtopic.delete }]
     }
@@ -230,7 +239,7 @@ var tableConfig = {
 module.exports = { initializeEditors: initializeEditors };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"toastr":45}],3:[function(require,module,exports){
+},{"../config":1,"toastr":46}],4:[function(require,module,exports){
 /*! Responsive 2.2.3
  * 2014-2018 SpryMedia Ltd - datatables.net/license
  */
@@ -1625,7 +1634,7 @@ $(document).on( 'preInit.dt.dtr', function (e, settings, json) {
 return Responsive;
 }));
 
-},{"datatables.net":4}],4:[function(require,module,exports){
+},{"datatables.net":5}],5:[function(require,module,exports){
 (function (global){
 /*! DataTables 1.10.16
  * ©2008-2017 SpryMedia Ltd - datatables.net/license
@@ -16871,7 +16880,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (global){
 /*! version : 4.17.47
  =========================================================
@@ -19511,7 +19520,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"moment":11}],6:[function(require,module,exports){
+},{"moment":12}],7:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -19534,7 +19543,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -36622,7 +36631,7 @@ function isSlowBuffer (obj) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports={
 	"version": "2018e",
 	"zones": [
@@ -37222,11 +37231,11 @@ module.exports={
 		"Pacific/Tarawa|Pacific/Wallis"
 	]
 }
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var moment = module.exports = require("./moment-timezone");
 moment.tz.load(require('./data/packed/latest.json'));
 
-},{"./data/packed/latest.json":8,"./moment-timezone":10}],10:[function(require,module,exports){
+},{"./data/packed/latest.json":9,"./moment-timezone":11}],11:[function(require,module,exports){
 //! moment-timezone.js
 //! version : 0.5.21
 //! Copyright (c) JS Foundation and other contributors
@@ -37841,7 +37850,7 @@ moment.tz.load(require('./data/packed/latest.json'));
 	return moment;
 }));
 
-},{"moment":11}],11:[function(require,module,exports){
+},{"moment":12}],12:[function(require,module,exports){
 //! moment.js
 //! version : 2.20.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -42378,7 +42387,7 @@ return hooks;
 
 })));
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 const logLevelOrders = ['debug', 'verbose', 'info', 'error']
 
 var logLevel = 'info'
@@ -42416,7 +42425,7 @@ log.setLogLevel = level => {
 
 module.exports = log
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (global){
 
 // var path = require('path')
@@ -42444,9 +42453,9 @@ $.fn.NCInputLibrary = function (conf) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/logger":12,"./src/model.js":39,"./src/presenter.js":40,"./src/view.js":41}],14:[function(require,module,exports){
+},{"./lib/logger":13,"./src/model.js":40,"./src/presenter.js":41,"./src/view.js":42}],15:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":16}],15:[function(require,module,exports){
+},{"./lib/axios":17}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -42630,7 +42639,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":22,"./../core/settle":25,"./../helpers/btoa":29,"./../helpers/buildURL":30,"./../helpers/cookies":32,"./../helpers/isURLSameOrigin":34,"./../helpers/parseHeaders":36,"./../utils":38,"_process":43}],16:[function(require,module,exports){
+},{"../core/createError":23,"./../core/settle":26,"./../helpers/btoa":30,"./../helpers/buildURL":31,"./../helpers/cookies":33,"./../helpers/isURLSameOrigin":35,"./../helpers/parseHeaders":37,"./../utils":39,"_process":44}],17:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -42684,7 +42693,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":17,"./cancel/CancelToken":18,"./cancel/isCancel":19,"./core/Axios":20,"./defaults":27,"./helpers/bind":28,"./helpers/spread":37,"./utils":38}],17:[function(require,module,exports){
+},{"./cancel/Cancel":18,"./cancel/CancelToken":19,"./cancel/isCancel":20,"./core/Axios":21,"./defaults":28,"./helpers/bind":29,"./helpers/spread":38,"./utils":39}],18:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42705,7 +42714,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -42764,14 +42773,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":17}],19:[function(require,module,exports){
+},{"./Cancel":18}],20:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -42859,7 +42868,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":27,"./../helpers/combineURLs":31,"./../helpers/isAbsoluteURL":33,"./../utils":38,"./InterceptorManager":21,"./dispatchRequest":23}],21:[function(require,module,exports){
+},{"./../defaults":28,"./../helpers/combineURLs":32,"./../helpers/isAbsoluteURL":34,"./../utils":39,"./InterceptorManager":22,"./dispatchRequest":24}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -42913,7 +42922,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":38}],22:[function(require,module,exports){
+},{"./../utils":39}],23:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -42933,7 +42942,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":24}],23:[function(require,module,exports){
+},{"./enhanceError":25}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43014,7 +43023,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":19,"../defaults":27,"./../utils":38,"./transformData":26}],24:[function(require,module,exports){
+},{"../cancel/isCancel":20,"../defaults":28,"./../utils":39,"./transformData":27}],25:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43037,7 +43046,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -43065,7 +43074,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":22}],26:[function(require,module,exports){
+},{"./createError":23}],27:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43087,7 +43096,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":38}],27:[function(require,module,exports){
+},{"./../utils":39}],28:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -43183,7 +43192,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":15,"./adapters/xhr":15,"./helpers/normalizeHeaderName":35,"./utils":38,"_process":43}],28:[function(require,module,exports){
+},{"./adapters/http":16,"./adapters/xhr":16,"./helpers/normalizeHeaderName":36,"./utils":39,"_process":44}],29:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -43196,7 +43205,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -43234,7 +43243,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43304,7 +43313,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":38}],31:[function(require,module,exports){
+},{"./../utils":39}],32:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43320,7 +43329,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43375,7 +43384,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":38}],33:[function(require,module,exports){
+},{"./../utils":39}],34:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43391,7 +43400,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43461,7 +43470,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":38}],35:[function(require,module,exports){
+},{"./../utils":39}],36:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -43475,7 +43484,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":38}],36:[function(require,module,exports){
+},{"../utils":39}],37:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43514,7 +43523,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":38}],37:[function(require,module,exports){
+},{"./../utils":39}],38:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43543,7 +43552,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -43848,7 +43857,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":28,"is-buffer":6}],39:[function(require,module,exports){
+},{"./helpers/bind":29,"is-buffer":7}],40:[function(require,module,exports){
 var axios = require('axios')
 var log = require('../lib/logger')
 
@@ -43893,7 +43902,7 @@ class Model {
 
 module.exports = Model
 
-},{"../lib/logger":12,"axios":14}],40:[function(require,module,exports){
+},{"../lib/logger":13,"axios":15}],41:[function(require,module,exports){
 var _ = require('lodash')
 
 var log = require('../lib/logger')
@@ -44049,7 +44058,7 @@ class Presenter {
 
 module.exports = Presenter
 
-},{"../lib/logger":12,"lodash":7}],41:[function(require,module,exports){
+},{"../lib/logger":13,"lodash":8}],42:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null)
 require('datatables.net-responsive')(window, $)
@@ -44588,7 +44597,7 @@ class View {
 module.exports = View
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../lib/logger":12,"datatables.net-responsive":3,"eonasdan-bootstrap-datetimepicker":5,"moment-timezone":9,"nprogress":42,"select2":44}],42:[function(require,module,exports){
+},{"../lib/logger":13,"datatables.net-responsive":4,"eonasdan-bootstrap-datetimepicker":6,"moment-timezone":10,"nprogress":43,"select2":45}],43:[function(require,module,exports){
 /* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
  * @license MIT */
 
@@ -45066,7 +45075,7 @@ module.exports = View
 });
 
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -45252,7 +45261,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function (global){
 /*!
  * Select2 4.0.6-rc.1
@@ -51103,7 +51112,7 @@ S2.define('jquery.select2',[
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function (global){
 /*
  * Toastr
@@ -51542,4 +51551,4 @@ S2.define('jquery.select2',[
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[1]);
+},{}]},{},[2]);
