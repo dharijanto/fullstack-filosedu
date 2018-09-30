@@ -1,3 +1,4 @@
+const Config = require('../config')
 const NCInputLibrary = require('nc-input-library')
 const rootPath = require('cmsRootPath')
 
@@ -22,7 +23,7 @@ const syncNCInput = $('#syncManagement').NCInputLibrary({
   },
   buttons: {
     conf: {
-      networkTimeout: 10000
+        networkTimeout: Config.NETWORK_TIMEOUT
     },
     ui: [
       {id: 'sync', desc: 'Sync', postTo: rootPath + '/synchronization/start' }

@@ -1,4 +1,5 @@
 var $ = require('jquery')
+var Config = require('../config')
 var rootPath = require('cmsRootPath')
 var toastr = require('toastr')
 
@@ -139,7 +140,7 @@ const tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.subject.add},
@@ -169,7 +170,7 @@ const tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.topic.add},
@@ -197,7 +198,7 @@ const tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.topicDependency.add},
@@ -227,7 +228,7 @@ const tableConfig = {
     },
     buttons: {
       conf: {
-        networkTimeOut: 2000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.subtopic.add},

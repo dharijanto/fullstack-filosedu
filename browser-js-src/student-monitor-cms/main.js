@@ -1,5 +1,6 @@
 var $ = require('jquery')
 
+var Config = require('../config')
 require('nc-input-library')
 
 var rootPath = require('cmsRootPath')
@@ -30,7 +31,7 @@ $(document).ready(function () {
     },
     buttons: {
       conf: {
-        networkTimeOut: 20000
+        networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
         {id: 'add', desc: 'Add', postTo: ''},
@@ -46,5 +47,3 @@ $(document).ready(function () {
   ncStats.setFirstCustomView(reloadBtn)
   ncStats.reloadTable()
 })
-
-
