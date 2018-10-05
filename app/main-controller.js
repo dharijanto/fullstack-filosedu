@@ -30,6 +30,7 @@ class Controller extends BaseController {
       log.verbose(TAG, 'req.path=' + req.path)
       log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
       log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
+      log.verbose(TAG, 'req.headers.cookie=' + JSON.stringify(req.headers.cookie))
       res.locals.marked = marked
       res.locals.getSlug = getSlug
       res.locals.site = req.site

@@ -58,7 +58,7 @@ class CredentialController extends BaseController {
       failureRedirect: '/login',
       failureFlash: true
     }), (req, res, next) => {
-      log.verbose(TAG, 'submitlogin.POST(): redirecting to: ' + req.session.returnTo)
+      log.verbose(TAG, 'submitlogin.POST(): Login success! Redirecting to: ' + (req.session.returnTo || '/'))
       res.redirect(req.session.returnTo || '/')
     })
 

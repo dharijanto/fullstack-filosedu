@@ -135,7 +135,7 @@ class ExerciseController extends BaseController {
       })
     })
 
-    this.routeGet('/getExerciseStars', (req, res, next) => {
+    this.routeGet('/getExerciseStars', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       const exerciseId = parseInt(req.query.exerciseId)
       if (exerciseId === undefined) {
         res.json({status: false, errMessage: `exerciseId is needed`})
@@ -167,7 +167,7 @@ class ExerciseController extends BaseController {
     })
 
     // Grading
-    this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', (req, res, next) => {
+    this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.body.exerciseId
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
