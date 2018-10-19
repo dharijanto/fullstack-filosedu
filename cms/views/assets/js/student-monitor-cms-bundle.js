@@ -50924,7 +50924,7 @@ $(document).ready(function () {
       panelColor: 'green'
     },
     table: {
-      ui: [{ id: 'username', desc: 'Username', dataTable: true, input: 'hidden', disabled: false }, { id: 'name', desc: 'Name', dataTable: true, input: 'hidden', disabled: false }, { id: 'submissions', desc: '# Submissions', dataTable: true, input: 'hidden' }, { id: 'avgTimeliness', desc: 'Avg Timeliness', dataTable: true, input: 'hidden' }, { id: 'avgScore', desc: 'Avg Score', dataTable: true, input: 'hidden' }, { id: 'lastSubtopic', desc: 'Last Subtopic', dataTable: true, input: 'hidden' }, { id: 'userId', desc: 'User ID', dataTable: false, input: 'hidden', disabled: true }],
+      ui: [{ id: 'username', desc: 'Username', dataTable: true, input: 'hidden', disabled: false }, { id: 'name', desc: 'Name', dataTable: true, input: 'hidden', disabled: false }, { id: 'submissions', desc: '# Submissions', dataTable: true, input: 'hidden' }, { id: 'avgTimeliness', desc: 'Avg Timeliness', dataTable: true, input: 'hidden' }, { id: 'avgScore', desc: 'Avg Score', dataTable: true, input: 'hidden' }, { id: 'lastTopic', desc: 'Last Topic', dataTable: true, input: 'hidden' }, { id: 'lastSubtopic', desc: 'Last Subtopic', dataTable: true, input: 'hidden' }, { id: 'userId', desc: 'User ID', dataTable: false, input: 'hidden', disabled: true }],
       conf: {
         order: [['avgTimeliness', 'desc']],
         getURL: function getURL() {
