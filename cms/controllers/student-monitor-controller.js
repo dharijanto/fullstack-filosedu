@@ -26,7 +26,19 @@ class StudentMonitorController extends BaseController {
     })
 
     this.routeGet('/student-monitor/last-hour-summary', (req, res, next) => {
-      studentMonitorService.getLastHourStats().then(resp => {
+      const schoolId = req.query.schoolId
+      if (schoolId) {
+        studentMonitorService.getLastHourStats(schoolId).then(resp => {
+          res.json(resp)
+        }).catch(next)
+      } else {
+        res.json({status: false, errMessage: 'schoolId is required!'})
+      }
+    })
+
+    this.routeGet('/student-monitor/last-submissions', (req, res, next) => {
+      const userId = req.query.userId
+      studentMonitorService.getLastNSubmissions(userId, 30).then(resp => {
         res.json(resp)
       }).catch(next)
     })

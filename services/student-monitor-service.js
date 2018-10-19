@@ -10,19 +10,19 @@ const CRUDService = require(path.join(__dirname, 'crud-service'))
 const TAG = 'StudentMonitorService'
 
 class StudentMonitorService extends CRUDService {
-  getStats (rawWhereClause, limit) {
+  getStats (schoolId, rawWhereClause, limit) {
 const query = `
 SELECT
-  users.id AS userId, users.fullName AS name,
+  users.id AS userId, users.fullName AS name, users.username as username,
   summarizedGeneratedExercises.submissions as submissions,
   summarizedGeneratedExercises.avgScore as avgScore,
   summarizedGeneratedExercises.avgTimeliness as avgTimeliness,
   lastSubtopic.subtopic as lastSubtopic
 FROM
-  (SELECT users.id as id, users.fullName as fullName
+  (SELECT users.id as id, users.username as username, users.fullName as fullName
     FROM users
     INNER JOIN schools ON users.schoolId = schools.id
-    WHERE schools.identifier = "${AppConfig.LOCAL_SCHOOL_INFORMATION.identifier}"
+    WHERE schools.id = "${schoolId}"
   ) AS users
 LEFT OUTER JOIN
   (SELECT
@@ -55,14 +55,32 @@ ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
     })
   }
 
-  getLastHourStats () {
+  getLastHourStats (schoolId) {
     const past = moment.utc().subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
-    return this.getStats(`AND updatedAt >= "${past}"`)
+    return this.getStats(schoolId, `AND updatedAt >= "${past}"`)
   }
 
-  // Statistics of last 10 submissions
-  getLast10Stats () {
-    return this.getStats(`AND updatedAt >= "${past}"`)
+  getLastNSubmissions(userId, N = 10) {
+    const query = `
+SELECT users.id AS userId, users.fullName AS fullName,
+  ROUND(lastGeneratedExercises.timeFinish / lastGeneratedExercises.idealTime * 100.0, 2) AS timeliness,
+  lastGeneratedExercises.idealTime as idealTime,
+  lastGeneratedExercises.timeFinish as timeFinish,
+  lastGeneratedExercises.score AS score,
+  lastGeneratedExercises.updatedAt AS updatedAt,
+  topics.topic AS topic,
+  subtopics.subtopic AS subtopic
+FROM
+  (SELECT * FROM generatedExercises WHERE userId = ${userId} AND submitted = TRUE ORDER BY updatedAt DESC LIMIT ${N}) AS lastGeneratedExercises
+  INNER JOIN users ON lastGeneratedExercises.userId = users.id
+  INNER JOIN exercises ON lastGeneratedExercises.exerciseId = exercises.id
+  INNER JOIN subtopics ON exercises.subtopicId = subtopics.id
+  INNER JOIN topics ON subtopics.topicId = topics.id
+`
+
+    return this._sequelize.query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        return {status: true, data: resp}
+      })
   }
 
 }
