@@ -51,6 +51,7 @@ $(document).ready(function () {
         {id: 'submissions', desc: '# Submissions', dataTable: true, input: 'hidden'},
         {id: 'avgTimeliness', desc: 'Avg Timeliness', dataTable: true, input: 'hidden'},
         {id: 'avgScore', desc: 'Avg Score', dataTable: true, input: 'hidden'},
+        {id: 'lastTopic', desc: 'Last Topic', dataTable: true, input: 'hidden'},
         {id: 'lastSubtopic', desc: 'Last Subtopic', dataTable: true, input: 'hidden'},
         {id: 'userId', desc: 'User ID', dataTable: false, input: 'hidden', disabled: true}
       ],

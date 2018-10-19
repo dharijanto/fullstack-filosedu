@@ -17,7 +17,8 @@ SELECT
   summarizedGeneratedExercises.submissions as submissions,
   summarizedGeneratedExercises.avgScore as avgScore,
   summarizedGeneratedExercises.avgTimeliness as avgTimeliness,
-  lastSubtopic.subtopic as lastSubtopic
+  lastSubtopic.subtopic as lastSubtopic,
+  lastSubtopic.topic as lastTopic
 FROM
   (SELECT users.id as id, users.username as username, users.fullName as fullName
     FROM users
@@ -43,10 +44,11 @@ LEFT OUTER JOIN
   ) AS lastGeneratedExercises ON lastGeneratedExercises.userId = users.id
 # Map generatedExercise to subtopic
 LEFT OUTER JOIN
-  (SELECT generatedExercises.id as exerciseId, subtopics.subtopic as subtopic
+  (SELECT generatedExercises.id as exerciseId, subtopics.subtopic as subtopic, topics.topic as topic
     FROM exercises
     INNER JOIN generatedExercises on generatedExercises.exerciseId = exercises.id
-    INNER JOIN subtopics ON exercises.subtopicId = subtopics.id) AS lastSubtopic ON lastGeneratedExercises.id = lastSubtopic.exerciseId
+    INNER JOIN subtopics ON exercises.subtopicId = subtopics.id
+    INNER JOIN topics ON subtopics.topicId = topics.id) AS lastSubtopic ON lastGeneratedExercises.id = lastSubtopic.exerciseId
 ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
 ;
 `
