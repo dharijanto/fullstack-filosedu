@@ -26,7 +26,7 @@ append head
     if (loggedIn)
       script.
         // This is an example script - don't forget to change it!
-        FS.identify(user.id, {
+        FS.identify('#{user.id}', {
           displayName: '#{user.username}',
           email: '#{user.email}'
         });

@@ -6,3 +6,7 @@
 #nextButton {
   margin-left: 20px
 }
+
+#leaderboard-content {
+  overflow-x: auto;
+}

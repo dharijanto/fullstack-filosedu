@@ -27,8 +27,9 @@ class StudentMonitorController extends BaseController {
 
     this.routeGet('/student-monitor/last-hour-summary', (req, res, next) => {
       const schoolId = req.query.schoolId
+      const showAllStudents = req.query.showAllStudents === 'true'
       if (schoolId) {
-        studentMonitorService.getLastHourStats(schoolId).then(resp => {
+        studentMonitorService.getLastHourStats(schoolId, showAllStudents).then(resp => {
           res.json(resp)
         }).catch(next)
       } else {

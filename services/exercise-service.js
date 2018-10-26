@@ -777,7 +777,7 @@ ORDER BY score DESC LIMIT 1;`,
       return this._sequelize.query(
 `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
  FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
- WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 5;`,
+ WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
       { type: Sequelize.QueryTypes.SELECT }).then(resp => {
         return {status: true, data: resp}
       })
@@ -785,7 +785,7 @@ ORDER BY score DESC LIMIT 1;`,
       return this._sequelize.query(
 `SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
  FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
- WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 5;`,
+ WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
       { type: Sequelize.QueryTypes.SELECT }).then(resp => {
         return {status: true, data: resp}
       })

@@ -10,13 +10,13 @@ const CRUDService = require(path.join(__dirname, 'crud-service'))
 const TAG = 'StudentMonitorService'
 
 class StudentMonitorService extends CRUDService {
-  getStats (schoolId, rawWhereClause, limit) {
+  getStats (schoolId, generatedExercisesWhereClause, showAllStudents) {
 const query = `
 SELECT
   users.id AS userId, users.fullName AS name, users.username as username,
-  summarizedGeneratedExercises.submissions as submissions,
-  summarizedGeneratedExercises.avgScore as avgScore,
-  summarizedGeneratedExercises.avgTimeliness as avgTimeliness,
+  IFNULL(summarizedGeneratedExercises.submissions, '-') as submissions,
+  IFNULL(summarizedGeneratedExercises.avgScore, '-') as avgScore,
+  IFNULL(summarizedGeneratedExercises.avgTimeliness, '-') as avgTimeliness,
   lastSubtopic.subtopic as lastSubtopic,
   lastSubtopic.topic as lastTopic
 FROM
@@ -32,7 +32,7 @@ LEFT OUTER JOIN
       ROUND(AVG(generatedExercises.score), 2) AS avgScore,
       ROUND(AVG(generatedExercises.timeFinish/generatedExercises.idealTime*100.0), 2) AS avgTimeliness
     FROM generatedExercises
-    WHERE idealTime > 0 AND submitted = TRUE AND timeFinish < 3600 ${rawWhereClause}
+    WHERE idealTime > 0 AND submitted = TRUE AND timeFinish < 3600 ${generatedExercisesWhereClause}
     GROUP BY userId
   ) AS summarizedGeneratedExercises ON summarizedGeneratedExercises.userId = users.id
 # lastGeneratedExercises
@@ -49,6 +49,7 @@ LEFT OUTER JOIN
     INNER JOIN generatedExercises on generatedExercises.exerciseId = exercises.id
     INNER JOIN subtopics ON exercises.subtopicId = subtopics.id
     INNER JOIN topics ON subtopics.topicId = topics.id) AS lastSubtopic ON lastGeneratedExercises.id = lastSubtopic.exerciseId
+${showAllStudents ? '' : 'WHERE submissions > 0'}
 ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
 ;
 `
@@ -57,9 +58,11 @@ ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
     })
   }
 
-  getLastHourStats (schoolId) {
+  // showAllStudents: if true, students without submissions will also be displayed
+  getLastHourStats (schoolId, showAllStudents) {
+    console.log('showAllStudents=' + showAllStudents)
     const past = moment.utc().subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
-    return this.getStats(schoolId, `AND updatedAt >= "${past}"`)
+    return this.getStats(schoolId, `AND updatedAt >= "${past}"`, showAllStudents)
   }
 
   getLastNSubmissions(userId, N = 10) {

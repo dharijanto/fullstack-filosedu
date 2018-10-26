@@ -39,6 +39,7 @@ $(document).ready(function () {
     }
   })
 
+  let showAllStudents = false
   const ncSummary = $('#summary').NCInputLibrary({
     design: {
       title: 'Last 1-Hour Summary',
@@ -46,18 +47,18 @@ $(document).ready(function () {
     },
     table: {
       ui: [
-        {id: 'username', desc: 'Username', dataTable: true, input: 'hidden', disabled: false},
         {id: 'name', desc: 'Name', dataTable: true, input: 'hidden', disabled: false},
         {id: 'submissions', desc: '# Submissions', dataTable: true, input: 'hidden'},
         {id: 'avgTimeliness', desc: 'Avg Timeliness', dataTable: true, input: 'hidden'},
         {id: 'avgScore', desc: 'Avg Score', dataTable: true, input: 'hidden'},
         {id: 'lastTopic', desc: 'Last Topic', dataTable: true, input: 'hidden'},
         {id: 'lastSubtopic', desc: 'Last Subtopic', dataTable: true, input: 'hidden'},
+        {id: 'username', desc: 'Username', dataTable: true, input: 'hidden', disabled: false},
         {id: 'userId', desc: 'User ID', dataTable: false, input: 'hidden', disabled: true}
       ],
       conf: {
         order: [['avgTimeliness', 'desc']],
-        getURL: () => `${rootPath}/student-monitor/last-hour-summary?schoolId=${schoolId}`,
+        getURL: () => `${rootPath}/student-monitor/last-hour-summary?schoolId=${schoolId}&showAllStudents=${showAllStudents}`,
         onRowClicked: (data) => {
           userId = data.userId
           ncLastSubmissions.reloadTable()
@@ -106,9 +107,23 @@ $(document).ready(function () {
   })
 
   ncSchool.reloadTable()
-  const btnReloadSummary = $('<button class="btn btn-primary"> Reload </button>')
-  btnReloadSummary.on('click', () => {
+  const summaryTableCustomView = $(
+`<div class="row">
+  <div class="col-md-12">
+    <input id="check-all-students" type="checkbox">All Students<br>
+  </div>
+  <div class="col-md-12">
+    <button id="btn-reload-summary" class="btn btn-primary"> Reload </button>
+  </div>
+</div
+`)
+  summaryTableCustomView.find('#check-all-students').on('change', event => {
+    const checkbox = event.target
+    showAllStudents = checkbox.checked
     ncSummary.reloadTable()
   })
-  ncSummary.setFirstCustomView(btnReloadSummary)
+  summaryTableCustomView.find('#btn-reload-summary').on('click', () => {
+    ncSummary.reloadTable()
+  })
+  ncSummary.setFirstCustomView(summaryTableCustomView)
 })
