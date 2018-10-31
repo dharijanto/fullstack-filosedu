@@ -106,6 +106,7 @@ $(document).ready(function () {
   video.endcapCTA({
     html: '<section class="endcapCallToActionContent" id="video-feedback-cta">\n  <h2> Rate this video: </h2>\n  </br>\n  <button id="video-feedback-good">\n    <img class="video-feedback-image" src="/assets/img/good_smiley.jpg"/>\n  </button>\n  <button id="video-feedback-bad">\n    <img class="video-feedback-image" src="/assets/img/bad_smiley.jpg"/>\n  </button>\n</section>',
     run: function run() {
+      console.log('TODO: Add video badge code here..');
       // This runs upon creation of endcapCTA, just after video starts playing
 
       // Avoid the callback from getting hook multiple time

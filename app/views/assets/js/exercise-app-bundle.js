@@ -211,6 +211,8 @@ function postAnswer() {
       $('#submissionError').text('Gagal memasukan jawaban: server mengalami kendala: ' + err.message);
       console.error(err);
       reject(err);
+    }).finally(function () {
+      clearInterval(stopWatch);
     });
   });
 }
@@ -228,7 +230,7 @@ $('#resetQuestion').on('click', function (e) {
 // ---------------- EXERCISE TIMER CODE -----------------
 // TODO: Refactor this so that exercise and topic-exercise share the same code
 // How long since the exercise was generated
-setInterval(function () {
+var stopWatch = setInterval(function () {
   window['elapsedTime'] += 1;
   updateProgressBar();
 }, 1000);
