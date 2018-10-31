@@ -2,7 +2,7 @@ const path = require('path')
 
 const log = require('npmlog')
 const Promise = require('bluebird')
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 
@@ -51,8 +51,14 @@ class SyncController extends BaseController {
       syncService.isServerReadyToSync().then(resp => {
         if (resp.status) {
           // Sync only data newer than last synced
-          const startTime = resp.data.lastSync
-          const endTime = moment().format('YYYY-MM-DD HH:mm:ss')
+
+          // This is the quirks of Sequelize and NCloud-Server.
+          // When we read from the database, the date is expected to be UTC as it's going to be converted by Sequelize
+          // to defined timezone, which is GMT + 7
+          const startTime = moment.tz(resp.data.lastSync, "Asia/Jakarta").utc().format('YYYY-MM-DD HH:mm:ss')
+          const endTime = moment.utc().format('YYYY-MM-DD HH:mm:ss')
+          console.log('startTime=' + startTime)
+          console.log('endTime=' + endTime)
           return syncService.findAllUser().then(resp => {
             if (resp.status) {
               const users = resp.data

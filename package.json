@@ -22,6 +22,7 @@
     "marked": "^0.3.6",
     "mathjax-node": "^1.2.1",
     "moment": "^2.22.2",
+    "moment-timezone": "^0.5.23",
     "multer-s3": "^2.7.0",
     "node-wget": "^0.4.2",
     "passport": "^0.4.0",

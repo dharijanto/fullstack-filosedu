@@ -137,6 +137,9 @@ class SyncService extends CRUDService {
       schoolIdentifier: 'sekolah_SMA_19',
       schoolId: 1
   */
+  // TODO: When syncing, we shouldn't search based on userName and schoolId, but instead we should
+  // use syncTable. The reason is because current method wouldn't accommodate username being changed.
+  // i.e if adennyh is updated to dennyh, then the some data is lost during syncing...
   _processUser (data, schoolIdentifier, serverHash, schoolId, trx) {
     const tableName = 'users'
     const modelName = 'User'
@@ -156,6 +159,8 @@ class SyncService extends CRUDService {
         })
       } else {
         return this._getSyncMapping(data.id, schoolIdentifier, serverHash, tableName, trx).then(resp => {
+          // TODO: Do we really need this if statement? We shouldn't because if there's no user with username and schoolId,
+          // we're supposed to create a new one
           if (resp.status) {
             var cloudId = resp.data.cloudId
             // if exists
