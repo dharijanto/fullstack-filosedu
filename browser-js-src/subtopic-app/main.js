@@ -70,6 +70,7 @@ $(document).ready(function () {
   </button>
 </section>`,
     run: function () {
+      console.log('TODO: Add video badge code here..')
       // This runs upon creation of endcapCTA, just after video starts playing
 
       // Avoid the callback from getting hook multiple time
