@@ -99,7 +99,6 @@ class SyncService extends CRUDService {
             [Sequelize.Op.lte]: endTime
           }
         },
-        submitted: true,
         onCloud: false
       }
     })
