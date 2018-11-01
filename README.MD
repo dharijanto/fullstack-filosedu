@@ -87,7 +87,15 @@ client_max_body_size 50M;
 * Enable sequelize verbose logging, through app-config so that we can see database logs.
 
 ### Test Cases
-#### Local-to-Cloud Sync
+
+#### Synchronization
+##### Things to Note on Synchronization Testing
+1. Timezone conversion -> Since we're using sequelize that does time conversion and cloud and local can have different settings, make
+   sure things are tested and working properly.
+2. First test locally, by having 2 filos applications on the same computer, 1 acts as local-server and the other 1 acts as cloud-server
+3. Then test syncing with real cloud server.
+
+##### Local-to-Cloud
 1. First-time sync
   a. Delete generatedExercises, generatedTopicExercises, and analytics rows on the cloud where schoolId = local.schoolId
   b. Sync to cloud
@@ -105,7 +113,7 @@ client_max_body_size 50M;
   c. Sync
   d. Check that row count is the same as (a)
 
-#### Cloud-to-Local Sync
+##### Cloud-to-Local
 1. First-time restore
   a. Do mysqldump of cloud, restore it in local server
   b. Check if restored data is accessible in local server
