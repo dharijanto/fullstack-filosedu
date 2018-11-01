@@ -3,6 +3,7 @@ var path = require('path')
 var log = require('npmlog')
 var Promise = require('bluebird')
 var pug = require('pug')
+var moment = require('moment')
 var Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
@@ -393,7 +394,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       submitted: true,
       timeFinish: 23.09
   */
-  updateGenerateExercise (data) {
+  updateGeneratedExercise (data) {
     return this.update({
       modelName: 'GeneratedExercise',
       data
@@ -551,6 +552,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       data: {
         id: generatedTopicId,
         submitted: true,
+        submittedAt: moment().local().format('YYYY-MM-DD HH:mm:ss'),
         onCloud: AppConfig.CLOUD_SERVER,
         score,
         timeFinish,

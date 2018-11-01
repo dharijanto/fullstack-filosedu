@@ -1,8 +1,10 @@
-var videojs = require('video.js')
-var $ = require('jquery')
+const videojs = require('video.js')
+const $ = require('jquery')
+
+const axios = require('../libs/axios-wrapper')
+const log = require('../libs/logger')
 
 const TAG = 'Subtopic-App'
-var log = require('../libs/logger')
 
 $(document).ready(function () {
   var video = videojs('#video-player')
@@ -70,14 +72,27 @@ $(document).ready(function () {
   </button>
 </section>`,
     run: function () {
-      console.log('TODO: Add video badge code here..')
+      const videoId = $('#video-player').data('id')
+      axios.post('/video/finishedWatching', {videoId}).then(rawResp => {
+        const resp = rawResp.data
+        if (typeof(resp) === 'object') {
+          if (!resp.status) {
+            log.error(TAG, 'Post finishedWatching failed due to: ' + resp.errMessage)
+          } else {
+            log.info(TAG, 'Post finishedWatching success!')
+          }
+        } else {
+          log.error(TAG, 'Post finishedWatching failed due to unexpected server response!')
+        }
+      }).catch(err => {
+        log.error(TAG, err)
+      })
       // This runs upon creation of endcapCTA, just after video starts playing
 
       // Avoid the callback from getting hook multiple time
       $('#video-feedback-good').off('click')
       $('#video-feedback-bad').off('click')
 
-      const videoId = $('#video-player').data('id')
       $('#video-feedback-good').on('click', function (e) {
         addFeedback(1, videoId)
         $(this).parent().parent().removeClass('is-active')
@@ -109,10 +124,10 @@ $(document).ready(function () {
       }
     }).done(function (resp) {
       if (!resp.status) {
-        console.error(JSON.stringify(resp.errMessage))
+        log.error(TAG, 'addFeedback() failed: ' + JSON.stringify(resp.errMessage))
       }
     }).fail(function (jqXHR, textStatus) {
-      console.error(textStatus)
+      log.error(TAG, 'addFeedack() error: ' + textStatus)
     })
   }
 
@@ -127,10 +142,10 @@ $(document).ready(function () {
       }
     }).done(function (resp) {
       if (!resp.status) {
-        console.error(JSON.stringify(resp.errMessage))
+        log.error(TAG, 'addView() failed: ' + JSON.stringify(resp.errMessage))
       }
     }).fail(function (jqXHR, textStatus) {
-      console.error(textStatus)
+      log.error(TAG, 'addView() error: ' + textStatus)
     })
   }
 
@@ -146,10 +161,10 @@ $(document).ready(function () {
       }
     }).done(function (resp) {
       if (!resp.status) {
-        console.error(JSON.stringify(resp.errMessage))
+        log.error(TAG, 'addViewDuration() failed: ' + JSON.stringify(resp.errMessage))
       }
     }).fail(function (jqXHR, textStatus) {
-      console.error(textStatus)
+      log.error(TAG, 'addViewDuration() error: '+ textStatus)
     })
   }
 
@@ -165,11 +180,11 @@ $(document).ready(function () {
       }
     }).done(function (resp) {
       if (!resp.status) {
-        console.error(JSON.stringify(resp.errMessage))
+        log.error(TAG, 'addSkippedVideo() failed: ' + JSON.stringify(resp.errMessage))
       }
       callback()
     }).fail(function (jqXHR, textStatus) {
-      console.error(textStatus)
+      log.error(TAG, 'addSkippedVideo() error: ' + textStatus)
       callback()
     })
   }

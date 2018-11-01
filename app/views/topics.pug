@@ -1,6 +1,9 @@
 extends layout/index.pug
 include includes/utils.pug
 
+append head
+  link(rel="stylesheet" href="/assets/css/topics-style.css")
+
 append initialization
   - const activePage = 'modules'
 
@@ -21,6 +24,7 @@ block contents
           .panel-collapse.collapse.in(id=`collapse_${index}`)
             ul.list-group
               - var numbering = 0;
+              //- TODO: Should use SQL join so that we can do topic.subtopics
               each subtopic, index2 in subtopics
                 if (subtopic.topicId === topic.id)
                   li.list-group-item
@@ -30,8 +34,11 @@ block contents
                         |
                         a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
                       .col-sm-12.col-md-6
-                        span.pull-right
-                          div
-                            + renderExerciseStars(parseInt(subtopic.stars), 20)
-                          div(style="margin-top: 2px")
-                            + renderTimerProgress(parseInt(subtopic.timers), 20)
+                        div#badge-container
+                            span
+                              div
+                                + renderVideoWatchStatus(subtopic.watched, 30)
+                              div
+                                + renderExerciseStars(parseInt(subtopic.stars), 20)
+                              div(style="margin-top: 2px")
+                                + renderTimerProgress(parseInt(subtopic.timers), 20)

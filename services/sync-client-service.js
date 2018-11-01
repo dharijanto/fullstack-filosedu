@@ -88,6 +88,23 @@ class SyncService extends CRUDService {
     })
   }
 
+  findWatchedVideos (userId, startTime, endTime) {
+    return this.read({
+      modelName: 'WatchedVideo',
+      searchClause: {
+        userId,
+        updatedAt: {
+          [Sequelize.Op.and]: {
+            [Sequelize.Op.gte]: startTime,
+            [Sequelize.Op.lte]: endTime
+          }
+        },
+        submitted: true,
+        onCloud: false
+      }
+    })
+  }
+
   sendData (users, syncTime) {
     return new Promise((resolve, reject) => {
       this.getServerHash().then (resp => {

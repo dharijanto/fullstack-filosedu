@@ -25,6 +25,10 @@ const KEY_TO_TABLE = {
   analytics: {
     tableName: 'analytics',
     modelName: 'Analytics'
+  },
+  watchedVideos: {
+    tableName: 'watchedVideos',
+    modelName: 'WatchedVideo'
   }
 }
 

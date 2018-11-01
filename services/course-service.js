@@ -133,6 +133,27 @@ class CourseService extends CRUDService {
       }
     })
   }
+
+  // Although there one subtopic can have multiple videos (record of past uploads),
+  // we care only if at least one had been watched
+  // return: { status: true, data: { watched: true }}
+  isSubtopicVideoWatched (subtopicId, userId) {
+    return this.getSequelize().query(
+`
+  SELECT subtopics.id AS subtopicId, true AS watched
+   FROM subtopics
+   INNER JOIN videos ON videos.subtopicId = subtopics.id
+   INNER JOIN watchedVideos on watchedVideos.videoId = videos.id
+   WHERE subtopics.id = ${subtopicId} AND watchedVideos.userId = ${userId}
+   LIMIT 1;
+`, { type: this.getSequelize().QueryTypes.SELECT }).then(data => {
+  let watched = false
+  if (data.length > 0) {
+    watched = true
+  }
+  return { status: true, data: { watched } }
+})
+  }
 }
 
 module.exports = CourseService

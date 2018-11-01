@@ -25,3 +25,7 @@ table.image-repeat {
   width: 100%;
   padding: 0;
 }
+
+#leaderboard-content {
+  overflow-x: auto;
+}

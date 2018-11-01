@@ -38,6 +38,19 @@ class SubtopicController extends BaseController {
       })
     })
 
+    this.routePost('/video/finishedWatching', (req, res, next) => {
+      const videoId = req.body.videoId
+      const userId = req.user.id
+      // We only want to track video watched by user. For those who don't login, we already have analytics service
+      if (userId) {
+        videoService.addFinishedWatching(videoId, userId).then(resp => {
+          res.json(resp)
+        }).catch(err => {
+          next(err)
+        })
+      }
+    })
+
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', (req, res, next) => {
       var topicId = req.params.topicId
       var subtopicId = req.params.subtopicId

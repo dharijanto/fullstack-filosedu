@@ -45,6 +45,17 @@ class SyncController extends BaseController {
          only those whose updatedAt is larger than last synchronization time
       4. Send them to the server
       5. If server suceeds, update synchronizationHistories table so that we don't have to re-sync what's already sent.
+
+      Format of data send to server;
+      data: [
+        {
+          user: ...
+          analytics: [...],
+          submittedGeneratedExercises: [...],
+          submittedGeneratedTopicExercises: [...],
+          watchedVideos: [...]
+        }
+      ]
     */
     this.routePost('/synchronization/start', (req, res, next) => {
       log.verbose(TAG, `syncController:GET(): HOMEPAGE`)
@@ -56,9 +67,9 @@ class SyncController extends BaseController {
           // When we read from the database, the date is expected to be UTC as it's going to be converted by Sequelize
           // to defined timezone, which is GMT + 7
           const startTime = moment.tz(resp.data.lastSync, "Asia/Jakarta").utc().format('YYYY-MM-DD HH:mm:ss')
-          const endTime = moment.utc().format('YYYY-MM-DD HH:mm:ss')
-          console.log('startTime=' + startTime)
-          console.log('endTime=' + endTime)
+          const endTime = moment.format('YYYY-MM-DD HH:mm:ss')
+          log.verbose(TAG, 'synchronization/start.POST: startTime=' + startTime)
+          log.verbose(TAG, 'synchronization/start.POST: endTime=' + endTime)
           return syncService.findAllUser().then(resp => {
             if (resp.status) {
               const users = resp.data
@@ -66,13 +77,15 @@ class SyncController extends BaseController {
                 return Promise.join(
                   syncService.findAnalytics(user.id, startTime, endTime),
                   syncService.findSubmittedGeneratedExercises(user.id, startTime, endTime),
-                  syncService.findSubmittedGeneratedTopicExercises(user.id, startTime, endTime)
-                ).spread((respAnalytics, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises) => {
+                  syncService.findSubmittedGeneratedTopicExercises(user.id, startTime, endTime),
+                  syncService.findWatchedVideos(user.id, startTime, endTime)
+                ).spread((respAnalytics, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises, respWatchedVideos) => {
                   return {
                     user,
                     analytics: respAnalytics.status ? respAnalytics.data : [],
                     submittedGeneratedExercises: respSubmittedGeneratedExercises.status ? respSubmittedGeneratedExercises.data : [],
-                    submittedGeneratedTopicExercises:  respSubmittedGeneratedTopicExercises.status ? respSubmittedGeneratedTopicExercises.data : []
+                    submittedGeneratedTopicExercises:  respSubmittedGeneratedTopicExercises.status ? respSubmittedGeneratedTopicExercises.data : [],
+                    watchedVideos: respWatchedVideos.status ? respWatchedVideos.data : []
                   }
                 })
               }).then(usersData => {

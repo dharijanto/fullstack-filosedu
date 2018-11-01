@@ -204,6 +204,18 @@ class VideoService extends CRUDService {
       }
     })
   }
+
+  addFinishedWatching (videoId, userId) {
+    if (videoId && userId) {
+      return this.create({modelName: 'WatchedVideo', data: {
+        videoId,
+        userId,
+        onCloud: AppConfig.CLOUD_SERVER
+      }})
+    } else {
+      return Promise.resolve({status: false, errMessage: 'videoId and userId are required!'})
+    }
+  }
 }
 
 module.exports = VideoService

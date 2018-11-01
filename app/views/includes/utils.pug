@@ -37,3 +37,9 @@ mixin renderCheckmark (isChecked, size)
     img(src="/assets/img/checked.png" width=size || 30)
   else
     img(src="/assets/img/unchecked.png" width=size || 30)
+
+mixin renderVideoWatchStatus (isWatched, size)
+  if (isWatched)
+    img(src="/assets/img/video_watched.png" width=size || 30)
+  else
+    img(src="/assets/img/video_unwatched.png" width=size || 30)

@@ -34,6 +34,7 @@ class CourseController extends BaseController {
         res.locals.topics = topicResp.data || []
 
         if (req.isAuthenticated()) {
+          // TODO: Should do SQL joins on all the following tables
           return Promise.join(
             Promise.map(res.locals.subtopics, subtopic => {
               return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
@@ -46,8 +47,11 @@ class CourseController extends BaseController {
             }),
             Promise.map(res.locals.topics, topic => {
               return exerciseService.getTopicExerciseTimer(req.user.id, topic.id, false)
+            }),
+            Promise.map(res.locals.subtopics, subtopic => {
+              return courseService.isSubtopicVideoWatched(subtopic.id, req.user.id)
             })
-          ).spread((subtopicstars, topicCheckmarks, subtopicTimers, topicTimers) => {
+          ).spread((subtopicstars, topicCheckmarks, subtopicTimers, topicTimers, subtopicWatchStats) => {
             log.verbose(TAG, '/: topicCheckmarks=' + JSON.stringify(topicCheckmarks))
             subtopicstars.forEach((resp, index) => {
               res.locals.subtopics[index].stars = resp.data.stars
@@ -65,14 +69,20 @@ class CourseController extends BaseController {
               res.locals.topics[index].timers = resp.data.timers
             })
 
+            subtopicWatchStats.forEach((resp, index) => {
+              res.locals.subtopics[index].watched = resp.data.watched
+            })
+
             res.render('topics')
           })
         } else {
           res.locals.subtopics.forEach((subtopic, index) => {
             res.locals.subtopics[index].stars = 0
+            res.locals.subtopics[index].timers = 0
           })
           res.locals.topics.forEach((topic, index) => {
             res.locals.topics[index].stars = 0
+            res.locals.topics[index].timers = 0
           })
           res.render('topics')
         }

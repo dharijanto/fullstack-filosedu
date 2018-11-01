@@ -87,6 +87,7 @@ function addTables (sequelize, models) {
     unknowns: {type: Sequelize.TEXT}, // JSON: array of unknowns i.e. [{a: 1, b: 3}, {a: 7, b: 3}]
     userAnswer: {type: Sequelize.TEXT}, // JSON: array of knowns i.e. [{x: 5}, {x: 3}, {x: 7}]
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false}, // Whether this generated exercise is complete or not
+    submittedAt: {type: Sequelize.DATE},
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
     idealTime: {type: Sequelize.FLOAT},
@@ -102,6 +103,14 @@ function addTables (sequelize, models) {
     sourceLink: {type: Sequelize.TEXT}
   })
   models.Videos.belongsTo(models.Subtopic)
+
+  models.WatchedVideo = sequelize.define('watchedVideos', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    date: {type: Sequelize.DATE, defaultValue: sequelize.fn('NOW')},
+    onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
+  })
+  models.WatchedVideo.belongsTo(models.Videos)
+  models.WatchedVideo.belongsTo(models.User)
 
   models.Images = sequelize.define('images', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
@@ -123,6 +132,7 @@ function addTables (sequelize, models) {
   models.GeneratedTopicExercise = sequelize.define('generatedTopicExercises', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
+    submittedAt: {type: Sequelize.DATE},
     score: {type: Sequelize.FLOAT},
     timeFinish: {type: Sequelize.FLOAT},
     topicExerciseHash: {type: Sequelize.STRING},
@@ -145,7 +155,10 @@ function addTables (sequelize, models) {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     schoolIdentifier: {type: Sequelize.STRING},
     status: {type: Sequelize.ENUM(['Syncing', 'Success', 'Failed'])},
-    date: {type: Sequelize.STRING} // Until what time had data been synchronized to
+    // Date of last synchronization. Intentionally STRING type instead of DATE
+    // because we're storing local server's date, not ours. And to avoid confusion
+    // with timezone conversion, STRING is way easier to work with in this case
+    date: {type: Sequelize.STRING}
   })
 
   // Information that belongs only to local server and never synced to cloud.

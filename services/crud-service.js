@@ -11,6 +11,10 @@ class CRUDService {
     this._models = models
   }
 
+  getSequelize () {
+    return this._sequelize
+  }
+
   create ({modelName, data, trx}) {
     log.verbose(TAG, `create(): modelName=${modelName} data=${JSON.stringify(data)}`)
     data = _.omit(data, 'id') // We want to allow easy duplication, so we assume that adding data with the same id means creating a duplicate

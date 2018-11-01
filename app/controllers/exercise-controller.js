@@ -248,11 +248,12 @@ class ExerciseController extends BaseController {
               })
 
               const timeFinish = ExerciseHelper.countTimeFinish(generatedExercise.createdAt)
-              return exerciseService.updateGenerateExercise({
+              return exerciseService.updateGeneratedExercise({
                 id: generatedExercise.id,
                 score: currentScore,
                 userAnswer: JSON.stringify(userAnswers),
                 submitted: true,
+                submittedAt: moment().local().format('YYYY-MM-DD HH:mm:ss'),
                 timeFinish
               }).then(resp => {
                 if (resp.status) {
