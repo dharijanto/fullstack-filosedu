@@ -1,16 +1,27 @@
-var path = require('path')
+let path = require('path')
 
-var log = require('npmlog')
-var Promise = require('bluebird')
-var pug = require('pug')
-var moment = require('moment')
-var Sequelize = require('sequelize')
+let log = require('npmlog')
+let pug = require('pug')
+let moment = require('moment')
+let Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
-var CRUDService = require(path.join(__dirname, 'crud-service'))
-var ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator'))
+let CRUDService = require(path.join(__dirname, 'crud-service'))
+/* let ExerciseGenerator = require(path.join(__dirname, '../lib/exercise_generator/exercise-generator')) */
+
+import * as Promise from 'bluebird'
+import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
+import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
 
 const TAG = 'ExerciseService'
+
+export interface GeneratedTopicExerciseDetail {
+  knowns: string, // stringified JSON
+  unknowns: string, // stringified JSON
+  userAnswer: string, // stringified JSON
+  exerciseHash: string
+  exerciseId: number
+}
 
 /*
   Important Note:
@@ -21,7 +32,10 @@ const TAG = 'ExerciseService'
     or generatedTopicExercises whose onCloud != AppConfig.CLOUD_SERVER.
     Remember to set the value properly!
 */
-class ExerciseService extends CRUDService {
+export default class ExerciseService extends CRUDService {
+  constructor (sequelize, models) {
+    super(sequelize, models)
+  }
   /*
     return:
       { status: true,
@@ -38,19 +52,19 @@ FROM exercises AS exercises
 INNER JOIN subtopics AS subtopic ON exercises.subtopicId = subtopic.id AND subtopic.topicId = ${topicId}
 ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTypes.SELECT }
     ).then(resp => {
-      return {status: true, data: resp}
+      return { status: true, data: resp }
     })
   }
 
-  getExercise (exerciseId) {
+  getExercise (exerciseId): Required<Exercise> {
     return this.readOne({
       modelName: 'Exercise',
-      searchClause: {id: exerciseId},
+      searchClause: { id: exerciseId },
       include: {
         model: this._models['Subtopic'],
-        include: {model: this._models['Topic']}
+        include: { model: this._models['Topic'] }
       }
-})
+    })
   }
 
   // TODO: Should call formatExercise()
@@ -87,19 +101,20 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }
     }
   */
-  generateExercise (exercise, isTopic = false) {
-    var exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-    var questions = null
-    if (isTopic) {
+  generateExercise (exercise: Exercise, subtopicOrTopic = false): Promise<NCResponse<any>> {
+    let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
+    let questions: GeneratedQuestionData[] = []
+
+    if (subtopicOrTopic) {
       questions = exerciseSolver.generateTopicQuestions()
     } else {
       questions = exerciseSolver.generateQuestions()
     }
 
-    var knowns = []
-    var unknowns = []
-    var formattedQuestionsPromises = []
-    var answerUnknowns = []
+    let knowns: Array<{}> = []
+    let unknowns: Array<{}> = []
+    let unknownsVariables: Array<{}> = []
+    let formattedQuestionsPromises: Array<Promise<string>> = []
     /*
       questions content:
       [ { knowns: { a: 23, b: 13 }, unknowns: { x: 36 } },
@@ -108,8 +123,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     questions.forEach(question => {
       formattedQuestionsPromises.push(exerciseSolver.formatQuestion(question.knowns))
       knowns.push(question.knowns)
-      unknowns.push(Object.keys(question.unknowns))
-      answerUnknowns.push(question.unknowns)
+      unknowns.push(question.unknowns)
+      unknownsVariables.push(Object.keys(question.unknowns))
     })
 
     return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
@@ -118,16 +133,13 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         data: {
           exerciseData: {
             knowns: JSON.stringify(knowns),
-            unknowns: JSON.stringify(answerUnknowns),
-            userAnswer: [],
+            unknowns: JSON.stringify(unknowns),
             exerciseId: exercise.id,
-            idealTime: exerciseSolver.getExerciseIdealTime(),
-            subtopicName: exercise.subtopicName
+            idealTime: exerciseSolver.getExerciseIdealTime()
           },
           formatted: {
             renderedQuestions,
-            unknowns,
-            subtopicName: exercise.subtopicName
+            unknowns: unknownsVariables
           }
         }
       }
@@ -145,10 +157,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       updatedAt: 2018-03-04T13:38:48.000Z,
       subtopicId: 13,
       subtopic: 'Pengenalan Bilangan 1 - 5',
-      description: '',
-      subtopicData: '{"detail":""}',
-      subtopicNo: 101,
-      topicId: 12
+      subtopic.description: '',
+      subtopic.data: '{"detail":""}',
+      subtopic.subtopicNo: 101,
+      subtopic.topicId: 12
     }],
     return: {
       status: true,
@@ -168,9 +180,9 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       }
     }
   */
-  generateExercises (exerciseDatas) {
-    return Promise.map(exerciseDatas, exerciseData => {
-      return this.generateExercise(exerciseData, true).then(resp => {
+  generateExercises (exercises: Exercise[]) {
+    return Promise.map(exercises, exercise => {
+      return this.generateExercise(exercise, true).then(resp => {
         if (resp.status) {
           // Check this has questions
           const parsedKnowns = JSON.parse(resp.data.exerciseData.knowns)
@@ -188,11 +200,16 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         }
       })
     }).then(results => {
-      const exerciseData = []
-      const formatted = []
-      var idealTime = 0
+      const exerciseData: any[] = []
+      const formatted: any[] = []
+      let idealTime = 0
 
-      results.filter(result => result != null).forEach(result => {
+      // Needed for TS to typecheck
+      function notEmpty<TValue> (value: TValue | null | undefined): value is TValue {
+        return value !== null && value !== undefined
+      }
+
+      results.filter(notEmpty).forEach(result => {
         idealTime += result.exerciseData.idealTime
         exerciseData.push(result.exerciseData)
         formatted.push(result.formatted)
@@ -227,19 +244,18 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         formatted: [{
           renderedQuestions: ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"], // HTML-rendered question array
           unknowns: [["x"], ["x"]], // Variable for inputs
-          subtopicName: 'Penjumlahan Hasil Bilangan 1-5'
         }]
       }
     }]
   */
-  // TODO: this should return status
-  formatExercises (generatedExercises) {
+  // TODO: data.formatted should be just data
+  formatExercises (generatedExercises: GeneratedExercise[]): Promise<NCResponse<{formatted: FormattedExercise[]}>> {
     return Promise.map(generatedExercises, generatedExercise => {
-      return this.readOne({modelName: 'Exercise', searchClause: {id: generatedExercise.exerciseId}}).then(resp => {
+      return this.readOne({ modelName: 'Exercise', searchClause: { id: generatedExercise.exerciseId } }).then(resp => {
         if (resp.status) {
-          var exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
-          var unknowns = []
-          var formattedQuestionsPromises = []
+          let exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
+          let unknowns: any[] = []
+          let formattedQuestionsPromises: Array<Promise<string>> = []
           JSON.parse(generatedExercise.knowns).forEach(knowns => {
             formattedQuestionsPromises.push(exerciseSolver.formatQuestion(knowns))
           })
@@ -250,8 +266,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
             return {
               renderedQuestions,
-              unknowns,
-              subtopicName: generatedExercise.subtopicName
+              unknowns
             }
           })
         } else {
@@ -307,9 +322,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     }
   */
   formatExercise (generatedExercise, exerciseSolver) {
-    const data = {}
-    var knowns = JSON.parse(generatedExercise.knowns)
-    var unknowns = JSON.parse(generatedExercise.unknowns)
+    let knowns = JSON.parse(generatedExercise.knowns)
+    let unknowns = JSON.parse(generatedExercise.unknowns)
 
     return Promise.join(
       Promise.map(knowns, known => {
@@ -319,12 +333,15 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         return Object.keys(unknown)
       })
     ).spread((formattedQuestions, unknowns) => {
-      data.formatted = {
-        renderedQuestions: formattedQuestions,
-        unknowns
+      let data = {
+        formatted: {
+          renderedQuestions: formattedQuestions,
+          unknowns
+        },
+        exerciseId: generatedExercise.exerciseId,
+        idealTime: generatedExercise.idealTime
       }
-      data.exerciseId = generatedExercise.exerciseId
-      data.idealTime = generatedExercise.idealTime
+
       return data
     })
   }
@@ -340,15 +357,15 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         }
       }
   */
-  getTopicExerciseHash (topicId) {
+  getTopicExerciseHash (topicId): Promise<NCResponse<{topicExerciseHash: string}>> {
     return new Promise((resolve, reject) => {
       this.getTopicExercises(topicId).then(resp => {
         if (resp.status) {
-          var tempCollectHash = ''
+          let tempCollectHash = ''
           resp.data.forEach(topicExercise => {
             tempCollectHash += ExerciseGenerator.getHash(topicExercise.data)
           })
-          var topicExerciseHash = ExerciseGenerator.getHash(tempCollectHash)
+          let topicExerciseHash = ExerciseGenerator.getHash(tempCollectHash)
           resolve({
             status: true,
             data: {
@@ -402,18 +419,18 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   // Get exercise that is curently active
-  getGeneratedExercise ({userId, exerciseId}) {
+  getGeneratedExercise ({ userId, exerciseId }) {
     return this.readOne({
       modelName: 'GeneratedExercise',
-      searchClause: {userId, exerciseId, submitted: false, onCloud: AppConfig.CLOUD_SERVER}
+      searchClause: { userId, exerciseId, submitted: false, onCloud: AppConfig.CLOUD_SERVER }
     })
   }
 
   // Get all exercises that have been submitted
-  getSubmittedExercises ({userId, exerciseId}) {
+  getSubmittedExercises ({ userId, exerciseId }) {
     return this.read({
       modelName: 'GeneratedExercise',
-      searchClause: {userId, exerciseId, submitted: true}
+      searchClause: { userId, exerciseId, submitted: true }
     })
   }
 
@@ -442,16 +459,16 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     ]
   }
   */
-  checkAnswer (exerciseDetails, userAnswers) {
+  checkAnswer (exerciseDetails: GeneratedTopicExerciseDetail[], userAnswers: Array<{[key: string]: any}>): Promise<NCResponse<any>> {
     return Promise.map(exerciseDetails, (exerciseDetail, index) => {
-      return this.readOne({modelName: 'Exercise', searchClause: {id: exerciseDetail.exerciseId}}).then(resp => {
+      return this.readOne({ modelName: 'Exercise', searchClause: { id: exerciseDetail.exerciseId } }).then(resp => {
         if (resp.status) {
           const exercise = resp.data
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
           const knowns = JSON.parse(exerciseDetail.knowns)
           const unknowns = JSON.parse(exerciseDetail.unknowns)
           return knowns.map((known, index) => {
-            return {known, unknown: unknowns[index], isAnswerFn: exerciseSolver.isAnswer.bind(exerciseSolver)}
+            return { known, unknown: unknowns[index], isAnswerFn: exerciseSolver.isAnswer.bind(exerciseSolver) }
           })
         } else {
           throw new Error('Exercise with id=' + exerciseDetail.exerciseId + ' could not be found!')
@@ -464,10 +481,10 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         return acc.concat(resultArr)
       }, [])
       const data = flattenedResults.map((result, index) => {
-        return {isCorrect: result.isAnswerFn(result.known, userAnswers[index]), unknown: result.unknown}
+        return { isCorrect: result.isAnswerFn(result.known, userAnswers[index]), unknown: result.unknown }
       })
 
-      return {status: true, data}
+      return { status: true, data }
     })
   }
 
@@ -594,13 +611,13 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   ORDER BY score DESC LIMIT 4;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const stars = datas.reduce((acc, data) => {
-          if (parseInt(data.score) >= 80) {
+          if (parseInt(data.score, 10) >= 80) {
             return acc + 1
           } else {
             return acc
           }
         }, 0)
-        return {status: true, data: {stars}}
+        return { status: true, data: { stars } }
       })
     } else {
       return this._sequelize.query(`
@@ -609,13 +626,13 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   ORDER BY score DESC LIMIT 4;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const stars = datas.reduce((acc, data) => {
-          if (parseInt(data.score) >= 80) {
+          if (parseInt(data.score, 10) >= 80) {
             return acc + 1
           } else {
             return acc
           }
         }, 0)
-        return {status: true, data: {stars}}
+        return { status: true, data: { stars } }
       })
     }
   }
@@ -642,8 +659,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       if (resp.status) {
         if (renderStar) {
           const stars = resp.data.stars
-          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), {stars})
-          return {status: true, data: {html, stars}}
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), { stars })
+          return { status: true, data: { html, stars } }
         } else {
           return resp
         }
@@ -661,7 +678,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     return this._getUniversalExerciseStars(userId, id, 'generatedTopicExercises', renderStar)
   }
 
-  getTopicExerciseCheckmark (userId, topicId, render) {
+  getTopicExerciseCheckmark (userId, topicId, render = false) {
     return this._sequelize.query(`
 SELECT score FROM generatedTopicExercises
 WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId} AND score > 80
@@ -669,26 +686,26 @@ ORDER BY score DESC LIMIT 1;`,
     { type: Sequelize.QueryTypes.SELECT }).then(datas => {
       const isChecked = datas.length > 0
       if (render) {
-        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ceckmark.pug'), {isChecked})
-        return {status: true, data: html}
+        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ceckmark.pug'), { isChecked })
+        return { status: true, data: html }
       } else {
-        return {status: true, data: {isChecked}}
+        return { status: true, data: { isChecked } }
       }
     })
   }
 
   // Specially called from course controller
-  getSubtopicStar (userId, subtopicId) {
+  getSubtopicStar (userId, subtopicId): Promise<NCResponse<any>> {
     return this.read({
-      modelName: 'Exercise', searchClause: {subtopicId}
+      modelName: 'Exercise', searchClause: { subtopicId }
     }).then(resp => {
-      return Promise.map(resp.data || [], exercise => {
+      return Promise.map(resp.data || [], (exercise: Exercise) => {
         return this._getExerciseStars(userId, exercise.id, 'generatedExercises')
       }).then(datas => {
         const stars = datas.reduce((acc, resp) => {
           return acc + resp.data.stars
         }, 0) / (datas.length || 1)
-        return {status: true, data: {stars}}
+        return { status: true, data: { stars } }
       })
     })
   }
@@ -706,14 +723,14 @@ ORDER BY score DESC LIMIT 1;`,
   ORDER BY score DESC LIMIT 1;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const timers = datas.reduce((acc, data) => {
-          if (parseInt(data.score) >= 80) {
+          if (parseInt(data.score, 10) >= 80) {
             return acc + 1
           } else {
             return acc
           }
         }, 0)
 
-        return {status: true, data: {timers}}
+        return { status: true, data: { timers } }
       })
     } else {
       return this._sequelize.query(`
@@ -723,13 +740,13 @@ ORDER BY score DESC LIMIT 1;`,
   ORDER BY score DESC LIMIT 4;`,
       { type: Sequelize.QueryTypes.SELECT }).then(datas => {
         const timers = datas.reduce((acc, data) => {
-          if (parseInt(data.score) >= 100) {
+          if (parseInt(data.score, 10) >= 100) {
             return acc + 1
           } else {
             return acc
           }
         }, 0)
-        return {status: true, data: {timers}}
+        return { status: true, data: { timers } }
       })
     }
   }
@@ -739,8 +756,8 @@ ORDER BY score DESC LIMIT 1;`,
       if (resp.status) {
         if (renderStar) {
           const timers = resp.data.timers
-          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/timers.pug'), {timers})
-          return {status: true, data: html}
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/timers.pug'), { timers })
+          return { status: true, data: html }
         } else {
           return resp
         }
@@ -752,15 +769,15 @@ ORDER BY score DESC LIMIT 1;`,
 
   getSubtopicExerciseTimers (userId, subtopicId) {
     return this.read({
-      modelName: 'Exercise', searchClause: {subtopicId}
+      modelName: 'Exercise', searchClause: { subtopicId }
     }).then(resp => {
-      return Promise.map(resp.data || [], exercise => {
+      return Promise.map(resp.data || [], (exercise: Exercise) => {
         return this._getExerciseTimers(userId, exercise.id, 'generatedExercises')
       }).then(datas => {
         const timers = datas.reduce((acc, resp) => {
           return acc + resp.data.timers
         }, 0) / (datas.length || 1)
-        return {status: true, data: {timers}}
+        return { status: true, data: { timers } }
       })
     })
   }
@@ -781,7 +798,7 @@ ORDER BY score DESC LIMIT 1;`,
  FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
  WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
       { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        return {status: true, data: resp}
+        return { status: true, data: resp }
       })
     } else {
       return this._sequelize.query(
@@ -789,13 +806,13 @@ ORDER BY score DESC LIMIT 1;`,
  FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
  WHERE submitted = TRUE AND exerciseId = ${id} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
       { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        return {status: true, data: resp}
+        return { status: true, data: resp }
       })
     }
   }
 
   getExerciseLeaderboard (id, isTopic = true, renderLeaderboard = true) {
-    var tableName = null
+    let tableName: string
     if (isTopic) {
       tableName = 'generatedTopicExercises'
     } else {
@@ -805,8 +822,8 @@ ORDER BY score DESC LIMIT 1;`,
       if (resp.status) {
         if (renderLeaderboard) {
           const exerciseData = resp.data
-          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ranking.pug'), {exerciseData})
-          return {status: true, data: html}
+          const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ranking.pug'), { exerciseData })
+          return { status: true, data: html }
         } else {
           return resp
         }
@@ -819,7 +836,7 @@ ORDER BY score DESC LIMIT 1;`,
   // Get the number of rank in leaderboard
   _getCurrentRanking (timeFinish, id, isTopic = true) {
     return new Promise((resolve, reject) => {
-      var queryDB = null
+      let queryDB: string
       if (isTopic) {
         queryDB = `SELECT COUNT(*) AS total
   FROM (SELECT COUNT(*) FROM generatedTopicExercises
@@ -835,7 +852,7 @@ ORDER BY score DESC LIMIT 1;`,
       }
       return this._sequelize.query(queryDB,
         { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-          resolve({status: true, data: {count: resp[0].total}})
+          resolve({ status: true, data: { count: resp[0].total } })
         }).catch(err => {
           reject(err)
         })
@@ -853,7 +870,7 @@ ORDER BY score DESC LIMIT 1;`,
   // Get the number of submissions in the leaderboard
   _getTotalRanking (id, isTopic = true) {
     return new Promise((resolve, reject) => {
-      var queryDB = null
+      let queryDB: string
       if (isTopic) {
         queryDB = `SELECT COUNT(*) AS total
   FROM (SELECT COUNT(*) FROM generatedTopicExercises WHERE submitted = TRUE AND topicId = ${id} AND score = 100 AND timeFinish IS NOT NULL
@@ -867,7 +884,7 @@ ORDER BY score DESC LIMIT 1;`,
       }
       return this._sequelize.query(queryDB,
         { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-          resolve({status: true, data: {count: resp[0].total}})
+          resolve({ status: true, data: { count: resp[0].total } })
         }).catch(err => {
           reject(err)
         })
@@ -882,5 +899,3 @@ ORDER BY score DESC LIMIT 1;`,
     return this._getTotalRanking(topicId)
   }
 }
-
-module.exports = ExerciseService

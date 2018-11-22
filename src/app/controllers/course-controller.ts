@@ -1,17 +1,20 @@
-var path = require('path')
+import * as Promise from 'bluebird'
 
-var log = require('npmlog')
-var Promise = require('bluebird')
-var pug = require('pug')
+import ExerciseService from '../../services/exercise-service'
+import { NamespaceProperties } from 'aws-sdk/clients/servicediscovery'
 
-var BaseController = require(path.join(__dirname, 'base-controller'))
-var CourseService = require(path.join(__dirname, '../../services/course-service'))
-var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
-var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
-var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
-var Utils = require(path.join(__dirname, '../utils/utils'))
+let path = require('path')
 
-var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
+let log = require('npmlog')
+let pug = require('pug')
+
+let BaseController = require(path.join(__dirname, 'base-controller'))
+let CourseService = require(path.join(__dirname, '../../services/course-service'))
+let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+let Utils = require(path.join(__dirname, '../utils/utils'))
+
+let ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
 
 const TAG = 'CourseController'
 
@@ -29,29 +32,33 @@ class CourseController extends BaseController {
       Promise.join(
         courseService.getAllSubtopics(),
         courseService.getAllTopics()
-      ).spread((subtopicResp, topicResp) => {
-        res.locals.subtopics = subtopicResp.data || []
-        res.locals.topics = topicResp.data || []
+      ).spread((subtopicResp: NCResponse<Subtopic[]>, topicResp: NCResponse<Topic[]>) => {
+        const subtopics: Subtopic[] = subtopicResp.data || []
+        const topics: Topic[] = topicResp.data || []
+        res.locals.subtopics = subtopics
+        res.locals.topics = topics
 
         if (req.isAuthenticated()) {
           // TODO: Should do SQL joins on all the following tables
           return Promise.join(
-            Promise.map(res.locals.subtopics, subtopic => {
+            Promise.map(subtopics, subtopic => {
               return exerciseService.getSubtopicStar(req.user.id, subtopic.id)
             }),
-            Promise.map(res.locals.topics, topic => {
+            Promise.map(topics, topic => {
               return exerciseService.getTopicExerciseCheckmark(req.user.id, topic.id)
             }),
-            Promise.map(res.locals.subtopics, subtopic => {
+            Promise.map(subtopics, subtopic => {
               return exerciseService.getSubtopicExerciseTimers(req.user.id, subtopic.id)
             }),
-            Promise.map(res.locals.topics, topic => {
+            Promise.map(topics, topic => {
               return exerciseService.getTopicExerciseTimer(req.user.id, topic.id, false)
             }),
-            Promise.map(res.locals.subtopics, subtopic => {
+            Promise.map(subtopics, subtopic => {
               return courseService.isSubtopicVideoWatched(subtopic.id, req.user.id)
             })
-          ).spread((subtopicstars, topicCheckmarks, subtopicTimers, topicTimers, subtopicWatchStats) => {
+          ).spread((subtopicstars: Array<NCResponse<any>>, topicCheckmarks: Array<NCResponse<any>>,
+                    subtopicTimers: Array<NCResponse<any>>, topicTimers: Array<NCResponse<any>>,
+                    subtopicWatchStats: Array<NCResponse<any>>) => {
             log.verbose(TAG, '/: topicCheckmarks=' + JSON.stringify(topicCheckmarks))
             subtopicstars.forEach((resp, index) => {
               res.locals.subtopics[index].stars = resp.data.stars
@@ -92,15 +99,16 @@ class CourseController extends BaseController {
     })
 
     this.routeGet('/topics/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      var topicId = req.params.topicId
-      var userId = req.user.id
+      let topicId = req.params.topicId
+      let userId = req.user.id
 
       Promise.join(
         exerciseService.getTopicExercises(topicId),
         exerciseService.getGeneratedTopicExercise(userId, topicId),
         exerciseService.getTopicExerciseHash(topicId),
         exerciseService.getTopic(topicId)
-      ).spread((resp, resp2, resp3, resp7) => {
+      ).spread((resp: NCResponse<any>, resp2: NCResponse<any>,
+                resp3: NCResponse<any>, resp7: NCResponse<any>) => {
         // log.verbose(TAG, 'exercise.review.GET: resp=' + JSON.stringify(resp))
         // log.verbose(TAG, 'exercise.review.GET: resp2=' + JSON.stringify(resp2))
         if (resp3.status && resp7.status) {
@@ -109,7 +117,7 @@ class CourseController extends BaseController {
           // If there's valid exercise to be restored
           if (resp2.status && resp2.data.topicExerciseHash === topicExerciseHash) {
             const generatedExercises = JSON.parse(resp2.data.exerciseDetail)
-            return exerciseService.formatExercises(generatedExercises).then(resp5 => {
+            return exerciseService.formatExercises(generatedExercises).then((resp5: any) => {
               if (resp5.status) {
                 return {
                   formatted: resp5.data.formatted,
@@ -124,7 +132,7 @@ class CourseController extends BaseController {
           } else if ((resp2.status && resp2.data.topicExerciseHash !== topicExerciseHash) || !resp2.status) {
             // If there's expired generated exercise or no generated exercise to be restored
             const exercises = resp.data
-            return exerciseService.generateExercises(exercises).then(resp5 => {
+            return exerciseService.generateExercises(exercises).then((resp5: NCResponse<any>) => {
               if (resp5.status) {
                 const generatedExercises = resp5.data.exerciseData
                 const formattedExercises = resp5.data.formatted
@@ -144,6 +152,8 @@ class CourseController extends BaseController {
                 throw new Error('Could not generateExercise: ' + resp5.errMessage)
               }
             })
+          } else {
+            throw new Error('Unexpected error!')
           }
         } else {
           throw new Error(`Could not retrieve topic or topicExerciseHash for topicId=${topicId}`)
@@ -180,14 +190,13 @@ class CourseController extends BaseController {
       })
     })
 
-
     this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
-      var topicId = req.params.topicId
+      let topicId = req.params.topicId
 
       if (topicId === undefined) {
-        res.json({status: false, errMessage: `topicId is needed`})
+        res.json({ status: false, errMessage: `topicId is needed` })
       } else if (!req.isAuthenticated) {
-        res.json({status: false, errMessage: `Unauthorized`})
+        res.json({ status: false, errMessage: `Unauthorized` })
       } else {
         exerciseService.getExerciseLeaderboard(topicId).then(resp => {
           res.json(resp)
@@ -199,21 +208,21 @@ class CourseController extends BaseController {
 
     this.routePost('/topics/:topicId/:topicSlug/review', (req, res, next) => {
       // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
-      var userAnswers = req.body.userAnswers
+      let userAnswers = req.body.userAnswers
 
-      var topicId = req.params.topicId
-      var userId = req.user.id
+      let topicId = req.params.topicId
+      let userId = req.user.id
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} topicId=${topicId} userAnswers=${userAnswers}`)
 
-      var totalAnswer = 0
-      var totalCorrectAnswer = 0
-      var dateCreatedAt
-      var isAnswerCorrect = []
+      let totalAnswer = 0
+      let totalCorrectAnswer = 0
+      let dateCreatedAt
+      let isAnswerCorrect: boolean[] = []
 
       return exerciseService.getGeneratedTopicExercise(userId, topicId).then(resp => {
         if (resp.status) {
           dateCreatedAt = resp.data.createdAt
-          var exerciseDetail = JSON.parse(resp.data.exerciseDetail)
+          let exerciseDetail = JSON.parse(resp.data.exerciseDetail)
           // check jawaban secara berurutan
           return exerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp2 => {
             if (resp2.status) {
@@ -226,10 +235,10 @@ class CourseController extends BaseController {
               totalAnswer = resp2.data.length
 
               const timeFinish = ExerciseHelper.countTimeFinish(dateCreatedAt)
-              var currentScore = parseInt((totalCorrectAnswer / totalAnswer) * 100)
+              let currentScore = totalCorrectAnswer / totalAnswer * 100
 
               // Adding userAnswer to existing content from exerciseDetail tobe saved in DB
-              var index = 0
+              let index = 0
               exerciseDetail.forEach((exercise) => {
                 JSON.parse(exercise.unknowns).forEach((val) => {
                   exercise.userAnswer.push(userAnswers[index])
@@ -243,7 +252,7 @@ class CourseController extends BaseController {
                 timeFinish,
                 JSON.stringify(exerciseDetail)
               ).then(resp3 => {
-                return {data: resp2.data, timeFinish, currentScore}
+                return { data: resp2.data, timeFinish, currentScore }
               })
             } else {
               throw new Error(resp.errMessage)
@@ -269,7 +278,7 @@ class CourseController extends BaseController {
               exerciseService.getTopicTotalRanking(topicId),
               exerciseService.getExerciseLeaderboard(topicId),
               exerciseService.getTopicExerciseTimer(userId, topicId)
-            ).spread((resp11, resp12, resp13, resp14, resp15) => {
+            ).spread((resp11: NCResponse<any>, resp12: NCResponse<any>, resp13: NCResponse<any>, resp14: NCResponse<any>, resp15: NCResponse<any>) => {
               res.json({
                 status: true,
                 data: {

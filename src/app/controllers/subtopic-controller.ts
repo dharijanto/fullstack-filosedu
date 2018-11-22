@@ -1,15 +1,17 @@
-var path = require('path')
-var log = require('npmlog')
-var Promise = require('bluebird')
+import * as Promise from 'bluebird'
 
-var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
-var AppConfig = require(path.join(__dirname, '../../app-config'))
-var BaseController = require(path.join(__dirname, 'base-controller'))
-var CourseService = require(path.join(__dirname, '../../services/course-service'))
-var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
-var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
-var Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
-var VideoService = require(path.join(__dirname, '../../services/video-service'))
+import ExerciseService from '../../services/exercise-service'
+
+let path = require('path')
+let log = require('npmlog')
+
+let AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
+let AppConfig = require(path.join(__dirname, '../../app-config'))
+let BaseController = require(path.join(__dirname, 'base-controller'))
+let CourseService = require(path.join(__dirname, '../../services/course-service'))
+let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
+let VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'SubtopicController'
 
@@ -52,16 +54,18 @@ class SubtopicController extends BaseController {
     })
 
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', (req, res, next) => {
-      var topicId = req.params.topicId
-      var subtopicId = req.params.subtopicId
+      let topicId = req.params.topicId
+      let subtopicId = req.params.subtopicId
       if (subtopicId) {
         Promise.join(
-          courseService.readOne({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
-          courseService.read({modelName: 'Exercise', searchClause: {subtopicId}}),
-          courseService.readOne({modelName: 'Topic', searchClause: {id: topicId}}),
+          courseService.readOne({ modelName: 'Subtopic', searchClause: { id: subtopicId } }),
+          courseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }),
+          courseService.readOne({ modelName: 'Topic', searchClause: { id: topicId } }),
           videoService.getVideo(subtopicId),
           courseService.getPreviousAndNextSubtopic(subtopicId)
-        ).spread((resp, resp2, resp3, resp4, resp5) => {
+        ).spread((resp: NCResponse<any>, resp2: NCResponse<any>,
+                  resp3: NCResponse<any>, resp4: NCResponse<any>,
+                  resp5: NCResponse<any>) => {
           if (resp.status && resp3.status && resp4.status) {
             const subtopic = resp.data
             res.locals.prevLink = resp5.status && resp5.data.prev ? Formatter.getSubtopicURL(resp5.data.prev) : null
@@ -104,7 +108,7 @@ class SubtopicController extends BaseController {
               req.session.returnTo = req.originalUrl || req.url
               res.render('subtopic')
             } else {
-              return Promise.map(res.locals.exercises, (exercise, index) => {
+              return Promise.map(res.locals.exercises, (exercise: Exercise, index) => {
                 return Promise.join(
                   exerciseService.getSubtopicExerciseStars(req.user.id, exercise.id, false),
                   exerciseService.getSubtopicExerciseTimer(req.user.id, exercise.id, false),

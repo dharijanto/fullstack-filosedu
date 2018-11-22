@@ -1,21 +1,22 @@
-var path = require('path')
+let path = require('path')
 
-var moment = require('moment-timezone')
+let moment = require('moment-timezone')
 
-var log = require('npmlog')
-var Promise = require('bluebird')
+let log = require('npmlog')
 
-var AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
-var BaseController = require(path.join(__dirname, 'base-controller'))
-var CourseService = require(path.join(__dirname, '../../services/course-service'))
-var ExerciseService = require(path.join(__dirname, '../../services/exercise-service'))
-var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
-var ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
-var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
-var PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+let AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
+let BaseController = require(path.join(__dirname, 'base-controller'))
+let CourseService = require(path.join(__dirname, '../../services/course-service'))
+let ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
+let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
-var Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
-var Utils = require(path.join(__dirname, '../utils/utils'))
+let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
+let Utils = require(path.join(__dirname, '../utils/utils'))
+
+import * as Promise from 'bluebird'
+import ExerciseService from '../../services/exercise-service'
+import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 
 const TAG = 'ExerciseController'
 
@@ -31,23 +32,25 @@ class ExerciseController extends BaseController {
     })
 
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      var exerciseId = req.params.exerciseId
-      var subtopicId = req.params.subtopicId
-      var topicId = req.params.topicId
+      let exerciseId = req.params.exerciseId
+      let subtopicId = req.params.subtopicId
+      let topicId = req.params.topicId
       Promise.join(
         exerciseService.getExercise(exerciseId),
-        exerciseService.getGeneratedExercise({userId: req.user.id, exerciseId}),
+        exerciseService.getGeneratedExercise({ userId: req.user.id, exerciseId }),
         courseService.getPreviousAndNextExercise(subtopicId, exerciseId),
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
         exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId),
         courseService.getPreviousAndNextSubtopic(subtopicId)
-      ).spread((resp, resp2, resp6, resp9, resp10, resp11) => {
+      ).spread((resp: NCResponse<any>, resp2: NCResponse<any>,
+                resp6: NCResponse<any>, resp9: NCResponse<any>,
+                resp10: NCResponse<any>, resp11) => {
         if (resp.status) {
           const exerciseHash = ExerciseGenerator.getHash(resp.data.data)
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
           const starsHTML = resp9.status ? resp9.data.html : '<p style="color:red;"> Unable to retrieve stars... </p>'
           const stars = resp9.status ? resp9.data.stars : 0
-          const timersHTML = resp10.status? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
+          const timersHTML = resp10.status ? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
           const topic = resp.data.subtopic.topic
           const subtopic = resp.data.subtopic
           const prevAndNextExercise = resp6.data
@@ -57,7 +60,7 @@ class ExerciseController extends BaseController {
               : (prevAndNextSubtopic && prevAndNextSubtopic.prev ? Formatter.getSubtopicURL(prevAndNextSubtopic.prev) : null)
           const nextLink = prevAndNextExercise && prevAndNextExercise.next
               ? Formatter.getExerciseURL(prevAndNextExercise.next)
-              : (prevAndNextSubtopic &&  prevAndNextSubtopic.next ? Formatter.getSubtopicURL(prevAndNextSubtopic.next) : null)
+              : (prevAndNextSubtopic && prevAndNextSubtopic.next ? Formatter.getSubtopicURL(prevAndNextSubtopic.next) : null)
 
           // If there's exercise to be restored and it's still valid
           if (resp2.status && resp2.data.exerciseHash === exerciseHash) {
@@ -79,6 +82,7 @@ class ExerciseController extends BaseController {
             })
           } else if ((resp2.status && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
             // If there's no exercise or there's but already expired
+            // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
             return exerciseService.generateExercise(resp.data).then(resp3 => {
               if (resp3.status) {
                 return exerciseService.saveGeneratedExercise(
@@ -88,7 +92,7 @@ class ExerciseController extends BaseController {
                 ).then(resp4 => {
                   if (resp4.status) {
                     return Object.assign({
-                      elapsedTime: Utils.getElapsedTime(resp3.data.createdAt),
+                      elapsedTime: Utils.getElapsedTime(resp3.data.createdAt)
                     }, {
                       formatted: resp3.data.formatted,
                       exerciseId: resp.data.id,
@@ -106,7 +110,7 @@ class ExerciseController extends BaseController {
                   }
                 })
               } else {
-                throw new Error('Exercise does not exists:' + resp4.errMessage)
+                throw new Error('Exercise does not exists:' + resp3.errMessage)
               }
             })
           } else {
@@ -136,11 +140,11 @@ class ExerciseController extends BaseController {
     })
 
     this.routeGet('/getExerciseStars', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      const exerciseId = parseInt(req.query.exerciseId)
+      const exerciseId = parseInt(req.query.exerciseId, 10)
       if (exerciseId === undefined) {
-        res.json({status: false, errMessage: `exerciseId is needed`})
+        res.json({ status: false, errMessage: `exerciseId is needed` })
       } else if (!req.isAuthenticated) {
-        res.json({status: false, errMessage: `Unauthorized`})
+        res.json({ status: false, errMessage: `Unauthorized` })
       } else {
         // subtopic stars
         exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId, false).then(resp => {
@@ -152,11 +156,11 @@ class ExerciseController extends BaseController {
     })
 
     this.routePost('/exercise/getLeaderboard', (req, res, next) => {
-      const exerciseId = parseInt(req.body.exerciseId)
+      const exerciseId = parseInt(req.body.exerciseId, 10)
       if (exerciseId === undefined) {
-        res.json({status: false, errMessage: `exerciseId is needed`})
+        res.json({ status: false, errMessage: `exerciseId is needed` })
       } else if (!req.isAuthenticated) {
-        res.json({status: false, errMessage: `Unauthorized`})
+        res.json({ status: false, errMessage: `Unauthorized` })
       } else {
         exerciseService.getExerciseLeaderboard(exerciseId, false, true).then(resp => {
           res.json(resp)
@@ -177,18 +181,18 @@ class ExerciseController extends BaseController {
         res.status(500).send('Request not authenticated!')
       } else {
         Promise.join(
-          exerciseService.getGeneratedExercise({userId, exerciseId}), // Exercise that's currently being graded
-          exerciseService.getSubmittedExercises({userId, exerciseId}),
+          exerciseService.getGeneratedExercise({ userId, exerciseId }), // Exercise that's currently being graded
+          exerciseService.getSubmittedExercises({ userId, exerciseId }),
           exerciseService.getExercise(exerciseId)
-        ).spread((geResp, sgeResp, eResp) => {
+        ).spread((geResp: NCResponse<any>, sgeResp: NCResponse<any>, eResp: NCResponse<any>) => {
           if (!geResp.status) {
             log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
-            res.json({status: false, errMessage: 'Current exercise cannot be found'})
+            res.json({ status: false, errMessage: 'Current exercise cannot be found' })
           } else if (!eResp.status) {
-            res.json({status: false, errMessage: 'Exercise information be found'})
+            res.json({ status: false, errMessage: 'Exercise information be found' })
           } else {
             const generatedExercise = geResp.data
-            var generatedQuestions = JSON.parse(generatedExercise.knowns)
+            let generatedQuestions = JSON.parse(generatedExercise.knowns)
             const submittedExercises = sgeResp.status ? sgeResp.data : []
             const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data.data)
             const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
@@ -196,12 +200,12 @@ class ExerciseController extends BaseController {
             log.verbose(TAG, `submitAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
             log.verbose(TAG, `submitAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
             if (userAnswers.length !== generatedQuestions.length) {
-              res.json({status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!'})
+              res.json({ status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!' })
             } else {
               // Get the number of non-empty answer. (i.e. the student tries to answer eventhough it's wrong)
               const attemptedAnswers = userAnswers.reduce((attemptedAnswers, answer) => {
                 const keys = Object.keys(answer)
-                var attempted = false
+                let attempted = false
                 keys.forEach(key => {
                   if (answer[key].length > 0) {
                     attempted = true
@@ -217,7 +221,7 @@ class ExerciseController extends BaseController {
               log.verbose(TAG, 'submitAnswer.POST(): attemptedAnswers= ' + attemptedAnswers)
 
               // Flag array identifying which user answer is correct/wrong
-              const isAnswerCorrect = []
+              const isAnswerCorrect: boolean[] = []
               // Compute the score of current exercise
               const correctAnswers = generatedQuestions.reduce((numCorrect, knowns, index) => {
                 const unknowns = userAnswers
@@ -236,7 +240,7 @@ class ExerciseController extends BaseController {
               Promise.join(
                 analyticsService.addExerciseData('correctAnswers', currentScore, exerciseId, userId),
                 analyticsService.addExerciseData('attemptedAnswers', attemptedAnswers, exerciseId, userId)
-              ).spread((resp, resp2) => {
+              ).spread((resp: NCResponse<any>, resp2: NCResponse<any>) => {
                 if (!resp.status) {
                   log.error(TAG, 'submitAnswer.POST(): addExerciseData.resp=' + JSON.stringify(resp))
                 }
@@ -263,7 +267,8 @@ class ExerciseController extends BaseController {
                     exerciseService.getSubtopicCurrentRanking(timeFinish, exerciseId),
                     exerciseService.getSubtopicTotalRanking(exerciseId),
                     exerciseService.getSubtopicExerciseTimer(userId, exerciseId)
-                  ).spread((resp2, resp3, resp4, resp5, resp6) => {
+                  ).spread((resp2: NCResponse<any>, resp3: NCResponse<any>,
+                            resp4: NCResponse<any>, resp5: NCResponse<any>, resp6: NCResponse<any>) => {
                     res.json({
                       status: true,
                       data: {
@@ -277,19 +282,19 @@ class ExerciseController extends BaseController {
                         currentTimeFinish: timeFinish,
                         currentRanking: resp4.data.count,
                         totalRanking: resp5.data.count,
-                        isPerfectScore: parseInt(currentScore) === 100
+                        isPerfectScore: currentScore === 100
                       }
                     })
                   })
                 } else {
-                  res.json({status: false, errMessage: 'Failed to save generated exercise'})
+                  res.json({ status: false, errMessage: 'Failed to save generated exercise' })
                 }
               })
             }
           }
         }).catch(err => {
           log.error(TAG, err)
-          res.json({status: false, errMessage: err.message})
+          res.json({ status: false, errMessage: err.message })
         })
       }
     })

@@ -62,7 +62,7 @@ function bundle (b, module, outputFolder) {
   console.time(module)
   b.bundle()
     .on('error', err => console.error(err.message))
-    .pipe(fs.createWriteStream(path.join(__dirname, `../${outputFolder}/views/assets/js/${module}-bundle.js`)))
+    .pipe(fs.createWriteStream(path.join(__dirname, `../dist/${outputFolder}/views/assets/js/${module}-bundle.js`)))
     .on('finish', () => {
       console.timeEnd(module)
     })

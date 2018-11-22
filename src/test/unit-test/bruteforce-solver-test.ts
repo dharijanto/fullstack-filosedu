@@ -1,21 +1,21 @@
-var path = require('path')
+let path = require('path')
 
-var _ = require('lodash')
-var chai = require('chai')
-var expect = chai.expect
+let _ = require('lodash')
+let chai = require('chai')
+let expect = chai.expect
 
-var data = require(path.join(__dirname, 'data'))// data.bruteforceQuestionPositiveQuestions
-var ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+let data = require(path.join(__dirname, 'data'))// data.bruteforceQuestionPositiveQuestions
+import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 
 describe('Bruteforce Solver', function () {
   it('Should parse a specified question properly', function (done) {
     // console.log(data)
     data.bruteforcePositiveQuestions.forEach(item => {
       const q1 = require(path.join(__dirname, `data/${item}`))
-      var exerciseSolver = ExerciseGenerator.getExerciseSolver(q1)
+      let exerciseSolver = ExerciseGenerator.getExerciseSolver(q1)
       // Since this is a bruteforce method, makes sense to try it multiple times
       _.range(0, 10).forEach(() => {
-        var questions = exerciseSolver.generateQuestions()
+        let questions = exerciseSolver.generateQuestions()
         // Number of generated questions should be the same as what's asked
         expect(questions).to.have.length(q1.quantity)
         // Check that each question is correct
@@ -27,7 +27,7 @@ describe('Bruteforce Solver', function () {
           // Formatted question should be a string
           // exerciseSolver.formatQuestion(question.knowns).then(result => result.to.be.a('string'))
           // Questions should be answered correctly
-          expect(exerciseSolver.isAnswer(question.knowns, question.unknowns)).to.be.ok
+          expect(exerciseSolver.isAnswer(question.knowns, question.unknowns)).to.be.ok()
         })
       })
     })

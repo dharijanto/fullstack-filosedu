@@ -6,7 +6,7 @@ const marked = require('marked')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const CourseService = require(path.join(__dirname, '../../services/course-service'))
-const ExerciseGenerator = require(path.join(__dirname, '../../lib/exercise_generator/exercise-generator'))
+import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 const ImageService = require(path.join(__dirname, '../../services/image-service'))
 const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const VideoService = require(path.join(__dirname, '../../services/video-service'))
@@ -34,14 +34,14 @@ class SubtopicController extends BaseController {
       log.verbose(TAG, 'subtopic/[id]/GET')
       const subtopicId = req.params.id
       return Promise.join(
-        courseService.read({modelName: 'Subtopic', searchClause: {id: subtopicId}}),
+        courseService.read({ modelName: 'Subtopic', searchClause: { id: subtopicId } }),
         courseService.getExercises(subtopicId)
       ).spread((sResp, eResp) => {
         if (sResp.status) {
           res.locals.subtopic = sResp.data[0]
           res.locals.exercises = eResp.data || []
           res.locals.subtopicData = res.locals.subtopic.data ? JSON.parse(res.locals.subtopic.data) : {}
-          return courseService.read({modelName: 'Topic', searchClause: {id: res.locals.subtopic.topicId}}).then(tResp => {
+          return courseService.read({ modelName: 'Topic', searchClause: { id: res.locals.subtopic.topicId } }).then(tResp => {
             if (tResp.status) {
               res.locals.topic = tResp.data[0]
               res.render('subtopic')
@@ -64,21 +64,21 @@ class SubtopicController extends BaseController {
     this.routePost('/subtopic/:id/submit', (req, res, next) => {
       log.verbose(this.getTag(), 'req.body=' + JSON.stringify(req.body))
       const subtopicId = req.params.id
-      var reqBodyKeys = Object.keys(req.body || {})
-      var newExercises = []
-      var existingExercises = []
+      let reqBodyKeys = Object.keys(req.body || {})
+      let newExercises: any[] = []
+      let existingExercises: any[] = []
 
       // Process exercises
       reqBodyKeys.forEach(key => {
         // New exercise is identified with key new-exercise-[ID]
         if (key.startsWith('new-exercise')) {
           // frontendKey is used to map POST's key to actual question key
-          newExercises.push({subtopicId, data: req.body[key], frontendKey: key})
+          newExercises.push({ subtopicId, data: req.body[key], frontendKey: key })
         }
         // Existing exercise is identified with key exercise-[ID]
         if (key.startsWith('exercise-')) {
           const exerciseId = key.split('-')[1]
-          existingExercises.push({subtopicId, id: exerciseId, data: req.body[key]})
+          existingExercises.push({ subtopicId, id: exerciseId, data: req.body[key] })
         }
       })
 
@@ -90,11 +90,11 @@ class SubtopicController extends BaseController {
       })
 
       const createExercisePromise = Promise.map(newExercises, newExercise => {
-        return courseService.create({modelName: 'Exercise', data: newExercise})
+        return courseService.create({ modelName: 'Exercise', data: newExercise })
       })
 
       const updateExercisePromises = Promise.map(existingExercises, existingExercise => {
-        return courseService.update({modelName: 'Exercise', data: existingExercise})
+        return courseService.update({ modelName: 'Exercise', data: existingExercise })
       })
 
       log.verbose(this.getTag(), `newExercises = ${JSON.stringify(newExercises)}`)
@@ -108,9 +108,9 @@ class SubtopicController extends BaseController {
       // newExerciseIds is used by frontend to map temporary id to real id
       Promise.join(updateSubtopicPromise, createExercisePromise, updateExercisePromises).spread((resp1, resp2, resp3) => {
         if (resp1.status) {
-          var data = {newExerciseIds: {}} // newExercises: {frontendKey: exerciseId}, this is used by frontend to map temporary key to actual key
-          var success = true
-          var errMessage = null
+          let data = { newExerciseIds: {} } // newExercises: {frontendKey: exerciseId}, this is used by frontend to map temporary key to actual key
+          let success = true
+          let errMessage = null
           // If new exercise(s) is added, all of them has to succeed
           if (newExercises.length) {
             success = resp2.reduce((acc, resp, index) => {
@@ -128,7 +128,7 @@ class SubtopicController extends BaseController {
             }, success)
           }
           // errMessage is one of the returned
-          res.send(Object.assign({status: success, data}, errMessage && {errMessage}))
+          res.send(Object.assign({ status: success, data }, errMessage && { errMessage }))
         } else {
           res.send({status: false,
             errMessage: resp1.errMessage})
@@ -137,21 +137,21 @@ class SubtopicController extends BaseController {
     })
 
     this.routePost('/generateExercise', (req, res, next) => {
-      var code = req.body.code
+      let code = req.body.code
       try {
-        var exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
-        var questions = exerciseSolver.generateQuestions()
+        let exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
+        let questions = exerciseSolver.generateQuestions()
         return Promise.map(questions, question => {
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
-            return {question: formattedQuestion, answer: question.unknowns}
+            return { question: formattedQuestion, answer: question.unknowns }
           })
         }).then(data => {
-          res.json({status: true, data})
+          res.json({ status: true, data })
         }).catch(err => {
-          res.json({status: false, errMessage: err.message || err})
+          res.json({ status: false, errMessage: err.message || err })
         })
       } catch (err) {
-        res.json({status: false, errMessage: err.message || err})
+        res.json({ status: false, errMessage: err.message || err })
       }
     })
 
@@ -166,7 +166,7 @@ class SubtopicController extends BaseController {
       const subtopicId = req.params.id
       VideoService.getUploadMiddleware()(req, res, err => {
         if (err) {
-          res.json({status: false, errMessage: err.message})
+          res.json({ status: false, errMessage: err.message })
         } else {
           videoService.uploadAndSaveVideoToDB(req.file.filename, subtopicId).then(resp => {
             res.json(resp)
@@ -190,9 +190,9 @@ class SubtopicController extends BaseController {
       log.verbose(TAG, `req.path = ${req.path}`)
       imageService.getImages().then(resp => {
         if (resp.status) {
-          return res.json({status: true, data: resp.data})
+          return res.json({ status: true, data: resp.data })
         } else {
-          return res.json({status: false})
+          return res.json({ status: false })
         }
       }).catch(err => {
         next(err)
@@ -203,7 +203,7 @@ class SubtopicController extends BaseController {
       log.verbose(TAG, `req.path = ${req.path}`)
       ImageService.uploadImageMiddleware()(req, res, err => {
         if (err) {
-          res.json({status: false, errMessage: err.message})
+          res.json({ status: false, errMessage: err.message })
         } else {
           imageService.uploadAndSaveImageToDB(req.file.filename).then(resp => {
             if (resp.status) {
