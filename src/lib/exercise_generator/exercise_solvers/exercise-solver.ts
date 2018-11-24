@@ -8,7 +8,7 @@ export interface GeneratedQuestionData {
 
 export interface BaseQuestionData {
   quantity: number
-  idealTimePerQuestion?: number
+  idealTimePerQuestion: number
   isAnswerFn: (knowns, unknowns) => boolean
   printFn: (knowns) => string | Promise<string>
 }
@@ -47,11 +47,7 @@ export default abstract class ExerciseSolver {
   }
 
   getExerciseIdealTime () {
-    if (this.question.idealTimePerQuestion) {
-      return (this.question.idealTimePerQuestion * this.question.quantity) || 0
-    } else {
-      throw new Error('idealTimePerQuestion is not defined!')
-    }
+    return (this.question.idealTimePerQuestion * this.question.quantity) || 0
   }
 
   getQuestionQuantity () {

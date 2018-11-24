@@ -29,6 +29,12 @@ interface Topic extends BaseModel {
   subjectId: number
 }
 
+interface TopicDependency extends BaseModel {
+  topicId: number
+  dependencyId: number
+  description: string
+}
+
 interface Subtopic extends BaseModel {
   subtopic: string
   description: string
@@ -76,7 +82,17 @@ interface GeneratedTopicExercise extends BaseModel {
 
 // END OF RAW Sequelize Model
 
-interface FormattedExercise extends BaseModel {
+interface FormattedExercise {
   renderedQuestions: Array<String> // ["\n2 + 3 = ?\n", "\n1 + 2 = ?\n"] -- HTML-rendered question array
   unknowns: Array<Array<string>> // [["x"], ["x"]] -- Variable for inputs
+}
+
+interface FormattedSubtopicExercise {
+}
+
+interface FormattedTopicExercise {
+  topicName: string,
+  formattedExercises: Array<FormattedExercise>,
+  idealTime: number,
+  elapsedTime: number
 }

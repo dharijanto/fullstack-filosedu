@@ -18,27 +18,23 @@ block contents
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
               span.pull-right(style="margin-right: 2%")
-                + renderCheckmark(topic.isChecked, 20)
-                + renderTimerProgress(parseInt(topic.timers), 20, 1)
+                + renderCheckmark(parseInt(topic.starBadge), 20)
+                + renderTimerProgress(parseInt(topic.timeBadge), 20, 1)
               button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
           .panel-collapse.collapse.in(id=`collapse_${index}`)
             ul.list-group
-              - var numbering = 0;
-              //- TODO: Should use SQL join so that we can do topic.subtopics
-              each subtopic, index2 in subtopics
-                if (subtopic.topicId === topic.id)
-                  li.list-group-item
-                    .row
-                      .col-sm-12.col-md-6
-                        | #{++numbering}.
-                        |
-                        a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
-                      .col-sm-12.col-md-6
-                        div#badge-container
-                            span
-                              div
-                                + renderVideoWatchStatus(subtopic.watched, 30)
-                              div
-                                + renderExerciseStars(parseInt(subtopic.stars), 20)
-                              div(style="margin-top: 2px")
-                                + renderTimerProgress(parseInt(subtopic.timers), 20)
+              each subtopic, index in topic.subtopics
+                li.list-group-item
+                  .row
+                    .col-sm-12.col-md-6
+                      | #{index + 1}. 
+                      a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
+                    .col-sm-12.col-md-6
+                      div#badge-container
+                          span
+                            div
+                              + renderVideoWatchStatus(parseInt(subtopic.watchBadge), 30)
+                            div
+                              + renderExerciseStars(parseInt(subtopic.starBadge), 20)
+                            div(style="margin-top: 2px")
+                              + renderTimerProgress(parseInt(subtopic.timeBadge), 20)

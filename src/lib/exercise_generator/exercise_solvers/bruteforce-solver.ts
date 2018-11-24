@@ -14,8 +14,8 @@ export interface GeneratedQuestionData {
 
 export interface BruteforceQuestion {
   quantity: number
-  idealTimePerQuestion?: number
-  reviewQuantity?: number
+  idealTimePerQuestion: number
+  reviewQuantity: number
   competencyQuantity?: number
   solver: {
     type: 'bruteforce_solver',

@@ -1,4 +1,8 @@
-let path = require('path')
+import * as path from 'path'
+
+import * as Promise from 'bluebird'
+
+import * as CourseService from '../../services/course-service'
 
 let _ = require('lodash')
 let chai = require('chai')
@@ -7,19 +11,16 @@ let log = require('npmlog')
 log.level = 'info'
 let request = require('supertest')
 let Sequelize = require('sequelize')
-let Promise = require('bluebird')
 
 let AppConfig = require(path.join(__dirname, '../../app-config'))
 let createSequelizeModel = require(path.join(__dirname, '../../db-structure'))
-let CourseService = require(path.join(__dirname, '../../services/course-service'))
 let MainController = require(path.join(__dirname, '../../cms/main-controller'))
-import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 
 describe('Subtopic Controller', function () {
   let sequelize
   let models = {}
   let app
-  let courseService
+  let CourseService
   const site = {
     hash: 'JustARandomValue'
   }
@@ -37,13 +38,12 @@ describe('Subtopic Controller', function () {
     sequelize.sync({ force: true }).then(() => {
       const mainController = new MainController({ site, db, logTag: 'SubtopicController-Test' })
       app = mainController.getRouter()
-      courseService = new CourseService(sequelize, models)
 
-      courseService.create({ modelName: 'Subject', data: { subject: 'Matematika' } }).then(resp => {
+      CourseService.create({ modelName: 'Subject', data: { subject: 'Matematika' } }).then(resp => {
         expect(resp.status).to.be.ok()
-        courseService.create({ modelName: 'Topic', data: { topic: 'Aljabar', topicId: resp.data.id } }).then(resp2 => {
+        CourseService.create({ modelName: 'Topic', data: { topic: 'Aljabar', topicId: resp.data.id } }).then(resp2 => {
           expect(resp2.status).to.be.ok()
-          courseService.create({ modelName: 'Subtopic', data: { subtopic: 'Mengenal Aljabar', topicId: resp2.data.id } }).then(resp3 => {
+          CourseService.create({ modelName: 'Subtopic', data: { subtopic: 'Mengenal Aljabar', topicId: resp2.data.id } }).then(resp3 => {
             expect(resp3.status).to.be.ok()
             done()
           })
@@ -60,7 +60,7 @@ describe('Subtopic Controller', function () {
   })
 
   it('GET subtopic/[id] should work', function (done) {
-    courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
+    CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
       expect(resp.status).to.be.ok()
       const subtopicId = resp.data[0].id
       request(app).get(`/${site.hash}/subtopic/${subtopicId}`).expect(200, function (err) {
@@ -71,7 +71,7 @@ describe('Subtopic Controller', function () {
 
   // Update only subtopicData and check if it is updated
   it('POST subtopic/submit/[id] should update subtopic detail', function (done) {
-    courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
+    CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
       expect(resp.status).to.be.ok()
       const subtopicId = resp.data[0].id
       request(app).post(`/${site.hash}/subtopic/submit/${subtopicId}`)
@@ -85,7 +85,7 @@ describe('Subtopic Controller', function () {
         // })
         .expect(200, function (err, res) {
           expect(res.body.status, res.body.errMessage).to.be.ok()
-          courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp2 => {
+          CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp2 => {
             expect(resp2.status).to.be.ok()
             expect(resp2.data[0]).to.exist()
             const subtopicData = JSON.parse(resp2.data[0].data)
@@ -100,7 +100,7 @@ describe('Subtopic Controller', function () {
 
   // Create only new exercises and check if they are created
   it('POST subtopic/submit/[id] should add new exercises', function (done) {
-    courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
+    CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
       expect(resp.status).to.be.ok()
       const subtopicId = resp.data[0].id
       request(app).post(`/${site.hash}/subtopic/submit/${subtopicId}`)
@@ -120,7 +120,7 @@ describe('Subtopic Controller', function () {
             const exerciseId2 = newExerciseIds['new-exercise-2']
             expect(exerciseId1).to.be.a('number')
             expect(exerciseId2).to.be.a('number')
-            courseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp => {
+            CourseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp => {
               expect(resp.status).to.be.ok()
               expect(resp.data, `Exercises: ${JSON.stringify(resp.data)}`).to.have.length(2)
               expect(resp.data[0].data).to.equal('hello this is new exercise 1')
@@ -136,18 +136,18 @@ describe('Subtopic Controller', function () {
   })
 
   it('POST subtopic/submit/[id] should update existing exercise', function (done) {
-    courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
+    CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
       const subtopicId = resp.data[0].id
       // Create 2 new exercises
       Promise.join(
-        courseService.create({ modelName: 'Exercise', data: { data: 'Hello World 1', subtopicId } }),
-        courseService.create({ modelName: 'Exercise', data: { data: 'Hello World 2', subtopicId } })
-      ).spread((resp1, resp2) => {
+        CourseService.create({ modelName: 'Exercise', data: { data: 'Hello World 1', subtopicId } }),
+        CourseService.create({ modelName: 'Exercise', data: { data: 'Hello World 2', subtopicId } })
+      ).spread((resp1: NCResponse<Exercise>, resp2: NCResponse<Exercise>) => {
         expect(resp1.status).to.be.ok()
         expect(resp2.status).to.be.ok()
         const requestBody = {}
-        requestBody[`exercise-${resp1.data.id}`] = 'World Hello 1'
-        requestBody[`exercise-${resp2.data.id}`] = 'World Hello 2'
+        requestBody[`exercise-${resp1.data && resp1.data.id}`] = 'World Hello 1'
+        requestBody[`exercise-${resp2.data && resp2.data.id}`] = 'World Hello 2'
         // Update the 2 exercises
         request(app).post(`/${site.hash}/subtopic/submit/${subtopicId}`)
           .send(requestBody)
@@ -157,7 +157,7 @@ describe('Subtopic Controller', function () {
             } else {
               expect(res.body.status).to.be.ok()
               expect(res.body.newExerciseIds).to.not.exist()
-              courseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp3 => {
+              CourseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp3 => {
                 expect(resp3.status).to.be.ok()
                 expect(resp3.data).to.have.length(2)
                 // Check if the update made it
@@ -172,10 +172,10 @@ describe('Subtopic Controller', function () {
   })
 
   it('POST subtopic/submit/[id] should add new and update existing exercises', function (done) {
-    courseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
+    CourseService.read({ modelName: 'Subtopic', searchClause: { subtopic: 'Mengenal Aljabar' } }).then(resp => {
       const subtopicId = resp.data[0].id
       // Create an exercise manually
-      courseService.create({ modelName: 'Exercise', data: { data: 'Hello World 1', subtopicId } }).then(resp1 => {
+      CourseService.create({ modelName: 'Exercise', data: { data: 'Hello World 1', subtopicId } }).then(resp1 => {
         expect(resp1.status).to.be.ok()
         const requestBody = {}
         // Create an exercise programmatically
@@ -194,7 +194,7 @@ describe('Subtopic Controller', function () {
               expect(newExerciseIds).to.exist()
               expect(Object.keys(newExerciseIds)).to.have.length(1)
               expect(newExerciseIds['new-exercise']).to.exist()
-              courseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp2 => {
+              CourseService.read({ modelName: 'Exercise', searchClause: { subtopicId } }).then(resp2 => {
                 expect(resp2.status).to.be.true()
                 expect(resp2.data).to.have.length(2)
                 expect(resp2.data[0].data).to.equal('Existing Exercise')

@@ -17,6 +17,7 @@
     "aws-sdk": "^2.188.0",
     "axios": "^0.18.0",
     "connect-ensure-login": "^0.1.1",
+    "flatToTrees": "^0.1.2",
     "ip": "^1.1.5",
     "lodash": "^4.17.4",
     "marked": "^0.3.6",

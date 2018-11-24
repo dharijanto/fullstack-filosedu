@@ -1,5 +1,5 @@
 mixin renderExerciseStars(numStars, size)
-  - var stars = numStars
+  - var stars = numStars > 4 ? 4 : numStars
   - var emptyStars = 4 - stars
   while stars-- > 0
     img(src="/assets/img/star.png" width=size || 30)
@@ -25,7 +25,7 @@ mixin renderExerciseRanking (data)
           td #{val.timeFinish} detik
 
 mixin renderTimerProgress (numTimers, size, maxTimers = 4)
-  - var timers = numTimers
+  - var timers = numTimers > 4 ? 4 : numTimers
   - var emptyTimers = maxTimers - timers
   while timers-- > 0
     img(src="/assets/img/timer.png" width=size || 30)

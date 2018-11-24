@@ -1,3 +1,8 @@
+import * as Promise from 'bluebird'
+import CourseService from '../../services/course-service'
+import ExerciseService from '../../services/exercise-service'
+import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
+
 let path = require('path')
 
 let moment = require('moment-timezone')
@@ -6,7 +11,6 @@ let log = require('npmlog')
 
 let AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 let BaseController = require(path.join(__dirname, 'base-controller'))
-let CourseService = require(path.join(__dirname, '../../services/course-service'))
 let ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
@@ -14,18 +18,12 @@ let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
 let Utils = require(path.join(__dirname, '../utils/utils'))
 
-import * as Promise from 'bluebird'
-import ExerciseService from '../../services/exercise-service'
-import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
-
 const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
   constructor (initData) {
     super(initData)
-    const courseService = new CourseService(this.getDb().sequelize, this.getDb().models)
     const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
-    const exerciseService = new ExerciseService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       next()
@@ -36,19 +34,19 @@ class ExerciseController extends BaseController {
       let subtopicId = req.params.subtopicId
       let topicId = req.params.topicId
       Promise.join(
-        exerciseService.getExercise(exerciseId),
-        exerciseService.getGeneratedExercise({ userId: req.user.id, exerciseId }),
-        courseService.getPreviousAndNextExercise(subtopicId, exerciseId),
-        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId),
-        exerciseService.getSubtopicExerciseTimer(req.user.id, exerciseId),
-        courseService.getPreviousAndNextSubtopic(subtopicId)
+        ExerciseService.getExercise(exerciseId),
+        ExerciseService.getGeneratedExercise({ userId: req.user.id, exerciseId }),
+        CourseService.getPreviousAndNextExercise(subtopicId, exerciseId),
+        ExerciseService.getRenderedExerciseStars(req.user.id, exerciseId),
+        ExerciseService.getRenderedExerciseTimers(req.user.id, exerciseId),
+        CourseService.getPreviousAndNextSubtopic(subtopicId)
       ).spread((resp: NCResponse<any>, resp2: NCResponse<any>,
                 resp6: NCResponse<any>, resp9: NCResponse<any>,
                 resp10: NCResponse<any>, resp11) => {
         if (resp.status) {
           const exerciseHash = ExerciseGenerator.getHash(resp.data.data)
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
-          const starsHTML = resp9.status ? resp9.data.html : '<p style="color:red;"> Unable to retrieve stars... </p>'
+          const starsHTML = resp9.status ? resp9.data : '<p style="color:red;"> Unable to retrieve stars... </p>'
           const stars = resp9.status ? resp9.data.stars : 0
           const timersHTML = resp10.status ? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
           const topic = resp.data.subtopic.topic
@@ -64,7 +62,7 @@ class ExerciseController extends BaseController {
 
           // If there's exercise to be restored and it's still valid
           if (resp2.status && resp2.data.exerciseHash === exerciseHash) {
-            return exerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
+            return ExerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
               return Object.assign({
                 elapsedTime: Utils.getElapsedTime(resp2.data.createdAt)
               }, {
@@ -83,9 +81,9 @@ class ExerciseController extends BaseController {
           } else if ((resp2.status && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
             // If there's no exercise or there's but already expired
             // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
-            return exerciseService.generateExercise(resp.data).then(resp3 => {
+            return ExerciseService.generateExercise(resp.data).then(resp3 => {
               if (resp3.status) {
-                return exerciseService.saveGeneratedExercise(
+                return ExerciseService.saveGeneratedExercise(
                   req.user.id,
                   resp3.data.exerciseData,
                   exerciseHash
@@ -147,7 +145,7 @@ class ExerciseController extends BaseController {
         res.json({ status: false, errMessage: `Unauthorized` })
       } else {
         // subtopic stars
-        exerciseService.getSubtopicExerciseStars(req.user.id, exerciseId, false).then(resp => {
+        ExerciseService.getExerciseStars(req.user.id, exerciseId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -162,7 +160,7 @@ class ExerciseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({ status: false, errMessage: `Unauthorized` })
       } else {
-        exerciseService.getExerciseLeaderboard(exerciseId, false, true).then(resp => {
+        ExerciseService.getExerciseLeaderboard(exerciseId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -180,10 +178,10 @@ class ExerciseController extends BaseController {
         log.verbose(TAG, 'submitAnswer.POST: request is not authenticated!')
         res.status(500).send('Request not authenticated!')
       } else {
-        Promise.join(
-          exerciseService.getGeneratedExercise({ userId, exerciseId }), // Exercise that's currently being graded
-          exerciseService.getSubmittedExercises({ userId, exerciseId }),
-          exerciseService.getExercise(exerciseId)
+        Promise.join<any>(
+          ExerciseService.getGeneratedExercise({ userId, exerciseId }), // Exercise that's currently being graded
+          ExerciseService.getSubmittedExercises({ userId, exerciseId }),
+          ExerciseService.getExercise(exerciseId)
         ).spread((geResp: NCResponse<any>, sgeResp: NCResponse<any>, eResp: NCResponse<any>) => {
           if (!geResp.status) {
             log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
@@ -252,7 +250,7 @@ class ExerciseController extends BaseController {
               })
 
               const timeFinish = ExerciseHelper.countTimeFinish(generatedExercise.createdAt)
-              return exerciseService.updateGeneratedExercise({
+              return ExerciseService.updateGeneratedExercise({
                 id: generatedExercise.id,
                 score: currentScore,
                 userAnswer: JSON.stringify(userAnswers),
@@ -262,11 +260,11 @@ class ExerciseController extends BaseController {
               }).then(resp => {
                 if (resp.status) {
                   Promise.join(
-                    exerciseService.getSubtopicExerciseStars(userId, exerciseId),
-                    exerciseService.getExerciseLeaderboard(exerciseId, false),
-                    exerciseService.getSubtopicCurrentRanking(timeFinish, exerciseId),
-                    exerciseService.getSubtopicTotalRanking(exerciseId),
-                    exerciseService.getSubtopicExerciseTimer(userId, exerciseId)
+                    ExerciseService.getRenderedExerciseStars(userId, exerciseId),
+                    ExerciseService.getExerciseLeaderboard(exerciseId),
+                    ExerciseService.getCurrentRanking(timeFinish, exerciseId),
+                    ExerciseService.getTotalRanking(exerciseId),
+                    ExerciseService.getRenderedExerciseTimers(userId, exerciseId)
                   ).spread((resp2: NCResponse<any>, resp3: NCResponse<any>,
                             resp4: NCResponse<any>, resp5: NCResponse<any>, resp6: NCResponse<any>) => {
                     res.json({
@@ -276,7 +274,7 @@ class ExerciseController extends BaseController {
                         isAnswerCorrect,
                         currentScore,
                         bestScore,
-                        starsHTML: resp2.data.html,
+                        starsHTML: resp2.data,
                         timersHTML: resp6.data,
                         ranking: resp3.data,
                         currentTimeFinish: timeFinish,

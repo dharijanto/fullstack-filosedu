@@ -1,20 +1,22 @@
+import * as Promise from 'bluebird'
+import SequelizeService from '../services/sequelize-service'
+
 const path = require('path')
 
-var express = require('express')
-var getSlug = require('speakingurl')
-var log = require('npmlog')
-var marked = require('marked')
-var moment = require('moment-timezone')
-var Promise = require('bluebird')
+let express = require('express')
+let getSlug = require('speakingurl')
+let log = require('npmlog')
+let marked = require('marked')
+let moment = require('moment-timezone')
 
-var AppConfig = require(path.join(__dirname, '../app-config'))
-var BaseController = require(path.join(__dirname, 'controllers/base-controller'))
-var CourseController = require(path.join(__dirname, 'controllers/course-controller'))
-var CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
-var ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
-var SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
-var SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
-var PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
+let AppConfig = require(path.join(__dirname, '../app-config'))
+let BaseController = require(path.join(__dirname, 'controllers/base-controller'))
+let CourseController = require(path.join(__dirname, 'controllers/course-controller'))
+let CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
+let ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
+let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
+let SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
+let PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
 
 const TAG = 'FiloseduAppController'
 
@@ -39,6 +41,7 @@ class Controller extends BaseController {
       res.locals.cloudServer = AppConfig.CLOUD_SERVER
       next()
     })
+    SequelizeService.initialize(this.getDb().sequelize, this.getDb().models)
 
     this.credentialController = new CredentialController(initData)
     this.exerciseController = new ExerciseController(initData)
@@ -46,8 +49,8 @@ class Controller extends BaseController {
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
 
-    this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, {maxAge: '1h'}))
-    this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, {maxAge: '1h'}))
+    this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
+    this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
     this.routeUse(this.credentialController.getRouter())
     this.routeUse(this.exerciseController.getRouter())
     this.routeUse(this.courseController.getRouter())
