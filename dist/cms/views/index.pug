@@ -1,0 +1,36 @@
+//- extends ../../../../../dist/sites/root/cms/view/v1/layout.pug
+extends /layout.pug
+
+include includes/sidebar.pug
+
+append links
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/data-table/css/datatables.min.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/data-table/css/dataTables.responsive.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/nc-input-library/style.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/style.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/nprogress.css'))
+  link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/toastr.min.css'))
+
+
+block content
+  .row
+    .col-md-12
+      hr
+      h1.text-center Filosedu Course Management Dashboard
+      hr
+  .row
+    .col-md-12
+      #subjectEditor
+  .row
+    .col-md-6
+      #topicEditor
+    .col-md-6
+      #topicDependencyEditor
+  .row
+    .col-md-12
+      #subtopicEditor
+append scripts
+  // Rooth path is pug-rendered
+  script.
+    var rootPath = "#{rootifyPath('')}"
+  script(src=rootifyPath('/assets/js/course-management-cms-bundle.js'))

@@ -1,0 +1,31 @@
+
+/*
+  Repeated Image (ref: image-helper.js) are done using table and by
+  default doesn't center on the exercise page.
+*/
+table.image-repeat {
+  margin: auto;
+}
+
+#submissionError {
+  color: red;
+}
+
+/* Enlarge exercise font size*/
+.rendered-question {
+  font-size: 1.5em;
+}
+
+/* Reduce the gap between bootstrap progress bar and what's below it */
+#progressBar {
+  margin-bottom: 5px !important;
+}
+
+#resetQuestion {
+  width: 100%;
+  padding: 0;
+}
+
+#leaderboard-content {
+  overflow-x: auto;
+}

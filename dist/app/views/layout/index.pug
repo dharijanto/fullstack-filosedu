@@ -1,0 +1,80 @@
+include header.pug
+
+block initialization
+
+append head
+  link(rel="stylesheet" href="/assets/vendor/fontawesome-5.0.8/css/fa-svg-with-js.css")
+  if cloudServer
+    script.
+      //- Full Story Analytics
+      window['_fs_debug'] = false;
+      window['_fs_host'] = 'fullstory.com';
+      window['_fs_org'] = 'CEWAW';
+      window['_fs_namespace'] = 'FS';
+      (function(m,n,e,t,l,o,g,y){
+          if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+          g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[];
+          o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
+          y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+          g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){g(l,v)};
+          g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+          g.consent=function(a){g("consent",!arguments.length||a)};
+          g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+          g.clearUserCookie=function(){};
+      })(window,document,window['_fs_namespace'],'script','user');
+    if (loggedIn)
+      script.
+        // This is an example script - don't forget to change it!
+        FS.identify('#{user.id}', {
+          displayName: '#{user.username}',
+          email: '#{user.email}'
+        });
+    //- Google Analytics
+    script(async src="https://www.googletagmanager.com/gtag/js?id=UA-121849277-1")
+    script.
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-121849277-1');
+
+
+
+body
+  nav.navbar.navbar-default
+    .container-fluid
+      // Brand and toggle get grouped for better mobile display
+      .navbar-header
+        button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#bs-example-navbar-collapse-1", aria-expanded="false")
+          span.sr-only Toggle navigation
+          span.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand(href="/" style="padding:5px 5px;")
+          img(src="/assets/img/logo.png" style="max-height:100%;" alt="Filosedu")
+      // Collect the nav links, forms, and other content for toggling
+      #bs-example-navbar-collapse-1.collapse.navbar-collapse
+        ul.nav.navbar-nav
+          li(class=`${activePage === 'modules' ? 'active' : ''}`)
+            a(href="/") Topik
+        ul.nav.navbar-nav.navbar-right
+          if (!loggedIn)
+            li(class=`${activePage === 'login' ? 'active' : ''}`)
+              a(href="/login") Login
+            li(class=`${activePage === 'register' ? 'active' : ''}`)
+              a(href="/register") Register
+          else
+            li.dropdown
+              a.dropdown-toggle(data-toggle='dropdown')
+                i.fa.fa-fw.fa-user
+                i(style="padding-left: 1em")=  user.fullName || user.username
+              ul.dropdown-menu.dropdown-user
+                li
+                  a(href='/logout') Logout
+  block contents
+
+block scripts
+  script(src="/assets/vendor/jquery3.3.1/jquery-3.3.1.min.js")
+  script(src="/assets/vendor/bootstrap3.3.7/js/bootstrap.min.js")
+  script(src="/assets/vendor/fontawesome-5.0.8/js/fontawesome-all.min.js")
+
+block footer

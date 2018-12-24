@@ -1,0 +1,40 @@
+extends layout/index.pug
+include includes/utils.pug
+
+append head
+  link(rel="stylesheet" href="/assets/css/topics-style.css")
+
+append initialization
+  - const activePage = 'modules'
+
+block contents
+  div.container
+    if user
+      p= 'Selamat Datang, ' + user.fullName || user.username
+    each topic, index in topics
+      .panel-group
+        .panel.panel-default
+          .panel-heading
+            h1.panel-title
+              a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
+              span.pull-right(style="margin-right: 2%")
+                + renderCheckmark(parseInt(topic.starBadge), 20)
+                + renderTimerProgress(parseInt(topic.timeBadge), 20, 1)
+              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
+          .panel-collapse.collapse.in(id=`collapse_${index}`)
+            ul.list-group
+              each subtopic, index in topic.subtopics
+                li.list-group-item
+                  .row
+                    .col-sm-12.col-md-6
+                      | #{index + 1}. 
+                      a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}` class="") #{subtopic.subtopic}
+                    .col-sm-12.col-md-6
+                      div#badge-container
+                          span
+                            div
+                              + renderVideoWatchStatus(parseInt(subtopic.watchBadge), 30)
+                            div
+                              + renderExerciseStars(parseInt(subtopic.starBadge), 20)
+                            div(style="margin-top: 2px")
+                              + renderTimerProgress(parseInt(subtopic.timeBadge), 20)
