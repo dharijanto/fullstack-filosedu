@@ -51,7 +51,7 @@ class SubtopicController extends BaseController {
             }
           })
         } else {
-          next() // 404 not found
+          return next() // 404 not found
         }
       }).catch(err => {
         next(err)
@@ -144,7 +144,7 @@ class SubtopicController extends BaseController {
       try {
         let exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         let questions = exerciseSolver.generateQuestions()
-        return Promise.map(questions, question => {
+        Promise.map(questions, question => {
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
             return { question: formattedQuestion, answer: question.unknowns }
           })

@@ -1,5 +1,4 @@
-
-class ExerciseHelper {
+export default class ExerciseHelper {
   static countTimeFinish (dateCreatedAt) {
     const timeStart = new Date(dateCreatedAt).getTime()
     const timeSubmit = Date.now()
@@ -7,5 +6,3 @@ class ExerciseHelper {
     return timeFinish
   }
 }
-
-module.exports = ExerciseHelper

@@ -24,6 +24,16 @@ export interface GeneratedTopicExerciseDetail {
   exerciseId: number
 }
 
+export interface TopicExerciseGrade {
+  numQuestions: number
+  numCorrectAnswers: number
+  correctAnswers: Array<{[key: string]: any}>
+  isCorrect: Array<boolean>
+  score: number
+}
+
+export type TopicExerciseAnswer = Array<{[key: string]: any}>
+
 class TopicExerciseService extends CRUDService {
   // TODO: We should use version on courseService instead of this
   private getTopic (topicId): Promise<NCResponse<Topic>> {
@@ -449,7 +459,7 @@ class TopicExerciseService extends CRUDService {
   }
   */
   checkAnswer (exerciseDetails: GeneratedTopicExerciseDetail[], userAnswers: Array<{[key: string]: any}>): Promise<NCResponse<any>> {
-    return Promise.map(exerciseDetails, (exerciseDetail, index) => {
+    return Promise.map(exerciseDetails, exerciseDetail => {
       return this.readOne<Exercise>({ modelName: 'Exercise', searchClause: { id: exerciseDetail.exerciseId } }).then(resp => {
         if (resp.status && resp.data) {
           const exercise = resp.data
@@ -474,6 +484,87 @@ class TopicExerciseService extends CRUDService {
       })
 
       return { status: true, data }
+    })
+  }
+
+  gradeExercise (generatedExerciseDetails: GeneratedTopicExerciseDetail[], answers: TopicExerciseAnswer): Promise<NCResponse<TopicExerciseGrade>> {
+    return Promise.map(generatedExerciseDetails, exerciseDetail => {
+      return this.readOne<Exercise>({ modelName: 'Exercise', searchClause: { id: exerciseDetail.exerciseId } }).then(resp => {
+        if (resp.status && resp.data) {
+          const exercise = resp.data
+          const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
+          const knowns = JSON.parse(exerciseDetail.knowns)
+          const unknowns = JSON.parse(exerciseDetail.unknowns)
+          return knowns.map((known, index) => {
+            return { known, correctAnswer: unknowns[index], isAnswerFn: exerciseSolver.isAnswer.bind(exerciseSolver) }
+          })
+        } else {
+          throw new Error('Exercise with id=' + exerciseDetail.exerciseId + ' could not be found!')
+        }
+      })
+    }).then(topicExerciseArray => {
+      // Now, we have 3 level arrays:
+      // 1 -> Topic Exercise. 2 -> Exercise. 3 -> Question
+      // But since userAnswer is a 1-level array of question, we need to flatten what we have to be easily used
+      return topicExerciseArray.reduce((acc, exerciseArray) => {
+        return acc.concat(exerciseArray)
+      }, []).reduce((acc, questionArray) => {
+        return acc.concat(questionArray)
+      }, [])
+    }).then(results => {
+      console.dir(results)
+      const { numCorrectAnswers, correctAnswers, isCorrect } = results.reduce((acc, result, index) => {
+        const isCorrect = result.isAnswerFn(result.known, answers[index])
+        acc.numCorrectAnswers += isCorrect ? 1 : 0
+        acc.correctAnswers.push(result.correctAnswer)
+        acc.isCorrect.push(isCorrect)
+        return acc
+      }, { numCorrectAnswers: 0, correctAnswers: [], isCorrect: [] })
+      const numQuestions = results.length
+      const grade: TopicExerciseGrade = {
+        numQuestions,
+        numCorrectAnswers,
+        correctAnswers,
+        isCorrect,
+        score: parseFloat(numCorrectAnswers) / numQuestions * 100
+      }
+      return { status: true, data: grade }
+    })
+  }
+
+  // Update GeneratedTopicExercise as submitted
+  finishExercise (generatedTopicExerciseId: number, score: number, timeFinish: string,
+                  exerciseDetails: GeneratedTopicExerciseDetail[], answers: TopicExerciseAnswer[]): Promise<NCResponse<number>> {
+    // This is a bit annoying..
+    // So answer is what a student would submit. It's a one dimensional array of answers for each of the exercises
+    // We want to save user answer into exerciseDetail so that we can debug problems. (i.e. wrong scoring)
+    // In order to make sure each answer goes to correct exercise detail, we have wind them up
+    // in the same order when we unwind. If you're confused about this code:
+    // 1. Try to look at MySQL table structure for generatedTopicExercises
+    // 2. Remember that exerciseDetail there is stringified version of each of generatedExercises that makes up
+    //    a topic exercise.
+    let answerIndex = 0
+    const exerciseDetail = JSON.stringify(exerciseDetails.map(exerciseDetail => {
+      console.dir(exerciseDetail)
+      const exerciseDetailAnswers: Array<any> = []
+      JSON.parse(exerciseDetail.knowns).forEach(_ => {
+        exerciseDetailAnswers.push(answers[answerIndex])
+        answerIndex++
+      })
+      exerciseDetail.userAnswer = JSON.stringify(exerciseDetailAnswers)
+      return exerciseDetail
+    }))
+    return this.update<GeneratedTopicExercise>({
+      modelName: 'GeneratedTopicExercise',
+      data: {
+        id: generatedTopicExerciseId,
+        submitted: true,
+        submittedAt: moment().local().format('YYYY-MM-DD HH:mm:ss'),
+        onCloud: AppConfig.CLOUD_SERVER,
+        score,
+        timeFinish,
+        exerciseDetail
+      }
     })
   }
 

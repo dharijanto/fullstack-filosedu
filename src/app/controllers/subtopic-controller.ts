@@ -104,7 +104,7 @@ class SubtopicController extends BaseController {
             // access exercise. And when they do, we want to redirect here
             if (!req.isAuthenticated()) {
               req.session.returnTo = req.originalUrl || req.url
-              res.render('subtopic')
+              return res.render('subtopic')
             } else {
               return Promise.map(res.locals.exercises, (exercise: Exercise, index) => {
                 return Promise.join<any>(

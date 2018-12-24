@@ -70,7 +70,7 @@ interface GeneratedTopicExercise extends BaseModel {
   submitted: boolean
   submittedAt: string
   score: number
-  timeFinish: number
+  timeFinish: string
   topicExerciseHash: string
   exerciseDetail: string
   idealTime: number

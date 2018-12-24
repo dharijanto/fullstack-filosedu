@@ -2,6 +2,7 @@ import * as Promise from 'bluebird'
 import CourseService from '../../services/course-service'
 import ExerciseService from '../../services/exercise-service'
 import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
+import ExerciseHelper from '../utils/exercise-helper'
 
 let path = require('path')
 
@@ -11,7 +12,6 @@ let log = require('npmlog')
 
 let AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 let BaseController = require(path.join(__dirname, 'base-controller'))
-let ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper'))
 let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
@@ -185,9 +185,9 @@ class ExerciseController extends BaseController {
         ).spread((geResp: NCResponse<any>, sgeResp: NCResponse<any>, eResp: NCResponse<any>) => {
           if (!geResp.status) {
             log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
-            res.json({ status: false, errMessage: 'Current exercise cannot be found' })
+            return res.json({ status: false, errMessage: 'Current exercise cannot be found' })
           } else if (!eResp.status) {
-            res.json({ status: false, errMessage: 'Exercise information be found' })
+            return res.json({ status: false, errMessage: 'Exercise information be found' })
           } else {
             const generatedExercise = geResp.data
             let generatedQuestions = JSON.parse(generatedExercise.knowns)
@@ -198,7 +198,7 @@ class ExerciseController extends BaseController {
             log.verbose(TAG, `submitAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
             log.verbose(TAG, `submitAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
             if (userAnswers.length !== generatedQuestions.length) {
-              res.json({ status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!' })
+              return res.json({ status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!' })
             } else {
               // Get the number of non-empty answer. (i.e. the student tries to answer eventhough it's wrong)
               const attemptedAnswers = userAnswers.reduce((attemptedAnswers, answer) => {

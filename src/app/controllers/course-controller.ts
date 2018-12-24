@@ -1,9 +1,8 @@
 import * as Promise from 'bluebird'
 
 import CourseService from '../../services/course-service'
-import ExerciseService from '../../services/exercise-service'
-import TopicExerciseService from '../../services/topic-exercise-service'
-import { json } from 'body-parser';
+import ExerciseHelper from '../utils/exercise-helper'
+import TopicExerciseService, { GeneratedTopicExerciseDetail } from '../../services/topic-exercise-service'
 
 let path = require('path')
 
@@ -14,8 +13,6 @@ let BaseController = require(path.join(__dirname, 'base-controller'))
 let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let Utils = require(path.join(__dirname, '../../lib/utils'))
-
-let ExerciseHelper = require(path.join(__dirname, '../utils/exercise-helper.js'))
 
 const TAG = 'CourseController'
 
@@ -31,7 +28,7 @@ class CourseController extends BaseController {
       CourseService.getTopicDetails(req.user ? req.user.id : null).then(resp => {
         if (resp.status && resp.data) {
           res.locals.topics = resp.data.topics
-          console.log(JSON.stringify(resp.data, null, 2))
+          // console.log(JSON.stringify(resp.data, null, 2))
           res.render('topics')
         } else {
           next(resp.errMessage)
@@ -67,7 +64,7 @@ class CourseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({ status: false, errMessage: `Unauthorized` })
       } else {
-        ExerciseService.getExerciseLeaderboard(topicId).then(resp => {
+        TopicExerciseService.getExerciseLeaderboard(topicId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -78,92 +75,54 @@ class CourseController extends BaseController {
     this.routePost('/topics/:topicId/:topicSlug/review', (req, res, next) => {
       // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
       let userAnswers = req.body.userAnswers
-
       let topicId = req.params.topicId
       let userId = req.user.id
       log.verbose(TAG, `submitAnswer.POST(): userId=${userId} topicId=${topicId} userAnswers=${userAnswers}`)
-
-      let totalAnswer = 0
-      let totalCorrectAnswer = 0
-      let dateCreatedAt
-      let isAnswerCorrect: boolean[] = []
-
       return TopicExerciseService.getGeneratedTopicExercise(userId, topicId).then(resp => {
         if (resp.status && resp.data) {
+          const generatedTopicExercise = resp.data
           const generatedTopicExerciseId = resp.data.id
-          dateCreatedAt = resp.data.createdAt
-          let exerciseDetail = JSON.parse(resp.data.exerciseDetail)
-          // check jawaban secara berurutan
-          return TopicExerciseService.checkAnswer(exerciseDetail, userAnswers).then(resp2 => {
-            if (resp2.status) {
-              resp2.data.forEach((data, index) => {
-                if (data.isCorrect) {
-                  totalCorrectAnswer++
+          let exerciseDetails: GeneratedTopicExerciseDetail[] = JSON.parse(resp.data.exerciseDetail)
+          return TopicExerciseService.gradeExercise(exerciseDetails, userAnswers).then(resp2 => {
+            console.log(JSON.stringify(resp2, null, 2))
+            if (resp2.status && resp2.data) {
+              const grade = resp2.data
+              const timeFinish = ExerciseHelper.countTimeFinish(generatedTopicExercise.createdAt)
+              return TopicExerciseService.finishExercise(generatedTopicExerciseId, grade.score, timeFinish, exerciseDetails, userAnswers).then(resp3 => {
+                if (resp3.status) {
+                  Promise.join(
+                    TopicExerciseService.getExerciseStars(userId, topicId),
+                    TopicExerciseService.getCurrentRanking(timeFinish, topicId),
+                    TopicExerciseService.getTotalRanking(topicId),
+                    TopicExerciseService.getExerciseLeaderboard(topicId),
+                    TopicExerciseService.getExerciseTimers(userId, topicId)
+                  ).spread((resp11: NCResponse<any>, resp12: NCResponse<any>, resp13: NCResponse<any>, resp14: NCResponse<any>, resp15: NCResponse<any>) => {
+                    res.json({
+                      status: true,
+                      data: {
+                        grade,
+                        starsHTML: resp11.data,
+                        timersHTML: resp15.data,
+                        ranking: resp14.data,
+                        timeFinish,
+                        currentRanking: resp12.data.count,
+                        totalRanking: resp13.data.count
+                      }
+                    })
+                  })
+                } else {
+                  return res.json({
+                    status: false,
+                    errMessage: resp3.errMessage
+                  })
                 }
-                isAnswerCorrect.push(data.isCorrect)
-              })
-              totalAnswer = resp2.data.length
-
-              const timeFinish = ExerciseHelper.countTimeFinish(dateCreatedAt)
-              let currentScore = totalCorrectAnswer / totalAnswer * 100
-
-              // Adding userAnswer to existing content from exerciseDetail tobe saved in DB
-              let index = 0
-              exerciseDetail.forEach((exercise) => {
-                JSON.parse(exercise.unknowns).forEach((val) => {
-                  exercise.userAnswer.push(userAnswers[index])
-                  index++
-                })
-              })
-
-              return TopicExerciseService.updateGeneratedTopicAnswer(
-                generatedTopicExerciseId,
-                currentScore,
-                timeFinish,
-                JSON.stringify(exerciseDetail)
-              ).then(resp3 => {
-                return { data: resp2.data, timeFinish, currentScore }
               })
             } else {
-              throw new Error(resp.errMessage)
-            }
-          }).then(resultAnswers => {
-            /*
-            content of resultAnswers
-            { data:
-               [ { isCorrect: false, userAnswer: '4', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
-                 { isCorrect: true, userAnswer: '4', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '4', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '4314', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '', unknown: [Object] },
-                 { isCorrect: false, userAnswer: '4', unknown: [Object] } ],
-              timeFinish: '73437.55',
-              currentScore: 100 }
-            */
-            Promise.join(
-              TopicExerciseService.getExerciseStars(userId, topicId),
-              TopicExerciseService.getCurrentRanking(resultAnswers.timeFinish, topicId),
-              TopicExerciseService.getTotalRanking(topicId),
-              TopicExerciseService.getExerciseLeaderboard(topicId),
-              TopicExerciseService.getExerciseTimers(userId, topicId)
-            ).spread((resp11: NCResponse<any>, resp12: NCResponse<any>, resp13: NCResponse<any>, resp14: NCResponse<any>, resp15: NCResponse<any>) => {
-              res.json({
-                status: true,
-                data: {
-                  summaryAnswers: resultAnswers.data,
-                  currentScore: resultAnswers.currentScore,
-                  starsHTML: resp11.data,
-                  timersHTML: resp15.data,
-                  ranking: resp14.data,
-                  currentTimeFinish: resultAnswers.timeFinish,
-                  currentRanking: resp12.data.count,
-                  totalRanking: resp13.data.count,
-                  isPerfectScore: resultAnswers.currentScore === 100
-                }
+              return res.json({
+                status: false,
+                errMessage: resp2.errMessage
               })
-            })
+            }
           })
         } else {
           throw (new Error(resp.errMessage))
