@@ -50,13 +50,13 @@ LEFT OUTER JOIN (
   SELECT COUNT(*) AS count, topicId
   FROM generatedTopicExercises
   WHERE userId = ${userId} AND submitted = 1 AND score >= 80
-  ORDER BY score DESC
+  GROUP BY topicId
 ) AS starBadge ON starBadge.topicId = topics.id
 LEFT OUTER JOIN (
   SELECT COUNT(*) AS count, topicId
   FROM generatedTopicExercises
   WHERE submitted = 1 AND userId = ${userId} AND timeFinish < idealTime AND score = 100
-  ORDER BY score DESC
+  GROUP BY topicId
 ) AS timeBadge ON timeBadge.topicId = topics.id
 INNER JOIN (
   SELECT

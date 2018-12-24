@@ -33,6 +33,8 @@ class CourseController extends BaseController {
         } else {
           next(resp.errMessage)
         }
+      }).catch(err => {
+        next(err)
       })
     })
 
@@ -51,7 +53,6 @@ class CourseController extends BaseController {
           next(resp.errMessage)
         }
       }).catch(err => {
-        console.error(err)
         next(err)
       })
     })
@@ -84,7 +85,7 @@ class CourseController extends BaseController {
           const generatedTopicExerciseId = resp.data.id
           let exerciseDetails: GeneratedTopicExerciseDetail[] = JSON.parse(resp.data.exerciseDetail)
           return TopicExerciseService.gradeExercise(exerciseDetails, userAnswers).then(resp2 => {
-            console.log(JSON.stringify(resp2, null, 2))
+            // console.log(JSON.stringify(resp2, null, 2))
             if (resp2.status && resp2.data) {
               const grade = resp2.data
               const timeFinish = ExerciseHelper.countTimeFinish(generatedTopicExercise.createdAt)
