@@ -65,7 +65,7 @@ class CourseController extends BaseController {
       } else if (!req.isAuthenticated) {
         res.json({ status: false, errMessage: `Unauthorized` })
       } else {
-        TopicExerciseService.getExerciseLeaderboard(topicId).then(resp => {
+        TopicExerciseService.getLeaderboard(topicId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -92,11 +92,11 @@ class CourseController extends BaseController {
               return TopicExerciseService.finishExercise(generatedTopicExerciseId, grade.score, timeFinish, exerciseDetails, userAnswers).then(resp3 => {
                 if (resp3.status) {
                   Promise.join(
-                    TopicExerciseService.getExerciseStars(userId, topicId),
+                    TopicExerciseService.getStarBadges(userId, topicId),
                     TopicExerciseService.getCurrentRanking(timeFinish, topicId),
                     TopicExerciseService.getTotalRanking(topicId),
-                    TopicExerciseService.getExerciseLeaderboard(topicId),
-                    TopicExerciseService.getExerciseTimers(userId, topicId)
+                    TopicExerciseService.getLeaderboard(topicId),
+                    TopicExerciseService.getTimerBadges(userId, topicId)
                   ).spread((resp11: NCResponse<any>, resp12: NCResponse<any>, resp13: NCResponse<any>, resp14: NCResponse<any>, resp15: NCResponse<any>) => {
                     res.json({
                       status: true,
