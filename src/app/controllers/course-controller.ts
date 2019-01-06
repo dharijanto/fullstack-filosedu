@@ -17,6 +17,11 @@ let Utils = require(path.join(__dirname, '../../lib/utils'))
 const TAG = 'CourseController'
 
 class CourseController extends BaseController {
+  // Since we're caching static files, we need to hash
+  // bundled JS so that they're renewed
+  // TODO: Better approach is to create pug utlity function
+  //       that does the caching there.
+  private topicExerciseFrontendJS: string
   constructor (initData) {
     super(initData)
 
@@ -24,6 +29,7 @@ class CourseController extends BaseController {
       next()
     })
 
+    // Landing page
     this.routeGet('/', (req, res, next) => {
       CourseService.getTopicDetails(req.user ? req.user.id : null).then(resp => {
         if (resp.status && resp.data) {
@@ -38,6 +44,7 @@ class CourseController extends BaseController {
       })
     })
 
+    // Topic Exercise
     this.routeGet('/topics/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       let topicId = req.params.topicId
       let userId = req.user.id
@@ -46,7 +53,7 @@ class CourseController extends BaseController {
           res.locals.idealTime = resp.data.idealTime
           res.locals.elapsedTime = resp.data.elapsedTime
           res.locals.topicName = resp.data.topicName
-          res.locals.bundle = this._assetBundle
+          res.locals.bundle = this.topicExerciseFrontendJS
           res.locals.formattedExercises = resp.data.formattedExercises
           res.render('topic-exercise')
         } else {
@@ -57,15 +64,15 @@ class CourseController extends BaseController {
       })
     })
 
+    // TopicExercise leaderboard
     this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
       let topicId = req.params.topicId
-
       if (topicId === undefined) {
         res.json({ status: false, errMessage: `topicId is needed` })
       } else if (!req.isAuthenticated) {
         res.json({ status: false, errMessage: `Unauthorized` })
       } else {
-        TopicExerciseService.getLeaderboard(topicId).then(resp => {
+        TopicExerciseService.getRenderedLeaderboard(topicId).then(resp => {
           res.json(resp)
         }).catch(err => {
           next(err)
@@ -73,6 +80,9 @@ class CourseController extends BaseController {
       }
     })
 
+    // TopicExercise submission
+    // TODO: Perhaps we should call getGeneratedTopicExercise and gradeExercise inside of finishExercise to make
+    //       the code cleaner?
     this.routePost('/topics/:topicId/:topicSlug/review', (req, res, next) => {
       // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
       let userAnswers = req.body.userAnswers
@@ -89,15 +99,22 @@ class CourseController extends BaseController {
             if (resp2.status && resp2.data) {
               const grade = resp2.data
               const timeFinish = ExerciseHelper.countTimeFinish(generatedTopicExercise.createdAt)
-              return TopicExerciseService.finishExercise(generatedTopicExerciseId, grade.score, timeFinish, exerciseDetails, userAnswers).then(resp3 => {
+              return TopicExerciseService.finishExercise(
+                generatedTopicExerciseId, grade.score,
+                timeFinish, exerciseDetails, userAnswers
+              ).then(resp3 => {
                 if (resp3.status) {
                   Promise.join(
                     TopicExerciseService.getStarBadges(userId, topicId),
                     TopicExerciseService.getCurrentRanking(timeFinish, topicId),
                     TopicExerciseService.getTotalRanking(topicId),
-                    TopicExerciseService.getLeaderboard(topicId),
+                    TopicExerciseService.getRenderedLeaderboard(topicId),
                     TopicExerciseService.getTimerBadges(userId, topicId)
-                  ).spread((resp11: NCResponse<any>, resp12: NCResponse<any>, resp13: NCResponse<any>, resp14: NCResponse<any>, resp15: NCResponse<any>) => {
+                  ).spread((
+                    resp11: NCResponse<any>, resp12: NCResponse<any>,
+                    resp13: NCResponse<any>, resp14: NCResponse<any>,
+                    resp15: NCResponse<any>
+                  ) => {
                     res.json({
                       status: true,
                       data: {
@@ -135,7 +152,7 @@ class CourseController extends BaseController {
   initialize () {
     return new Promise((resolve, reject) => {
       PathFormatter.hashAsset('app', '/assets/js/topic-exercise-app-bundle.js').then(result => {
-        this._assetBundle = result
+        this.topicExerciseFrontendJS = result
         resolve()
       }).catch(err => {
         reject(err)

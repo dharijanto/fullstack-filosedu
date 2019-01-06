@@ -40,6 +40,8 @@ class TopicExerciseService extends CRUDService {
     return this.readOne<Topic>({ modelName: 'Topic', searchClause: { id: topicId } })
   }
 
+  // Get a formatted TopicExercise ready for use. If there's previously generated
+  // that hasn't been submitted, this will restore it. Otherwise, it'll generate one.
   getFormattedExercise (topicId, userId): Promise<NCResponse<FormattedTopicExercise>> {
     if (topicId && userId) {
       return Promise.join<any>(
@@ -54,11 +56,11 @@ class TopicExerciseService extends CRUDService {
           // If there's valid exercise to be restored
           if (resp2.status && resp2.data && resp2.data.topicExerciseHash === topicExerciseHash) {
             return this.formatGeneratedTopicExercise(resp2.data)
+          // If there's expired generated exercise or no generated exercise to be restored
           } else if (resp.status && resp.data &&
                     ((resp2.status && resp2.data && resp2.data.topicExerciseHash !== topicExerciseHash) ||
                     !resp2.status)) {
-            // If there's expired generated exercise or no generated exercise to be restored
-            return this.generateTopicExercise(topicId, userId, resp.data).then(resp5 => {
+            return this.generateExercise(topicId, userId, resp.data).then(resp5 => {
               if (resp5.status && resp5.data) {
                 return this.formatGeneratedTopicExercise(resp5.data)
               } else {
@@ -107,7 +109,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  generateTopicExercise (topicId, userId, exercises: Exercise[]): Promise<NCResponse<GeneratedTopicExercise>> {
+  private generateExercise (topicId, userId, exercises: Exercise[]): Promise<NCResponse<GeneratedTopicExercise>> {
     return this.getExercisesHash(topicId).then(resp => {
       if (resp.status && resp.data) {
         const topicExerciseHash = resp.data
@@ -341,7 +343,7 @@ ORDER BY score DESC LIMIT 4;`,
     })
   }
 
-  getCheckmarkBadge (userId, topicId, render = false) {
+  private getCheckmarkBadge (userId, topicId, render = false) {
     return this.getSequelize().query(`
 SELECT score FROM generatedTopicExercises
 WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId} AND score > 80
@@ -399,7 +401,7 @@ WHERE submitted = TRUE AND topicId = ${topicId} AND score = 100 AND timeFinish I
     })
   }
 
-  getLeaderboard (topicId) {
+  getRenderedLeaderboard (topicId) {
     return this.getRanking(topicId).then(resp => {
       if (resp.status) {
         const exerciseData = resp.data
