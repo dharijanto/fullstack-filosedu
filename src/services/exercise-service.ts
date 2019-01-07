@@ -38,13 +38,13 @@ class ExerciseService extends CRUDService {
         // There's unsubmitted GeneratedExercise that can be restored
         if (resp2.status && resp2.data && resp2.data.exerciseHash === exerciseHash) {
           const generatedExercise = resp2.data
-          return this.formatExercise2(exercise, generatedExercise)
+          return this.formatExercise(exercise, generatedExercise)
           // Unsubmitted GeneratedExercise can no longer be used or there's none
         } else if ((resp2.status && resp2.data && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
           // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
           return this.generateAndSaveExercise(exercise, userId).then(resp => {
             if (resp.status && resp.data) {
-              return this.formatExercise2(exercise, resp.data)
+              return this.formatExercise(exercise, resp.data)
             } else {
               return { status: false, errMessage: resp.errMessage }
             }
@@ -76,7 +76,7 @@ class ExerciseService extends CRUDService {
 
   // Create a new GeneratedExercise and save it to database
   generateAndSaveExercise (exercise, userId: number): Promise<NCResponse<GeneratedExercise>> {
-    return this.generateExercise2(exercise).then(resp => {
+    return this.generateExercise(exercise).then(resp => {
       if (resp.status && resp.data) {
         const unsavedGeneratedExercise = resp.data
         return this.getModels('GeneratedExercise').destroy({where: {
@@ -105,7 +105,7 @@ class ExerciseService extends CRUDService {
   }
 
   // Format a GeneratedExercise to a form ready to use
-  formatExercise2 (exercise: Exercise, generatedExercise: GeneratedExercise): Promise<NCResponse<FormattedSubtopicExercise>> {
+  formatExercise (exercise: Exercise, generatedExercise: GeneratedExercise): Promise<NCResponse<FormattedSubtopicExercise>> {
     const solver = ExerciseGenerator.getExerciseSolver(exercise.data)
     const knowns = JSON.parse(generatedExercise.knowns)
     const unknowns = JSON.parse(generatedExercise.unknowns)
@@ -134,7 +134,7 @@ class ExerciseService extends CRUDService {
   }
 
   // Created GeneratedExercise ready to be saved
-  generateExercise2 (exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
+  generateExercise (exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
     let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
     // Generate X number of questions, which depends whether it's topic or subTopic
     let questions: GeneratedQuestionData[] = topicOrSubtopic ?
@@ -164,109 +164,6 @@ class ExerciseService extends CRUDService {
           exerciseId: exercise.id
         }
       }
-    })
-  }
-
-  generateExercise (exercise: Exercise, subtopicOrTopic = false): Promise<NCResponse<any>> {
-    let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
-    let questions: GeneratedQuestionData[] = []
-
-    if (subtopicOrTopic) {
-      questions = exerciseSolver.generateTopicQuestions()
-    } else {
-      questions = exerciseSolver.generateQuestions()
-    }
-
-    let knowns: Array<{}> = []
-    let unknowns: Array<{}> = []
-    let unknownsVariables: Array<{}> = []
-    let formattedQuestionsPromises: Array<Promise<string>> = []
-    /*
-      questions content:
-      [ { knowns: { a: 23, b: 13 }, unknowns: { x: 36 } },
-        { knowns: { a: 10, b: 12 }, unknowns: { x: 22 } } ]
-    */
-    questions.forEach(question => {
-      formattedQuestionsPromises.push(exerciseSolver.formatQuestion(question.knowns))
-      knowns.push(question.knowns)
-      unknowns.push(question.unknowns)
-      unknownsVariables.push(Object.keys(question.unknowns))
-    })
-
-    return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
-      return {
-        status: true,
-        data: {
-          exerciseData: {
-            knowns: JSON.stringify(knowns),
-            unknowns: JSON.stringify(unknowns),
-            userAnswer: [],
-            exerciseId: exercise.id,
-            idealTime: exerciseSolver.getExerciseIdealTime()
-          },
-          formatted: {
-            renderedQuestions,
-            unknowns: unknownsVariables
-          }
-        }
-      }
-    })
-  }
-
-  /*
-    generatedExercise:
-    {
-      id: 140,
-      exerciseHash: '306e75a560185c08fa9937e1095d9af3',
-      knowns: '[{"a":10,"b":3},{"a":10,"b":1},{"a":10,"b":5},{"a":10,"b":9},{"a":10,"b":6},{"a":10,"b":2}]',
-      unknowns: '[{"x":13},{"x":11},{"x":15},{"x":19},{"x":16},{"x":12}]',
-      userAnswer: null,
-      submitted: false,
-      score: null,
-      timeFinish: null,
-      createdAt: 2018-04-10T02:26:51.000Z,
-      updatedAt: 2018-04-10T02:26:51.000Z,
-      idealTime: 15,
-      exerciseId: 34,
-      userId: 99
-    }
-
-    return:
-    {
-      "formatted": {
-        "renderedQuestions": [
-            "\n<span><img src='http://app-filosedu.nusantara-local.com/images/1519379519782_tens.jpeg' width='5%' /></span>\n<span><table class=\"image-repeat\" style=\"width: 23.333333333333332%;\"><tbody><tr><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td><td style=\"padding:5px;\"><img src=\"http://app-filosedu.nusantara-local.com/images/1519379524931_unit.jpeg\" width=\"100%\"/></td></tr></tbody></table></span>\n\nBerapa jumlah balok diatas? (dalam angka)\n",
-        ],
-        "unknowns": [
-            ["x"],
-        ]
-      },
-      "exerciseId": 34
-      "idealTime": 5
-    }
-  */
-  formatExercise (generatedExercise, exerciseSolver) {
-    let knowns = JSON.parse(generatedExercise.knowns)
-    let unknowns = JSON.parse(generatedExercise.unknowns)
-
-    return Promise.join(
-      Promise.map(knowns, known => {
-        return exerciseSolver.formatQuestion(known)
-      }),
-      Promise.map(unknowns, unknown => {
-        return Object.keys(unknown)
-      })
-    ).spread((formattedQuestions, unknowns) => {
-      let data = {
-        formatted: {
-          renderedQuestions: formattedQuestions,
-          unknowns
-        },
-        exerciseId: generatedExercise.exerciseId,
-        idealTime: generatedExercise.idealTime
-      }
-
-      return data
     })
   }
 

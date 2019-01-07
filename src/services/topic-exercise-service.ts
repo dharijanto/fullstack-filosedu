@@ -114,7 +114,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       if (resp.status && resp.data) {
         const topicExerciseHash = resp.data
         return Promise.map(exercises, exercise => {
-          return ExerciseService.generateExercise2(exercise, true).then(resp => {
+          return ExerciseService.generateExercise(exercise, true).then(resp => {
             if (resp.status && resp.data) {
               // Check this has questions
               const parsedKnowns = JSON.parse(resp.data.knowns || '[]')
