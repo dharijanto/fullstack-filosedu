@@ -19,20 +19,20 @@ block contents
       .row
         include includes/exercise-timer
       h1.text-center Latihan Soal
-      h4.text-center #{topic.topic} - #{subtopic.subtopic}
+      h4.text-center #{subtopic.topic.topic} - #{subtopic.subtopic}
       h4.text-center
-        a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Kembali ke Video
+        a.backToVideoBtn(onclick='return false;' data-exercise-id=`${exerciseId}` data-href=`/${subtopic.topic.id}/${getSlug(subtopic.topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopic)}`) Kembali ke Video
       h4.text-center
         button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
       hr(style="height: 1px")
       input#exerciseId(type="hidden" name="exerciseId" value=`${exerciseId}`)
 
       div.text-center#questionSubmit
-        each question, index in formatted.renderedQuestions
+        each question, index in formattedExercise.renderedQuestions
           form.QuestionSection(method="POST" onkeypress="return event.keyCode != 13;")
             .row.rendered-question(style="max-width: 720px; margin:auto")
               | !{question}
-            each unknown in formatted.unknowns[index]
+            each unknown in formattedExercise.unknowns[index]
               .row.form-group(style="width: 40%; margin:auto")
                 .col-md-2
                   label.control-label(style="font-size: 150%") #{unknown}
@@ -55,7 +55,7 @@ block contents
           a.btn.btn-primary#prevButton(style=`${prevLink ? '' : 'display: none'}` href=`${prevLink || ''}`) <
           button.btn.btn-primary.btn_submit_answer() Masukan Jawaban
           a.btn.btn-primary.btn_retry_question.hidden(href="") Latihan Lagi
-          a.btn.btn-primary#nextButton(style=`${nextLink ? '' : 'display: none;'}${stars < 4 ? 'background-color: grey;' : ''}` href=`${nextLink || ''}`) >
+          a.btn.btn-primary#nextButton(style=`${nextLink ? '' : 'display: none;'}` href=`${nextLink || ''}`) >
 
 append scripts
   script().

@@ -2,6 +2,7 @@ import * as Promise from 'bluebird'
 import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import CRUDService from './crud-service-neo'
 import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
+import CourseService from './course-service'
 
 let path = require('path')
 
@@ -11,6 +12,7 @@ let moment = require('moment')
 let Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
+const Utils = require(path.join(__dirname, '../lib/utils'))
 const TAG = 'ExerciseService'
 
 /*
@@ -23,6 +25,40 @@ const TAG = 'ExerciseService'
     Remember to set the value properly!
 */
 class ExerciseService extends CRUDService {
+  // Get a GeneratedExercise in a format ready for use. If there's previously generated
+  // that hasn't been submitted, this will restore it. Otherwise, it'll generate one.
+  getFormattedExercise (exerciseId, userId): Promise<NCResponse<FormattedSubtopicExercise>> {
+    return Promise.join<any>(
+      this.getExercise(exerciseId),
+      this.getGeneratedExercise({ userId, exerciseId })
+    ).spread((resp1: NCResponse<Exercise> , resp2: NCResponse<GeneratedExercise>) => {
+      if (resp1.status && resp1.data) {
+        const exercise = resp1.data
+        const exerciseHash = ExerciseGenerator.getHash(exercise.data)
+        // There's unsubmitted GeneratedExercise that can be restored
+        if (resp2.status && resp2.data && resp2.data.exerciseHash === exerciseHash) {
+          const generatedExercise = resp2.data
+          return this.formatExercise2(exercise, generatedExercise)
+          // Unsubmitted GeneratedExercise can no longer be used or there's none
+        } else if ((resp2.status && resp2.data && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
+          // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
+          return this.generateAndSaveExercise(exercise, userId).then(resp => {
+            if (resp.status && resp.data) {
+              return this.formatExercise2(exercise, resp.data)
+            } else {
+              return { status: false, errMessage: resp.errMessage }
+            }
+          })
+        } else {
+          throw new Error(`Unexpected error: resp1=${JSON.stringify(resp1)} resp2=${JSON.stringify(resp2)}`)
+        }
+      } else {
+        throw new Error('Failed to retrieve exercise: ' + resp1.errMessage)
+      }
+    })
+  }
+
+  // END OF NEW CODE
   getExercise (exerciseId): Promise<NCResponse<Exercise>> {
     return this.readOne<Exercise>({
       modelName: 'Exercise',
@@ -38,40 +74,99 @@ class ExerciseService extends CRUDService {
     })
   }
 
-  // TODO: Should call formatExercise()
-  /*
-    exercise: {
-      id: 13,
-      data: // NodeJS Code describing the exercise
-      createdAt: 2018-02-21T08:50:28.000Z,
-      updatedAt: 2018-03-04T13:38:48.000Z,
-      subtopicId: 13,
-      subtopic: 'Pengenalan Bilangan 1 - 5',
-      description: '',
-      subtopicData: '{"detail":""}',
-      subtopicNo: 101,
-      topicId: 12
-    }
+  // Create a new GeneratedExercise and save it to database
+  generateAndSaveExercise (exercise, userId: number): Promise<NCResponse<GeneratedExercise>> {
+    return this.generateExercise2(exercise).then(resp => {
+      if (resp.status && resp.data) {
+        const unsavedGeneratedExercise = resp.data
+        return this.getModels('GeneratedExercise').destroy({where: {
+          userId,
+          exerciseId: exercise.id,
+          submitted: false,
+          onCloud: AppConfig.CLOUD_SERVER
+        }}).then(() => {
+          return this.create<GeneratedExercise>({
+            modelName: 'GeneratedExercise',
+            data: {
+              exerciseHash: unsavedGeneratedExercise.exerciseHash,
+              knowns: unsavedGeneratedExercise.knowns,
+              unknowns: unsavedGeneratedExercise.unknowns,
+              exerciseId: unsavedGeneratedExercise.exerciseId,
+              userId,
+              idealTime: unsavedGeneratedExercise.idealTime,
+              onCloud: AppConfig.CLOUD_SERVER
+            }
+          })
+        })
+      } else {
+        return { status: false, errMessage: resp.errMessage }
+      }
+    })
+  }
 
-    return: {
-      status: true,
-      data :{
-        exerciseData: {
-          knowns,  // Already stringified
-          unknowns, // Already stringified
-          userAnswer, // DONE
-          exerciseId: 40,
-          idealTime: 60,
-          subtopicName: 'Pengenalan Hasil Bilangan 1-5'
-        }
-        formatted: {
-          renderedQuestions, // HTML-rendered question array
-          unknowns, // Variable for inputs
-          subtopicName: 'Penjumlahan Hasil Bilangan 1-5'
+  // Format a GeneratedExercise to a form ready to use
+  formatExercise2 (exercise: Exercise, generatedExercise: GeneratedExercise): Promise<NCResponse<FormattedSubtopicExercise>> {
+    const solver = ExerciseGenerator.getExerciseSolver(exercise.data)
+    const knowns = JSON.parse(generatedExercise.knowns)
+    const unknowns = JSON.parse(generatedExercise.unknowns)
+
+    return Promise.join<any>(
+      Promise.map(knowns, known => {
+        return solver.formatQuestion(known)
+      }),
+      Promise.map(unknowns, unknown => {
+        return Object.keys(unknown)
+      })
+    ).spread((renderedQuestions: string[], unknowns: string[][]) => {
+      return {
+        status: true,
+        data: {
+          exerciseId: exercise.id,
+          idealTime: generatedExercise.idealTime,
+          elapsedTime: Utils.getElapsedTime(generatedExercise.createdAt),
+          formattedExercise: {
+            renderedQuestions,
+            unknowns
+          }
         }
       }
-    }
-  */
+    })
+  }
+
+  // Created GeneratedExercise ready to be saved
+  generateExercise2 (exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
+    let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
+    // Generate X number of questions, which depends whether it's topic or subTopic
+    let questions: GeneratedQuestionData[] = topicOrSubtopic ?
+        exerciseSolver.generateTopicQuestions() :
+        exerciseSolver.generateQuestions()
+
+    let knowns: Array<{}> = []
+    let unknowns: Array<{}> = []
+    let unknownsVariables: Array<{}> = []
+    let formattedQuestionsPromises: Array<Promise<string>> = []
+
+    questions.forEach(question => {
+      knowns.push(question.knowns)
+      unknowns.push(question.unknowns)
+      unknownsVariables.push(Object.keys(question.unknowns))
+    })
+
+    return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
+      return {
+        status: true,
+        data: {
+          exerciseHash: ExerciseGenerator.getHash(exercise.data),
+          knowns: JSON.stringify(knowns), // Stringified JSON
+          unknowns: JSON.stringify(unknowns), // Stringified JSON
+          submitted: false,
+          idealTime: exerciseSolver.getExerciseIdealTime(),
+          exerciseId: exercise.id
+        }
+      }
+    })
+  }
+
   generateExercise (exercise: Exercise, subtopicOrTopic = false): Promise<NCResponse<any>> {
     let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
     let questions: GeneratedQuestionData[] = []
@@ -268,7 +363,7 @@ ORDER BY score DESC LIMIT 4;`,
         }
       }
   */
-  getRenderedExerciseStars (userId, id) {
+  getRenderedExerciseStars (userId, id): Promise<NCResponse<string>> {
     return this.getExerciseStars(userId, id).then(resp => {
       if (resp.status) {
         const stars = resp.data.stars
@@ -318,7 +413,7 @@ ORDER BY score DESC LIMIT 4;`,
     })
   }
 
-  getRenderedExerciseTimers (userId, id) {
+  getRenderedExerciseTimers (userId, id): Promise<NCResponse<string>> {
     return this.getExerciseTimers(userId, id).then(resp => {
       if (resp.status) {
         const timers = resp.data.timers

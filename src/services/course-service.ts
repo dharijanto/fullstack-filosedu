@@ -173,7 +173,7 @@ ORDER BY topicNo, subtopicNo ASC
     return this.read<Exercise>({ modelName: 'Exercise', searchClause: { subtopicId }, order: [['id', 'ASC']] })
   }
 
-  getPreviousAndNextExercise (subtopicId, exerciseId): Promise<NCResponse<any>> {
+  getPreviousAndNextExercise (subtopicId, exerciseId): Promise<NCResponse<{ next?: Exercise, prev?: Exercise}>> {
     return Promise.join(
       this.readOne({
         modelName: 'Exercise',
@@ -221,7 +221,7 @@ ORDER BY topicNo, subtopicNo ASC
       })
   }
 
-  getPreviousAndNextSubtopic (subtopicId): Promise<NCResponse<any>> {
+  getPreviousAndNextSubtopic (subtopicId): Promise<NCResponse<{ next?: Subtopic, prev?: Subtopic}>> {
     return this.getSubtopic(subtopicId).then(resp => {
       if (resp.status && resp.data) {
         const subtopicNo = resp.data.subtopicNo

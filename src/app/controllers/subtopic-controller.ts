@@ -55,7 +55,7 @@ class SubtopicController extends BaseController {
       let topicId = req.params.topicId
       let subtopicId = req.params.subtopicId
       if (subtopicId) {
-        Promise.join(
+        Promise.join<any>(
           CourseService.readOne({ modelName: 'Subtopic', searchClause: { id: subtopicId } }),
           CourseService.read<Exercise>({ modelName: 'Exercise', searchClause: { subtopicId } }),
           CourseService.readOne({ modelName: 'Topic', searchClause: { id: topicId } }),

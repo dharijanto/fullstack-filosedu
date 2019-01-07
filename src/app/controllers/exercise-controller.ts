@@ -21,120 +21,71 @@ let Utils = require(path.join(__dirname, '../utils/utils'))
 const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
+  private exerciseFrontendJS: string
+  initialize () {
+    return new Promise((resolve, reject) => {
+      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js').then(result => {
+        this.exerciseFrontendJS = result
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
   constructor (initData) {
     super(initData)
     const analyticsService = new AnalyticsService(this.getDb().sequelize, this.getDb().models)
-
     this.addInterceptor((req, res, next) => {
       next()
     })
 
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      let exerciseId = req.params.exerciseId
-      let subtopicId = req.params.subtopicId
-      let topicId = req.params.topicId
-      Promise.join(
-        ExerciseService.getExercise(exerciseId),
-        ExerciseService.getGeneratedExercise({ userId: req.user.id, exerciseId }),
+      const userId = req.user.id
+      const exerciseId = req.params.exerciseId
+      const subtopicId = req.params.subtopicId
+
+      Promise.join<any>(
+        ExerciseService.getFormattedExercise(exerciseId, userId),
+        ExerciseService.getRenderedExerciseStars(userId, exerciseId),
+        ExerciseService.getRenderedExerciseTimers(userId, exerciseId),
         CourseService.getPreviousAndNextExercise(subtopicId, exerciseId),
-        ExerciseService.getRenderedExerciseStars(req.user.id, exerciseId),
-        ExerciseService.getRenderedExerciseTimers(req.user.id, exerciseId),
-        CourseService.getPreviousAndNextSubtopic(subtopicId)
-      ).spread((resp: NCResponse<any>, resp2: NCResponse<any>,
-                resp6: NCResponse<any>, resp9: NCResponse<any>,
-                resp10: NCResponse<any>, resp11) => {
-        if (resp.status) {
-          const exerciseHash = ExerciseGenerator.getHash(resp.data.data)
-          const exerciseSolver = ExerciseGenerator.getExerciseSolver(resp.data.data)
-          const starsHTML = resp9.status ? resp9.data : '<p style="color:red;"> Unable to retrieve stars... </p>'
-          const stars = resp9.status ? resp9.data.stars : 0
-          const timersHTML = resp10.status ? resp10.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
-          const topic = resp.data.subtopic.topic
-          const subtopic = resp.data.subtopic
-          const prevAndNextExercise = resp6.data
-          const prevAndNextSubtopic = resp11.data
-          const prevLink = prevAndNextExercise && prevAndNextExercise.prev
+        CourseService.getPreviousAndNextSubtopic(subtopicId),
+        CourseService.getSubtopic(subtopicId)
+      ).spread((resp1: NCResponse<FormattedSubtopicExercise>,
+                resp2: NCResponse<string>,
+                resp3: NCResponse<string>,
+                resp4: NCResponse<{ next?: Exercise, prev?: Exercise}>,
+                resp5: NCResponse<{ next?: Subtopic, prev?: Subtopic}>,
+                resp6: NCResponse<Subtopic>) => {
+        if (resp1.status && resp1.data &&
+            resp4.status && resp4.data &&
+            resp5.status && resp5.data &&
+            resp6.status && resp6.data) {
+          const prevAndNextExercise = resp4.data
+          const prevAndNextSubtopic = resp5.data
+          res.locals.formattedExercise = resp1.data.formattedExercise
+          res.locals.elapsedTime = resp1.data.elapsedTime
+          res.locals.idealTime = resp1.data.idealTime
+          res.locals.exerciseId = resp1.data.exerciseId
+          res.locals.prevLink = prevAndNextExercise && prevAndNextExercise.prev
               ? Formatter.getExerciseURL(prevAndNextExercise.prev)
-              : (prevAndNextSubtopic && prevAndNextSubtopic.prev ? Formatter.getSubtopicURL(prevAndNextSubtopic.prev) : null)
-          const nextLink = prevAndNextExercise && prevAndNextExercise.next
+              : (prevAndNextSubtopic && prevAndNextSubtopic.prev ?
+                    Formatter.getSubtopicURL(prevAndNextSubtopic.prev) : null)
+          res.locals.nextLink = prevAndNextExercise && prevAndNextExercise.next
               ? Formatter.getExerciseURL(prevAndNextExercise.next)
-              : (prevAndNextSubtopic && prevAndNextSubtopic.next ? Formatter.getSubtopicURL(prevAndNextSubtopic.next) : null)
+              : (prevAndNextSubtopic && prevAndNextSubtopic.next ?
+                    Formatter.getSubtopicURL(prevAndNextSubtopic.next) : null)
+          res.locals.starsHTML = resp2.status ? resp2.data : '<p style="color:red;"> Unable to retrieve stars... </p>'
+          res.locals.timersHTML = resp3.status ? resp3.data : '<p style="color:red;"> Unable to retrieve timers... </p>'
+          res.locals.subtopic = resp6.data
 
-          // If there's exercise to be restored and it's still valid
-          if (resp2.status && resp2.data.exerciseHash === exerciseHash) {
-            return ExerciseService.formatExercise(resp2.data, exerciseSolver).then(data => {
-              return Object.assign({
-                elapsedTime: Utils.getElapsedTime(resp2.data.createdAt)
-              }, {
-                formatted: data.formatted,
-                exerciseId: data.exerciseId,
-                idealTime: data.idealTime,
-                topic,
-                subtopic,
-                starsHTML,
-                stars,
-                timersHTML,
-                prevLink,
-                nextLink
-              })
-            })
-          } else if ((resp2.status && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
-            // If there's no exercise or there's but already expired
-            // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
-            return ExerciseService.generateExercise(resp.data).then(resp3 => {
-              if (resp3.status) {
-                return ExerciseService.saveGeneratedExercise(
-                  req.user.id,
-                  resp3.data.exerciseData,
-                  exerciseHash
-                ).then(resp4 => {
-                  if (resp4.status) {
-                    return Object.assign({
-                      elapsedTime: Utils.getElapsedTime(resp3.data.createdAt)
-                    }, {
-                      formatted: resp3.data.formatted,
-                      exerciseId: resp.data.id,
-                      idealTime: resp3.data.exerciseData.idealTime,
-                      topic,
-                      subtopic,
-                      starsHTML,
-                      stars,
-                      timersHTML,
-                      prevLink,
-                      nextLink
-                    })
-                  } else {
-                    throw new Error('Could not create new generatedExercise!')
-                  }
-                })
-              } else {
-                throw new Error('Exercise does not exists:' + resp3.errMessage)
-              }
-            })
-          } else {
-            throw new Error('Unknown error!')
-          }
+          res.locals.bundle = this.exerciseFrontendJS
+          res.render('exercise')
         } else {
-          throw new Error(`exercseId${req.params.exerciseId} or subtopicId=${subtopicId} or topicId=${topicId} does not exist!`)
+          next(new Error(resp1.errMessage || resp4.errMessage || resp5.errMessage || resp6.errMessage))
         }
-      }).then(preparedExercise => {
-        /*
-          preparedExercise: {
-            topic,
-            subtopic,
-            exerciseId,
-            formatted,
-            idealTime,
-            elapsedTime,
-            starsHTML,
-            timersHTML
-          }
-        */
-
-        Object.assign(res.locals, preparedExercise)
-        res.locals.bundle = this._assetBundle
-        res.render('exercise')
-      })
+      }).catch(next)
     })
 
     this.routeGet('/getExerciseStars', PassportHelper.ensureLoggedIn(), (req, res, next) => {
@@ -307,17 +258,6 @@ class ExerciseController extends BaseController {
         res.json(resp)
       }).catch(err => {
         next(err)
-      })
-    })
-  }
-
-  initialize () {
-    return new Promise((resolve, reject) => {
-      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js').then(result => {
-        this._assetBundle = result
-        resolve()
-      }).catch(err => {
-        reject(err)
       })
     })
   }

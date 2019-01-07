@@ -88,11 +88,15 @@ interface FormattedExercise {
 }
 
 interface FormattedSubtopicExercise {
+  exerciseId: number
+  idealTime: number
+  elapsedTime: number
+  formattedExercise: FormattedExercise
 }
 
 interface FormattedTopicExercise {
-  topicName: string,
-  formattedExercises: Array<FormattedExercise>,
-  idealTime: number,
+  topicName: string
+  formattedExercises: Array<FormattedExercise>
+  idealTime: number
   elapsedTime: number
 }

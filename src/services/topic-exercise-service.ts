@@ -40,7 +40,7 @@ class TopicExerciseService extends CRUDService {
     return this.readOne<Topic>({ modelName: 'Topic', searchClause: { id: topicId } })
   }
 
-  // Get a formatted TopicExercise ready for use. If there's previously generated
+  // Get a GeneratedTopicExercise in a format ready for use. If there's previously generated
   // that hasn't been submitted, this will restore it. Otherwise, it'll generate one.
   getFormattedExercise (topicId, userId): Promise<NCResponse<FormattedTopicExercise>> {
     if (topicId && userId) {
@@ -60,7 +60,7 @@ class TopicExerciseService extends CRUDService {
           } else if (resp.status && resp.data &&
                     ((resp2.status && resp2.data && resp2.data.topicExerciseHash !== topicExerciseHash) ||
                     !resp2.status)) {
-            return this.generateExercise(topicId, userId, resp.data).then(resp5 => {
+            return this.generateAndSaveExercise(topicId, userId, resp.data).then(resp5 => {
               if (resp5.status && resp5.data) {
                 return this.formatGeneratedTopicExercise(resp5.data)
               } else {
@@ -109,19 +109,17 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  private generateExercise (topicId, userId, exercises: Exercise[]): Promise<NCResponse<GeneratedTopicExercise>> {
+  private generateAndSaveExercise (topicId, userId, exercises: Exercise[]): Promise<NCResponse<GeneratedTopicExercise>> {
     return this.getExercisesHash(topicId).then(resp => {
       if (resp.status && resp.data) {
         const topicExerciseHash = resp.data
         return Promise.map(exercises, exercise => {
-          return ExerciseService.generateExercise(exercise, true).then(resp => {
-            if (resp.status) {
+          return ExerciseService.generateExercise2(exercise, true).then(resp => {
+            if (resp.status && resp.data) {
               // Check this has questions
-              const parsedKnowns = JSON.parse(resp.data.exerciseData.knowns)
+              const parsedKnowns = JSON.parse(resp.data.knowns || '[]')
               if (parsedKnowns.length > 0) {
-                return {
-                  exerciseData: resp.data.exerciseData
-                }
+                return resp.data
               } else {
                 // Skip over empty questions
                 return null
@@ -130,7 +128,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
               return null
             }
           })
-        }).then(results => {
+        }).then((results: Array<Partial<GeneratedExercise | null>>) => {
           const exerciseDetail: any[] = []
           let idealTime = 0
 
@@ -140,8 +138,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
           }
 
           results.filter(notEmpty).forEach(result => {
-            idealTime += result.exerciseData.idealTime
-            exerciseDetail.push(result.exerciseData)
+            idealTime += result.idealTime || 0
+            exerciseDetail.push(result)
           })
 
           // In case that the exercise is no longer up-to-date, we have to delete stale generated exercise
