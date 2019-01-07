@@ -8608,44 +8608,47 @@ function postAnswer() {
         $('input').prop('disabled', true);
         $('input').prop('read-only', true);
 
-        var realAnswers = resp.data.summaryAnswers;
-        var currentScore = resp.data.currentScore;
+        var grade = resp.data.grade;
         var starsHTML = resp.data.starsHTML;
         var timersHTML = resp.data.timersHTML;
         var ranking = resp.data.ranking;
-        var currentTimeFinish = resp.data.currentTimeFinish;
+        var timeFinish = resp.data.timeFinish;
         var currentRanking = resp.data.currentRanking;
         var totalRanking = resp.data.totalRanking;
-        var isPerfectScore = resp.data.isPerfectScore;
 
         $('#currentScore').removeClass('hidden');
-        $('#currentScore').text('Nilai yang diperoleh: ' + currentScore);
+        $('#currentScore').text('Nilai yang diperoleh: ' + grade.score);
         $('.bestScore').html(starsHTML);
         $('.bestTimer').html(timersHTML);
         $('.rankingScore').html(ranking);
 
-        if (isPerfectScore) {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
+        if (parseInt(grade.score) === 100) {
+          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + timeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
         } else {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
+          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + timeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
         }
         if (parseInt(currentScore) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
         }
 
-        realAnswers.forEach(function (realAnswer, index) {
-          var correctUnknowns = [];
-          for (var x in realAnswer.unknown) {
-            correctUnknowns.push(x + ' = ' + realAnswer.unknown[x]);
+        grade.correctAnswers.forEach(function (correctAnswer, index) {
+          var stringifiedCorrectAnswer = null;
+          for (var key in correctAnswer) {
+            if (stringifiedCorrectAnswer === null) {
+              stringifiedCorrectAnswer = key + '=' + correctAnswer[key];
+            } else {
+              stringifiedCorrectAnswer += ' ' + key + '=' + correctAnswer[key];
+            }
+          }
+
+          var answerMessage = void 0;
+          if (grade.isCorrect[index]) {
+            answerMessage = $('<p style="color:green">Benar</p>');
+          } else {
+            answerMessage = $('<p style="color:red;">Salah. Jawaban yang benar: ' + stringifiedCorrectAnswer + '</p>');
           }
           $('.resultAnswer_' + index).empty();
-          var answer = null;
-          if (realAnswer.isCorrect) {
-            answer = $('<p style="color:green">Benar</p>');
-          } else {
-            answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>');
-          }
-          $('.resultAnswer_' + index).append(answer);
+          $('.resultAnswer_' + index).append(answerMessage);
         });
 
         $('.btn_submit_answer').addClass('hidden');
