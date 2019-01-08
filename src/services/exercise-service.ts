@@ -177,30 +177,6 @@ class ExerciseService extends CRUDService {
     })
   }
 
-  // Given a generated exercise data, create an entry in generatedExercise table
-  // If the user already has a generatedExercise, delete it first before adding a new entry
-  saveGeneratedExercise (userId, generatedExercise, exerciseHash) {
-    return this.getModels('GeneratedExercise').destroy({where: {
-      userId,
-      exerciseId: generatedExercise.exerciseId,
-      submitted: false,
-      onCloud: AppConfig.CLOUD_SERVER
-    }}).then(() => {
-      return this.create<GeneratedExercise>({
-        modelName: 'GeneratedExercise',
-        data: {
-          exerciseHash,
-          knowns: generatedExercise.knowns,
-          unknowns: generatedExercise.unknowns,
-          exerciseId: generatedExercise.exerciseId,
-          userId,
-          idealTime: generatedExercise.idealTime,
-          onCloud: AppConfig.CLOUD_SERVER
-        }
-      })
-    })
-  }
-
   /*
     Input:
       id: 1,
@@ -221,14 +197,6 @@ class ExerciseService extends CRUDService {
     return this.readOne<GeneratedExercise>({
       modelName: 'GeneratedExercise',
       searchClause: { userId, exerciseId, submitted: false, onCloud: AppConfig.CLOUD_SERVER }
-    })
-  }
-
-  // Get all exercises that have been submitted
-  getSubmittedExercises ({ userId, exerciseId }) {
-    return this.read<GeneratedExercise>({
-      modelName: 'GeneratedExercise',
-      searchClause: { userId, exerciseId, submitted: true }
     })
   }
 
