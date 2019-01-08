@@ -133,15 +133,14 @@ function postAnswer() {
     $('.btn_submit_answer').attr('disabled', true);
     onNextQuestion();
     onSetCompleted();
-    var answers = $('#questionSubmit').children();
-    var userAnswers = [];
+    var answers = [];
 
-    answers.each(function (index, value) {
-      userAnswers.push($(value).serializeObject());
+    $('#questionSubmit').children().each(function (index, value) {
+      answers.push($(value).serializeObject());
     });
 
     axios.post(window.location.href, {
-      userAnswers: userAnswers,
+      answers: answers,
       generatedExerciseId: $('input[name=generatedExerciseId]').val(),
       exerciseId: $('input[name=exerciseId]').val()
     }).then(function (rawResp) {
@@ -151,19 +150,19 @@ function postAnswer() {
         $('input').prop('disabled', true);
         $('input').prop('read-only', true);
 
-        var correction = resp.data.isAnswerCorrect;
-        var realAnswers = resp.data.realAnswers;
-        var currentScore = resp.data.currentScore;
+        var isCorrectArr = resp.data.isCorrect;
+        var correctAnswers = resp.data.correctAnswers;
+        var score = resp.data.score;
         var starsHTML = resp.data.starsHTML;
         var timersHTML = resp.data.timersHTML;
         var ranking = resp.data.ranking;
-        var currentTimeFinish = resp.data.currentTimeFinish;
+        var timeFinish = resp.data.timeFinish;
         var currentRanking = resp.data.currentRanking;
         var totalRanking = resp.data.totalRanking;
-        var isPerfectScore = resp.data.isPerfectScore;
+        var isPerfectScore = score === 100;
 
         $('#currentScore').removeClass('hidden');
-        $('#currentScore').text('Nilai yang diperoleh: ' + currentScore);
+        $('#currentScore').text('Nilai yang diperoleh: ' + score);
         $('.bestScore').empty();
         $('.bestScore').append(starsHTML);
         $('.bestTimer').empty();
@@ -171,24 +170,24 @@ function postAnswer() {
         $('.rankingScore').html(ranking);
 
         if (isPerfectScore) {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di \n            urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
+          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + timeFinish + ' detik</b>. Waktu ini ada di\n            urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
         } else {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + currentTimeFinish + ' detik</b>. \n            Hanya nilai 100 yang masuk penilaian ranking. </p>');
+          $('.rankingScore').append('<p>Soal diselesaikan dalam \n            <b>' + timeFinish + ' detik</b>.\n            Hanya nilai 100 yang masuk penilaian ranking. </p>');
         }
 
         // TODO: This message and conditional checking should be from backend
-        if (parseInt(currentScore) < 80) {
+        if (parseInt(score) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
         }
 
-        realAnswers.forEach(function (realAnswer, index) {
+        correctAnswers.forEach(function (realAnswer, index) {
           var correctUnknowns = [];
           for (var unknown in realAnswer) {
             correctUnknowns.push(unknown + ' = ' + realAnswer[unknown]);
           }
           $('.resultAnswer_' + index).empty();
           var answer = null;
-          if (correction[index] === true) {
+          if (isCorrectArr[index] === true) {
             answer = $('<p style="color:green">Benar</p>');
           } else {
             answer = $('<p style="color:red;">Salah. \n              Jawaban yang benar: ' + correctUnknowns.join(', ') + ' </p>');
