@@ -240,7 +240,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         return acc.concat(questionArray)
       }, [])
     }).then(results => {
-      console.dir(results)
       const { numCorrectAnswers, correctAnswers, isCorrect } = results.reduce((acc, result, index) => {
         const isCorrect = result.isAnswerFn(result.known, answers[index])
         acc.numCorrectAnswers += isCorrect ? 1 : 0

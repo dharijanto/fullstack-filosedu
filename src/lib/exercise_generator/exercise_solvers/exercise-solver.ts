@@ -56,7 +56,7 @@ export default abstract class ExerciseSolver {
 
   abstract generateQuestions (): GeneratedQuestionData[]
 
-  isAnswer (knowns, unknowns): boolean {
-    return this.question.isAnswerFn(knowns, unknowns)
+  isAnswer (known, unknown): boolean {
+    return this.question.isAnswerFn(known, unknown)
   }
 }

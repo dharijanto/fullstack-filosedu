@@ -96,6 +96,7 @@ export default class CRUDService {
     })
   }
 
+  // TODO: We should only return true if at least one row is updated (i.e. check the count)
   update <T extends BaseModel> ({ modelName, data, trx }:
                                 { modelName: string, data: Partial<T>,
                                   trx?: Transaction }): Promise<NCResponse<number>> {

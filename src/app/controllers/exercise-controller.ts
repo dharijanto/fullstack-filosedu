@@ -1,6 +1,6 @@
 import * as Promise from 'bluebird'
 import CourseService from '../../services/course-service'
-import ExerciseService from '../../services/exercise-service'
+import ExerciseService, { ExerciseAnswer } from '../../services/exercise-service'
 import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 import ExerciseHelper from '../utils/exercise-helper'
 
@@ -40,6 +40,7 @@ class ExerciseController extends BaseController {
       next()
     })
 
+    // Continue/start an exercise
     this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.params.exerciseId
@@ -119,134 +120,64 @@ class ExerciseController extends BaseController {
       }
     })
 
-    // Grading
-    this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      const userId = req.user.id
-      const exerciseId = req.body.exerciseId
-      log.verbose(TAG, `submitAnswer.POST(): userId=${userId} exerciseId=${exerciseId}`)
+    // Exercise submission
+    this.routePost(
+      '/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug',
+      PassportHelper.ensureLoggedIn(),
+      (req, res, next) => {
+        const userId = req.user.id
+        const exerciseId = req.body.exerciseId
+        const answers: ExerciseAnswer = req.body.answers
+        console.dir(req.body)
+        ExerciseService.finishExercise(exerciseId, userId, answers).then(resp => {
+          if (res.status && resp.data) {
+            const grade = resp.data
 
-      if (!req.isAuthenticated) {
-        log.verbose(TAG, 'submitAnswer.POST: request is not authenticated!')
-        res.status(500).send('Request not authenticated!')
-      } else {
-        Promise.join<any>(
-          ExerciseService.getGeneratedExercise({ userId, exerciseId }), // Exercise that's currently being graded
-          ExerciseService.getSubmittedExercises({ userId, exerciseId }),
-          ExerciseService.getExercise(exerciseId)
-        ).spread((geResp: NCResponse<any>, sgeResp: NCResponse<any>, eResp: NCResponse<any>) => {
-          if (!geResp.status) {
-            log.error(TAG, 'geResp.status=' + geResp.status + ' geResp.errMessage=' + geResp.errMessage)
-            return res.json({ status: false, errMessage: 'Current exercise cannot be found' })
-          } else if (!eResp.status) {
-            return res.json({ status: false, errMessage: 'Exercise information be found' })
-          } else {
-            const generatedExercise = geResp.data
-            let generatedQuestions = JSON.parse(generatedExercise.knowns)
-            const submittedExercises = sgeResp.status ? sgeResp.data : []
-            const exerciseSolver = ExerciseGenerator.getExerciseSolver(eResp.data.data)
-            const userAnswers = req.body.userAnswers // [{'x': '2', 'y': '3'}, {'x': '1', 'y': '3'}]. This is string based
+            // Does the student even try?
+            const attemptsPercentage = answers.reduce((count, answer) => {
+              const userInputs = Object.values<string>(answer)
+              // Make sure at least one input is not empty
+              let attempted = userInputs.reduce((acc, userInput) => acc || userInput.length > 0, false)
+              return attempted ? count + 1 : 0
+            }, 0) / answers.length * 100
 
-            log.verbose(TAG, `submitAnswer.POST(): userAnswer=${JSON.stringify(userAnswers)}`)
-            log.verbose(TAG, `submitAnswer.POST(): generatedQuestions=${JSON.stringify(generatedQuestions)}`)
-            if (userAnswers.length !== generatedQuestions.length) {
-              return res.json({ status: false, errMessage: 'Number of submitted answers doesn\'t match number of questions!' })
-            } else {
-              // Get the number of non-empty answer. (i.e. the student tries to answer eventhough it's wrong)
-              const attemptedAnswers = userAnswers.reduce((attemptedAnswers, answer) => {
-                const keys = Object.keys(answer)
-                let attempted = false
-                keys.forEach(key => {
-                  if (answer[key].length > 0) {
-                    attempted = true
-                  }
-                })
-                if (attempted) {
-                  return attemptedAnswers + 1
-                } else {
-                  return attemptedAnswers
-                }
-              }, 0) / parseFloat(generatedQuestions.length) * 100
+            analyticsService.addExerciseSubmissionStats(
+              grade.score,
+              attemptsPercentage,
+              exerciseId,
+              userId
+            ).then(resp => {
+              if (!resp.status) {
+                log.error(TAG, 'submitAnswer.POST(): failed to add analytics: ' + JSON.stringify(resp))
+              }
+            }).catch(err => log.error(TAG, err))
 
-              log.verbose(TAG, 'submitAnswer.POST(): attemptedAnswers= ' + attemptedAnswers)
-
-              // Flag array identifying which user answer is correct/wrong
-              const isAnswerCorrect: boolean[] = []
-              // Compute the score of current exercise
-              const correctAnswers = generatedQuestions.reduce((numCorrect, knowns, index) => {
-                const unknowns = userAnswers
-                log.verbose(TAG, `submitAnswer.POST(): knowns=${JSON.stringify(knowns)}, unknowns=${JSON.stringify(unknowns[index])} isAnswer=${exerciseSolver.isAnswer(knowns, unknowns[index])}`)
-                const isCorrect = exerciseSolver.isAnswer(knowns, unknowns[index])
-                isAnswerCorrect.push(isCorrect)
-                return isCorrect ? numCorrect + 1 : numCorrect
-              }, 0)
-              const currentScore = correctAnswers / parseFloat(generatedQuestions.length) * 100
-              // Compute the best score
-              const bestScore = submittedExercises.reduce((bestScore, submitedExercise) => {
-                return submitedExercise.score > bestScore ? submitedExercise.score : bestScore
-              }, 0)
-
-              // Keep track of the number of correct and attempted answers
-              Promise.join(
-                analyticsService.addExerciseData('correctAnswers', currentScore, exerciseId, userId),
-                analyticsService.addExerciseData('attemptedAnswers', attemptedAnswers, exerciseId, userId)
-              ).spread((resp: NCResponse<any>, resp2: NCResponse<any>) => {
-                if (!resp.status) {
-                  log.error(TAG, 'submitAnswer.POST(): addExerciseData.resp=' + JSON.stringify(resp))
-                }
-                if (!resp2.status) {
-                  log.error(TAG, 'submitAnswer.POST(): addExerciseData.resp2=' + JSON.stringify(resp2))
-                }
-              }).catch(err => {
-                log.error(TAG, err)
-              })
-
-              const timeFinish = ExerciseHelper.countTimeFinish(generatedExercise.createdAt)
-              return ExerciseService.updateGeneratedExercise({
-                id: generatedExercise.id,
-                score: currentScore,
-                userAnswer: JSON.stringify(userAnswers),
-                submitted: true,
-                submittedAt: moment().local().format('YYYY-MM-DD HH:mm:ss'),
-                timeFinish
-              }).then(resp => {
-                if (resp.status) {
-                  Promise.join(
-                    ExerciseService.getRenderedExerciseStars(userId, exerciseId),
-                    ExerciseService.getExerciseLeaderboard(exerciseId),
-                    ExerciseService.getCurrentRanking(timeFinish, exerciseId),
-                    ExerciseService.getTotalRanking(exerciseId),
-                    ExerciseService.getRenderedExerciseTimers(userId, exerciseId)
-                  ).spread((resp2: NCResponse<any>, resp3: NCResponse<any>,
-                            resp4: NCResponse<any>, resp5: NCResponse<any>, resp6: NCResponse<any>) => {
-                    res.json({
-                      status: true,
-                      data: {
-                        realAnswers: JSON.parse(generatedExercise.unknowns),
-                        isAnswerCorrect,
-                        currentScore,
-                        bestScore,
-                        starsHTML: resp2.data,
-                        timersHTML: resp6.data,
-                        ranking: resp3.data,
-                        currentTimeFinish: timeFinish,
-                        currentRanking: resp4.data.count,
-                        totalRanking: resp5.data.count,
-                        isPerfectScore: currentScore === 100
-                      }
-                    })
-                  })
-                } else {
-                  res.json({ status: false, errMessage: 'Failed to save generated exercise' })
+            Promise.join(
+              ExerciseService.getRenderedExerciseStars(userId, exerciseId),
+              ExerciseService.getExerciseLeaderboard(exerciseId),
+              ExerciseService.getCurrentRanking(grade.timeFinish, exerciseId),
+              ExerciseService.getTotalRanking(exerciseId),
+              ExerciseService.getRenderedExerciseTimers(userId, exerciseId)
+            ).spread((resp2: NCResponse<any>, resp3: NCResponse<any>,
+                      resp4: NCResponse<any>, resp5: NCResponse<any>, resp6: NCResponse<any>) => {
+              res.json({
+                status: true,
+                data: {
+                  correctAnswers: grade.correctAnswers,
+                  isCorrect: grade.isCorrect,
+                  score: grade.score,
+                  starsHTML: resp2.data,
+                  timersHTML: resp6.data,
+                  ranking: resp3.data,
+                  timeFinish: grade.timeFinish,
+                  currentRanking: resp4.data.count,
+                  totalRanking: resp5.data.count
                 }
               })
-            }
+            })
           }
-        }).catch(err => {
-          log.error(TAG, err)
-          res.json({ status: false, errMessage: err.message })
         })
-      }
-    })
+      })
 
     this.routePost('/exercise/analytics', (req, res, next) => {
       // Event type

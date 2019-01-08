@@ -2,7 +2,7 @@ import * as Promise from 'bluebird'
 import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import CRUDService from './crud-service-neo'
 import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
-import CourseService from './course-service'
+import ExerciseHelper from '../app/utils/exercise-helper'
 
 let path = require('path')
 
@@ -14,6 +14,16 @@ let Sequelize = require('sequelize')
 const AppConfig = require(path.join(__dirname, '../app-config'))
 const Utils = require(path.join(__dirname, '../lib/utils'))
 const TAG = 'ExerciseService'
+
+export type ExerciseAnswer = Array<{[key: string]: string}>
+export interface ExerciseGrade {
+  numQuestions: number
+  numCorrectAnswers: number
+  correctAnswers: Array<{[key: string]: any}>
+  isCorrect: Array<boolean>
+  score: number
+  timeFinish: string
+}
 
 /*
   Important Note:
@@ -30,7 +40,7 @@ class ExerciseService extends CRUDService {
   getFormattedExercise (exerciseId, userId): Promise<NCResponse<FormattedSubtopicExercise>> {
     return Promise.join<any>(
       this.getExercise(exerciseId),
-      this.getGeneratedExercise({ userId, exerciseId })
+      this.getGeneratedExercise(userId, exerciseId)
     ).spread((resp1: NCResponse<Exercise> , resp2: NCResponse<GeneratedExercise>) => {
       if (resp1.status && resp1.data) {
         const exercise = resp1.data
@@ -207,7 +217,7 @@ class ExerciseService extends CRUDService {
   }
 
   // Get exercise that is curently active
-  getGeneratedExercise ({ userId, exerciseId }) {
+  getGeneratedExercise (userId: number, exerciseId: number) {
     return this.readOne<GeneratedExercise>({
       modelName: 'GeneratedExercise',
       searchClause: { userId, exerciseId, submitted: false, onCloud: AppConfig.CLOUD_SERVER }
@@ -392,6 +402,74 @@ ORDER BY MIN(timeFinish)) AS totalrow;`
         }).catch(err => {
           reject(err)
         })
+    })
+  }
+
+  finishExercise (exerciseId: number, userId: number, answers: ExerciseAnswer): Promise<NCResponse<ExerciseGrade>> {
+    return this.getGeneratedExercise(userId, exerciseId).then(resp => {
+      if (resp.status && resp.data) {
+        const generatedExercise = resp.data
+        return this.gradeExercise(generatedExercise, answers).then(resp2 => {
+          if (resp2.status && resp2.data) {
+            const grade: ExerciseGrade = resp2.data
+            // Save to database
+            return this.updateGeneratedExercise({
+              id: generatedExercise.id,
+              score: grade.score,
+              userAnswer: JSON.stringify(answers),
+              submitted: true,
+              submittedAt: moment().local().format('YYYY-MM-DD HH:mm:ss'),
+              timeFinish: grade.timeFinish
+            }).then(resp => {
+              if (resp.status) {
+                return { status: true, data: grade } as NCResponse<ExerciseGrade>
+              } else {
+                return { status: false, errMessage: 'Failed to update generatedExercise: ' + resp.errMessage }
+              }
+            })
+          } else {
+            return { status: false, errMessage: 'Failed to grade exercise: ' + resp2.errMessage }
+          }
+        })
+      } else {
+        return { status: false, errMessage: 'Failed to get generatedExercise: ' + resp.errMessage }
+      }
+    })
+  }
+
+  private gradeExercise (generatedExercise: GeneratedExercise, answers: ExerciseAnswer): Promise<NCResponse<ExerciseGrade>> {
+    return this.getExercise(generatedExercise.exerciseId).then(resp => {
+      if (resp.status && resp.data) {
+        const exercise = resp.data
+        const knowns = JSON.parse(generatedExercise.knowns)
+        const unknowns = JSON.parse(generatedExercise.unknowns)
+        const solver = ExerciseGenerator.getExerciseSolver(exercise.data)
+
+        if (knowns.length !== answers.length) {
+          return { status: false, errMessage: 'Unexpected number of answers!' }
+        } else {
+          const { numCorrectAnswers, correctAnswers, isCorrect } = knowns.reduce((acc, known, index) => {
+            const isCorrectAnswer = solver.isAnswer(known, answers[index])
+            acc.isCorrect.push(isCorrectAnswer)
+            acc.numCorrectAnswers += isCorrectAnswer ? 1 : 0
+            acc.correctAnswers.push(unknowns[index])
+            return acc
+          }, { numCorrectAnswers: 0, correctAnswers: [], isCorrect: [] })
+          const numQuestions = knowns.length
+          const grade: ExerciseGrade = {
+            numQuestions,
+            numCorrectAnswers,
+            correctAnswers,
+            isCorrect,
+            timeFinish: ExerciseHelper.countTimeFinish(generatedExercise.createdAt),
+            score: parseFloat(numCorrectAnswers) / numQuestions * 100
+          }
+
+          return { status: true, data: grade }
+        }
+      } else {
+        return { status: false, errMessage: 'Faile to get exercise: ' + resp.errMessage }
+      }
     })
   }
 }
