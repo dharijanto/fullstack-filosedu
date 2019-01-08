@@ -65,7 +65,7 @@ class AnalyticsService extends CRUDService {
 
   addExerciseSubmissionStats (scorePercentage, attemptsPercentage, exerciseId, userId) {
     // test
-    log.debug(TAG, `addExerciseSubmissionStats(): scorePercentage=${scorePercentage} attemptsPercentage=${attemptsPercentage} exerciseId=${exerciseId} userId=${userId}`)
+    log.verbose(TAG, `addExerciseSubmissionStats(): scorePercentage=${scorePercentage} attemptsPercentage=${attemptsPercentage} exerciseId=${exerciseId} userId=${userId}`)
     return Promise.join(
       this.addExerciseData('correctAnswers', scorePercentage, exerciseId, userId),
       this.addExerciseData('attemptedAnswers', attemptsPercentage, exerciseId, userId)
