@@ -1,5 +1,6 @@
 import * as path from 'path'
 import Solvers from './exercise_solvers'
+import ExerciseSolver from './exercise_solvers/exercise-solver';
 
 let log = require('npmlog')
 let Crypto = require(path.join(__dirname, '../crypto'))
@@ -14,7 +15,7 @@ export default class ExerciseGenerator {
     return Crypto.md5(questionData)
   }
 
-  static getExerciseSolver (questionData) {
+  static getExerciseSolver (questionData): ExerciseSolver {
     try {
       // If questionData is already parsed, use it, otherwise, it's retrieved
       // from database and needs to be eval-ed
@@ -25,7 +26,6 @@ export default class ExerciseGenerator {
       }
       return new SolverClass(parsedQuestion)
     } catch (err) {
-      log.error(TAG, err)
       throw err
     }
   }

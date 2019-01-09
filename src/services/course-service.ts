@@ -165,6 +165,10 @@ ORDER BY topicNo, subtopicNo ASC
     })
   }
 
+  getOrderedTopic (): Promise<NCResponse<Topic[]>> {
+    return this.read<Topic>({ modelName: 'Topic', order: [['topicNo', 'ASC']], searchClause: {} })
+  }
+
   getTopic (topicId) {
     return this.readOne<Topic>({ modelName: 'Topic', searchClause: { id: topicId } })
   }

@@ -72,12 +72,23 @@ interface GeneratedTopicExercise extends BaseModel {
   score: number
   timeFinish: string
   topicExerciseHash: string
-  exerciseDetail: string
+  userAnswer: string // TODO: User answer should be saved here instead of inside exerciseDetail!. Much more intuitive and less work!
+  exerciseDetail: string // JSON.stringify(Array<GeneratedExercise>)
   idealTime: number
   onCloud: boolean
   topicId: number
   userId: number
   topic?: Topic
+}
+
+interface GeneratedCompetencyExercise extends BaseModel {
+  submitted: boolean
+  abandoned: boolean
+  score: number
+  timeFinish: string
+  hash: string
+  onCloud: boolean
+  exerciseDetail: string // JSON.stringify(Array<GeneratedTopicExercise>)
 }
 
 // END OF RAW Sequelize Model
@@ -100,3 +111,4 @@ interface FormattedTopicExercise {
   idealTime: number
   elapsedTime: number
 }
+

@@ -16,15 +16,15 @@ export default class CRUDService {
     return SequelizeService.getInstance().sequelize
   }
 
-  rawReadQuery (query): Promise<NCResponse<any>> {
-    return this.getSequelize().query(query, { type: this.getSequelize().QueryTypes.SELECT }).then(result => {
+  rawReadQuery (query, nest = false): Promise<NCResponse<any[]>> {
+    return this.getSequelize().query(query, { type: this.getSequelize().QueryTypes.SELECT, nest }).then(result => {
       return { status: true, data: result }
     })
   }
 
-  rawReadOneQuery (query) {
-    return this.rawReadQuery(query).then(resp => {
-      if (resp.status) {
+  rawReadOneQuery (query, nest = false) {
+    return this.rawReadQuery(query, nest).then(resp => {
+      if (resp.status && resp.data) {
         if (!resp.data.length) {
           return { status: false, errMessage: 'Data not found!' }
         } else {

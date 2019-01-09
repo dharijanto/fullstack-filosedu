@@ -45,22 +45,20 @@ class TopicExerciseService extends CRUDService {
   getFormattedExercise (topicId, userId): Promise<NCResponse<FormattedTopicExercise>> {
     if (topicId && userId) {
       return Promise.join<any>(
-        this.getExercises(topicId),
         this.getGeneratedTopicExercise(userId, topicId),
         this.getExercisesHash(topicId),
         this.getTopic(topicId)
-      ).spread((resp: NCResponse<Exercise[]>, resp2: NCResponse<GeneratedTopicExercise>,
-                resp3: NCResponse<string>, resp4: NCResponse<Topic>) => {
-        if (resp3.status && resp4.status) {
-          const topicExerciseHash = resp3.data
+      ).spread((resp: NCResponse<GeneratedTopicExercise>,
+                resp2: NCResponse<string>, resp3: NCResponse<Topic>) => {
+        if (resp2.status && resp3.status) {
+          const topicExerciseHash = resp2.data
           // If there's valid exercise to be restored
-          if (resp2.status && resp2.data && resp2.data.topicExerciseHash === topicExerciseHash) {
-            return this.formatGeneratedTopicExercise(resp2.data)
+          if (resp.status && resp.data && resp.data.topicExerciseHash === topicExerciseHash) {
+            return this.formatGeneratedTopicExercise(resp.data)
           // If there's expired generated exercise or no generated exercise to be restored
-          } else if (resp.status && resp.data &&
-                    ((resp2.status && resp2.data && resp2.data.topicExerciseHash !== topicExerciseHash) ||
-                    !resp2.status)) {
-            return this.generateAndSaveExercise(topicId, userId, resp.data).then(resp5 => {
+          } else if ((resp.status && resp.data && resp.data.topicExerciseHash !== topicExerciseHash) ||
+                    !resp.status) {
+            return this.generateAndSaveExercise(topicId, userId).then(resp5 => {
               if (resp5.status && resp5.data) {
                 return this.formatGeneratedTopicExercise(resp5.data)
               } else {
@@ -72,7 +70,7 @@ class TopicExerciseService extends CRUDService {
             throw new Error('Unexpected error!')
           }
         } else {
-          throw new Error(`Failed to retrieve topic or topicExerciseHash: ${resp3.errMessage || resp4.errMessage}`)
+          throw new Error(`Failed to retrieve topic or topicExerciseHash: ${resp2.errMessage || resp3.errMessage}`)
         }
       })
     } else {
@@ -109,68 +107,78 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  private generateAndSaveExercise (topicId, userId, exercises: Exercise[]): Promise<NCResponse<GeneratedTopicExercise>> {
-    return this.getExercisesHash(topicId).then(resp => {
+  private generateAndSaveExercise (topicId, userId): Promise<NCResponse<GeneratedTopicExercise>> {
+    return this.generateExercise(topicId).then(resp => {
       if (resp.status && resp.data) {
-        const topicExerciseHash = resp.data
-        return Promise.map(exercises, exercise => {
-          return ExerciseService.generateExercise(exercise, true).then(resp => {
-            if (resp.status && resp.data) {
-              // Check this has questions
-              const parsedKnowns = JSON.parse(resp.data.knowns || '[]')
-              if (parsedKnowns.length > 0) {
-                return resp.data
-              } else {
-                // Skip over empty questions
-                return null
-              }
-            } else {
-              return null
+        const generatedExercise = resp.data
+        // In case that the exercise is no longer up-to-date, we have to delete stale generated exercise
+        return this.getModels('GeneratedTopicExercise').destroy({where: {
+          topicId,
+          userId,
+          submitted: false,
+          onCloud: AppConfig.CLOUD_SERVER
+        }}).then(() => {
+          return this.create<GeneratedTopicExercise>({
+            modelName: 'GeneratedTopicExercise',
+            data: {
+              topicId,
+              userId,
+              exerciseDetail: generatedExercise.exerciseDetail,
+              topicExerciseHash: generatedExercise.topicExerciseHash,
+              idealTime: generatedExercise.idealTime,
+              onCloud: AppConfig.CLOUD_SERVER
             }
-          })
-        }).then((results: Array<Partial<GeneratedExercise | null>>) => {
-          const exerciseDetail: any[] = []
-          let idealTime = 0
-
-          // Needed for TS to typecheck
-          function notEmpty<TValue> (value: TValue | null | undefined): value is TValue {
-            return value !== null && value !== undefined
-          }
-
-          results.filter(notEmpty).forEach(result => {
-            idealTime += result.idealTime || 0
-            exerciseDetail.push(result)
-          })
-
-          // In case that the exercise is no longer up-to-date, we have to delete stale generated exercise
-          return this.getModels('GeneratedTopicExercise').destroy({where: {
-            topicId,
-            userId,
-            submitted: false,
-            onCloud: AppConfig.CLOUD_SERVER
-          }}).then(() => {
-            return this.create<GeneratedTopicExercise>({
-              modelName: 'GeneratedTopicExercise',
-              data: {
-                topicId,
-                userId,
-                exerciseDetail: JSON.stringify(exerciseDetail),
-                topicExerciseHash,
-                idealTime,
-                onCloud: AppConfig.CLOUD_SERVER
-              }
-            })
           })
         })
       } else {
-        return { status: false, errMessage: 'Failed to retrieve exercise hash!' }
+        return { status: false, errMessage: 'Failed to generated topic exercise: ' + resp.errMessage }
       }
     })
+  }
 
+  private generateExercise (topicId: number): Promise<NCResponse<Partial<GeneratedTopicExercise>>> {
+    return Promise.join<any>(
+      this.getExercises(topicId),
+      this.getExercisesHash(topicId)
+    ).spread((resp: NCResponse<Exercise[]>, resp2: NCResponse<string>) => {
+      if (resp.status && resp.data && resp2.status && resp2.data) {
+        const exercises = resp.data
+        const topicExerciseHash = resp2.data
+        return Promise.map(exercises, exercise => {
+          return ExerciseService.generateExercise(exercise, true).then(resp => {
+            if (resp.status && resp.data) {
+              // Filter out empty exercise (i.e. added but no code)
+              if (JSON.parse(resp.data.knowns || '[]').length > 0) {
+                return resp.data
+              } else {
+                return null
+              }
+            } else {
+              throw new Error('Failed to generate exercise with id=' + exercise.id + ': ' + resp.errMessage)
+            }
+          })
+        }).then((generatedExercises: Partial<GeneratedExercise>[]) => {
+          generatedExercises = generatedExercises.filter(generatedExercise => generatedExercise !== null)
+          const idealTime = generatedExercises.reduce((idealTime, generatedExercise) => {
+            return idealTime + (generatedExercise.idealTime || 0)
+          }, 0)
+          return {
+            status: true,
+            data: {
+              idealTime,
+              topicExerciseHash,
+              exerciseDetail: JSON.stringify(generatedExercises)
+            }
+          } as NCResponse<Partial<GeneratedTopicExercise>>
+        })
+      } else {
+        return { status: false, errMessage: 'Failed to get exercises/hash: ' + resp.errMessage || resp2.errMessage }
+      }
+    })
   }
 
   // Format GeneratedTopicExercise for controller uses.
-  private formatGeneratedTopicExercise (generatedTopicExercise: GeneratedTopicExercise): Promise<NCResponse<FormattedTopicExercise>> {
+  formatGeneratedTopicExercise (generatedTopicExercise: GeneratedTopicExercise): Promise<NCResponse<FormattedTopicExercise>> {
     const topicId = generatedTopicExercise.topicId
     const generatedExercises: GeneratedExercise[] = JSON.parse(generatedTopicExercise.exerciseDetail)
     return Promise.map(generatedExercises, generatedExercise => {

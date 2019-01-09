@@ -144,37 +144,40 @@ class ExerciseService extends CRUDService {
   }
 
   // Created GeneratedExercise ready to be saved
-  generateExercise (exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
-    let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
-    // Generate X number of questions, which depends whether it's topic or subTopic
-    let questions: GeneratedQuestionData[] = topicOrSubtopic ?
-        exerciseSolver.generateTopicQuestions() :
-        exerciseSolver.generateQuestions()
+  generateExercise (exercise: Exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
+    try {
+      let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
+      // Generate X number of questions, which depends whether it's topic or subTopic
+      let questions: GeneratedQuestionData[] = topicOrSubtopic ?
+          exerciseSolver.generateTopicQuestions() :
+          exerciseSolver.generateQuestions()
+      let knowns: Array<{}> = []
+      let unknowns: Array<{}> = []
+      let unknownsVariables: Array<{}> = []
+      let formattedQuestionsPromises: Array<Promise<string>> = []
 
-    let knowns: Array<{}> = []
-    let unknowns: Array<{}> = []
-    let unknownsVariables: Array<{}> = []
-    let formattedQuestionsPromises: Array<Promise<string>> = []
+      questions.forEach(question => {
+        knowns.push(question.knowns)
+        unknowns.push(question.unknowns)
+        unknownsVariables.push(Object.keys(question.unknowns))
+      })
 
-    questions.forEach(question => {
-      knowns.push(question.knowns)
-      unknowns.push(question.unknowns)
-      unknownsVariables.push(Object.keys(question.unknowns))
-    })
-
-    return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
-      return {
-        status: true,
-        data: {
-          exerciseHash: ExerciseGenerator.getHash(exercise.data),
-          knowns: JSON.stringify(knowns), // Stringified JSON
-          unknowns: JSON.stringify(unknowns), // Stringified JSON
-          submitted: false,
-          idealTime: exerciseSolver.getExerciseIdealTime(),
-          exerciseId: exercise.id
+      return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
+        return {
+          status: true,
+          data: {
+            exerciseHash: ExerciseGenerator.getHash(exercise.data),
+            knowns: JSON.stringify(knowns), // Stringified JSON
+            unknowns: JSON.stringify(unknowns), // Stringified JSON
+            submitted: false,
+            idealTime: exerciseSolver.getExerciseIdealTime(),
+            exerciseId: exercise.id
+          }
         }
-      }
-    })
+      })
+    } catch (err) {
+      return Promise.reject(err)
+    }
   }
 
   /*

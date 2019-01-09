@@ -1,6 +1,7 @@
 import * as Promise from 'bluebird'
 import CourseService from '../../services/course-service'
 import ExerciseService, { ExerciseAnswer } from '../../services/exercise-service'
+import CompetencyExerciseService from '../../services/competency-exercise-service'
 import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 import ExerciseHelper from '../utils/exercise-helper'
 
@@ -152,6 +153,8 @@ class ExerciseController extends BaseController {
               }
             }).catch(err => log.error(TAG, err))
 
+            // TODO: This should be done on the service, so that we can share type definitions with
+            //       frontend
             Promise.join(
               ExerciseService.getRenderedExerciseStars(userId, exerciseId),
               ExerciseService.getExerciseLeaderboard(exerciseId),
@@ -190,6 +193,14 @@ class ExerciseController extends BaseController {
       }).catch(err => {
         next(err)
       })
+    })
+
+    this.routeGet('/testtesttest', (req, res, next) => {
+      /* CompetencyExerciseService.generateExercise().then(resp => {
+        console.log(JSON.stringify(resp, null, 2))
+      }).catch(err => {
+        console.error(err)
+      }) */
     })
   }
 }
