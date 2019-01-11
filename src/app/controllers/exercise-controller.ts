@@ -195,12 +195,22 @@ class ExerciseController extends BaseController {
       })
     })
 
-    this.routeGet('/testtesttest', (req, res, next) => {
-      /* CompetencyExerciseService.generateExercise().then(resp => {
-        console.log(JSON.stringify(resp, null, 2))
+    this.routeGet('/competency-test', (req, res, next) => {
+      CompetencyExerciseService.getFormattedExercise(53).then(resp => {
+        if (resp.status && resp.data) {
+          res.locals.topicName = resp.data.topicName
+          res.locals.formattedExercises = resp.data.formattedExercises
+          res.locals.idealTime = resp.data.idealTime
+          res.locals.elapsedTime = resp.data.elapsedTime
+          res.render('competency-exercise')
+          console.log(JSON.stringify(resp, null, 2))
+        } else {
+          next(new Error(resp.errMessage))
+        }
+        res.json(resp)
       }).catch(err => {
         console.error(err)
-      }) */
+      })
     })
   }
 }

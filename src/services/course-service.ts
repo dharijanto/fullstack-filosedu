@@ -165,7 +165,7 @@ ORDER BY topicNo, subtopicNo ASC
     })
   }
 
-  getOrderedTopic (): Promise<NCResponse<Topic[]>> {
+  getOrderedTopics (): Promise<NCResponse<Topic[]>> {
     return this.read<Topic>({ modelName: 'Topic', order: [['topicNo', 'ASC']], searchClause: {} })
   }
 
@@ -234,14 +234,14 @@ ORDER BY topicNo, subtopicNo ASC
             modelName: 'Subtopic',
             searchClause: { subtopicNo: { [Sequelize.Op.lt]: subtopicNo } },
             include: [{ model: this.getModels('Topic') }],
-            order: [['subtopicNo', 'DESC']],
-            limit: 1}),
+            order: [['subtopicNo', 'DESC']]
+          }),
           this.readOne<Subtopic>({
             modelName: 'Subtopic',
             searchClause: { subtopicNo: { [Sequelize.Op.gt]: subtopicNo } },
             include: [{ model: this.getModels('Topic') }],
-            order: [['subtopicNo', 'ASC']],
-            limit: 1})
+            order: [['subtopicNo', 'ASC']]
+          })
         ).spread((resp2: NCResponse<Subtopic>, resp3: NCResponse<Subtopic>) => {
           return { status: true, data: { prev: resp2.data, next: resp3.data } } as NCResponse<any>
         })

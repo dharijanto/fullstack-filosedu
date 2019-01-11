@@ -77,6 +77,7 @@ interface GeneratedTopicExercise extends BaseModel {
   idealTime: number
   onCloud: boolean
   topicId: number
+  topicName: string
   userId: number
   topic?: Topic
 }
@@ -85,10 +86,9 @@ interface GeneratedCompetencyExercise extends BaseModel {
   submitted: boolean
   abandoned: boolean
   score: number
-  timeFinish: string
   hash: string
-  onCloud: boolean
   exerciseDetail: string // JSON.stringify(Array<GeneratedTopicExercise>)
+  onCloud: boolean 
 }
 
 // END OF RAW Sequelize Model

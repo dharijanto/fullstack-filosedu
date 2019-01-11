@@ -3,6 +3,7 @@ import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generat
 import CRUDService from './crud-service-neo'
 import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import ExerciseService from './exercise-service'
+import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver';
 
 let path = require('path')
 
@@ -54,13 +55,13 @@ class TopicExerciseService extends CRUDService {
           const topicExerciseHash = resp2.data
           // If there's valid exercise to be restored
           if (resp.status && resp.data && resp.data.topicExerciseHash === topicExerciseHash) {
-            return this.formatGeneratedTopicExercise(resp.data)
+            return this.formatExercise(resp.data)
           // If there's expired generated exercise or no generated exercise to be restored
           } else if ((resp.status && resp.data && resp.data.topicExerciseHash !== topicExerciseHash) ||
                     !resp.status) {
             return this.generateAndSaveExercise(topicId, userId).then(resp5 => {
               if (resp5.status && resp5.data) {
-                return this.formatGeneratedTopicExercise(resp5.data)
+                return this.formatExercise(resp5.data)
               } else {
                 return { status: false, errMessage: resp5.errMessage }
               }
@@ -93,7 +94,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   // The hash is computed from each of the building subtopic Exercises.
   // In other words, if any subtopic Exercise changes, hash for respective
   // TopicExercise that depends on it also changes.
-  private getExercisesHash (topicId): Promise<NCResponse<string>> {
+  getExercisesHash (topicId): Promise<NCResponse<string>> {
     return this.getExercises(topicId).then(resp => {
       if (resp.status && resp.data) {
         const combinedHash = resp.data.reduce((acc, hash) => {
@@ -136,7 +137,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  private generateExercise (topicId: number): Promise<NCResponse<Partial<GeneratedTopicExercise>>> {
+  generateExercise (topicId: number, quantityVariableName: QuantityVariableName = 'reviewQuantity'): Promise<NCResponse<Partial<GeneratedTopicExercise>>> {
     return Promise.join<any>(
       this.getExercises(topicId),
       this.getExercisesHash(topicId)
@@ -145,7 +146,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         const exercises = resp.data
         const topicExerciseHash = resp2.data
         return Promise.map(exercises, exercise => {
-          return ExerciseService.generateExercise(exercise, true).then(resp => {
+          return ExerciseService.generateExercise(exercise, quantityVariableName).then(resp => {
             if (resp.status && resp.data) {
               // Filter out empty exercise (i.e. added but no code)
               if (JSON.parse(resp.data.knowns || '[]').length > 0) {
@@ -178,48 +179,54 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   // Format GeneratedTopicExercise for controller uses.
-  formatGeneratedTopicExercise (generatedTopicExercise: GeneratedTopicExercise): Promise<NCResponse<FormattedTopicExercise>> {
+  formatExercise (generatedTopicExercise: Partial<GeneratedTopicExercise>): Promise<NCResponse<FormattedTopicExercise>> {
     const topicId = generatedTopicExercise.topicId
-    const generatedExercises: GeneratedExercise[] = JSON.parse(generatedTopicExercise.exerciseDetail)
-    return Promise.map(generatedExercises, generatedExercise => {
-      return this.readOne<Exercise>({ modelName: 'Exercise', searchClause: { id: generatedExercise.exerciseId } }).then(resp2 => {
-        if (resp2.status && resp2.data) {
-          let exerciseSolver = ExerciseGenerator.getExerciseSolver(resp2.data.data)
-          let unknowns: Array<string[]> = []
-          let formattedQuestionsPromises: Array<Promise<string>> = []
-          JSON.parse(generatedExercise.knowns).forEach(knowns => {
-            formattedQuestionsPromises.push(exerciseSolver.formatQuestion(knowns))
-          })
-          JSON.parse(generatedExercise.unknowns).forEach(_unknowns => {
-            unknowns.push(Object.keys(_unknowns))
-          })
-          return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
-            return {
-              renderedQuestions,
-              unknowns
-            } as FormattedExercise
-          })
-        } else {
-          throw new Error(resp2.errMessage)
-        }
-      })
-    }).then(formattedExercises => {
-      return this.readOne<Topic>({ modelName: 'Topic', searchClause: { id: topicId } }).then(resp => {
-        if (resp.status && resp.data) {
-          return {
-            status: true,
-            data: {
-              topicName: resp.data.topic,
-              formattedExercises,
-              idealTime: generatedTopicExercise.idealTime,
-              elapsedTime: Utils.getElapsedTime(generatedTopicExercise.createdAt)
-            }
+    try {
+      const generatedExercises: GeneratedExercise[] = JSON.parse(generatedTopicExercise.exerciseDetail || '')
+      return Promise.map(generatedExercises, generatedExercise => {
+        return this.readOne<Exercise>({ modelName: 'Exercise', searchClause: { id: generatedExercise.exerciseId } }).then(resp2 => {
+          if (resp2.status && resp2.data) {
+            let exerciseSolver = ExerciseGenerator.getExerciseSolver(resp2.data.data)
+            let unknowns: Array<string[]> = []
+            let formattedQuestionsPromises: Array<Promise<string>> = []
+            JSON.parse(generatedExercise.knowns).forEach(knowns => {
+              formattedQuestionsPromises.push(exerciseSolver.formatQuestion(knowns))
+            })
+            JSON.parse(generatedExercise.unknowns).forEach(_unknowns => {
+              unknowns.push(Object.keys(_unknowns))
+            })
+            return Promise.all(formattedQuestionsPromises).then(renderedQuestions => {
+              return {
+                renderedQuestions,
+                unknowns
+              } as FormattedExercise
+            })
+          } else {
+            throw new Error(resp2.errMessage)
           }
-        } else {
-          return { status: false, errMessage: '' }
-        }
+        })
+      }).then(formattedExercises => {
+        return this.readOne<Topic>({ modelName: 'Topic', searchClause: { id: topicId } }).then(resp => {
+          if (resp.status && resp.data) {
+            return {
+              status: true,
+              data: {
+                topicName: resp.data.topic,
+                formattedExercises,
+                idealTime: generatedTopicExercise.idealTime || 0,
+                elapsedTime: Utils.getElapsedTime(generatedTopicExercise.createdAt)
+              }
+            }
+          } else {
+            return { status: false, errMessage: '' }
+          }
+        })
       })
-    })
+    } catch (err) {
+      log.error(TAG, 'Failed to parse generatedTopicExerise: ' + JSON.stringify(generatedTopicExercise))
+      return Promise.reject(err)
+      // return Promise.resolve({ status: false, errMessage: 'Failed to parse generatedTopicExerise: ' + JSON.stringify(generatedTopicExercise) })
+    }
   }
 
   // Grade a TopicExercise
@@ -268,6 +275,9 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   // Update GeneratedTopicExercise as submitted
+  // TODO: We added userAnswer column to GeneratedTopicExercise, so we should be able to
+  //       just put the answer there? However current approach makes it really easy
+  //       to figure out what mistakes user is making.
   finishExercise (generatedTopicExerciseId: number, score: number, timeFinish: string,
                   exerciseDetails: GeneratedTopicExerciseDetail[], answers: TopicExerciseAnswer[]): Promise<NCResponse<number>> {
     // This is a bit annoying..
@@ -280,7 +290,6 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     //    a topic exercise.
     let answerIndex = 0
     const exerciseDetail = JSON.stringify(exerciseDetails.map(exerciseDetail => {
-      console.dir(exerciseDetail)
       const exerciseDetailAnswers: Array<any> = []
       JSON.parse(exerciseDetail.knowns).forEach(_ => {
         exerciseDetailAnswers.push(answers[answerIndex])

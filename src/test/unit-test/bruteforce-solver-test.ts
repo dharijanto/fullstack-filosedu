@@ -15,7 +15,7 @@ describe('Bruteforce Solver', function () {
       let exerciseSolver = ExerciseGenerator.getExerciseSolver(q1)
       // Since this is a bruteforce method, makes sense to try it multiple times
       _.range(0, 10).forEach(() => {
-        let questions = exerciseSolver.generateQuestions()
+        let questions = exerciseSolver.generateQuestions('quantity')
         // Number of generated questions should be the same as what's asked
         expect(questions).to.have.length(q1.quantity)
         // Check that each question is correct

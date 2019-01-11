@@ -3,7 +3,7 @@ let log = require('npmlog')
 
 let Utility = require(path.join(__dirname, '../../utils/utility'))
 import * as Promise from 'bluebird'
-import ExerciseSolver from './exercise-solver'
+import ExerciseSolver, { QuantityVariableName } from './exercise-solver'
 
 const TAG = 'BruteforceSolver'
 
@@ -94,14 +94,8 @@ export default class BruteforceSolver extends ExerciseSolver {
   }
 
   // Generate question for sub-topic exercise
-  generateQuestions (): GeneratedQuestionData[] {
-    const quantity = this.question.quantity || 0
-    return this._generateQuestions(quantity)
-  }
-
-  // Generate question for topic exercise
-  generateTopicQuestions (): GeneratedQuestionData[] {
-    const quantity = this.question.reviewQuantity || 0
+  generateQuestions (quantityVariableName: QuantityVariableName): GeneratedQuestionData[] {
+    const quantity = this.question[quantityVariableName] || 0
     return this._generateQuestions(quantity)
   }
 }

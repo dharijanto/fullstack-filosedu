@@ -143,7 +143,7 @@ class SubtopicController extends BaseController {
       let code = req.body.code
       try {
         let exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
-        let questions = exerciseSolver.generateQuestions()
+        let questions = exerciseSolver.generateQuestions('quantity')
         Promise.map(questions, question => {
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
             return { question: formattedQuestion, answer: question.unknowns }

@@ -3,6 +3,7 @@ import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import CRUDService from './crud-service-neo'
 import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
 import ExerciseHelper from '../app/utils/exercise-helper'
+import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver';
 
 let path = require('path')
 
@@ -86,7 +87,7 @@ class ExerciseService extends CRUDService {
 
   // Create a new GeneratedExercise and save it to database
   generateAndSaveExercise (exercise, userId: number): Promise<NCResponse<GeneratedExercise>> {
-    return this.generateExercise(exercise).then(resp => {
+    return this.generateExercise(exercise, 'quantity').then(resp => {
       if (resp.status && resp.data) {
         const unsavedGeneratedExercise = resp.data
         return this.getModels('GeneratedExercise').destroy({where: {
@@ -144,13 +145,11 @@ class ExerciseService extends CRUDService {
   }
 
   // Created GeneratedExercise ready to be saved
-  generateExercise (exercise: Exercise, topicOrSubtopic = false): Promise<NCResponse<Partial<GeneratedExercise>>> {
+  generateExercise (exercise: Exercise, quantityVariableName: QuantityVariableName): Promise<NCResponse<Partial<GeneratedExercise>>> {
     try {
       let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
       // Generate X number of questions, which depends whether it's topic or subTopic
-      let questions: GeneratedQuestionData[] = topicOrSubtopic ?
-          exerciseSolver.generateTopicQuestions() :
-          exerciseSolver.generateQuestions()
+      let questions: GeneratedQuestionData[] = exerciseSolver.generateQuestions(quantityVariableName)
       let knowns: Array<{}> = []
       let unknowns: Array<{}> = []
       let unknownsVariables: Array<{}> = []

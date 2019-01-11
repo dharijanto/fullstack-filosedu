@@ -1,0 +1,58 @@
+extends layout/index.pug
+
+append head
+  link(rel="stylesheet" href="/assets/css/exercise-style.css")
+
+block contents
+    #leaderboard.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+      .modal-dialog(role='document')
+        .modal-content
+          .modal-header
+            h4#exampleModalLabel.modal-title.text-center Ranking
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') ×
+          .modal-body#leaderboard-content
+          .modal-footer
+            button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+
+    .container
+      .row
+        include includes/exercise-timer
+      h1.text-center Test Pemahaman
+      h4.text-center #{topicName}
+      h4.text-center
+        a(href='/') Kembali
+      h4.text-center
+        button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
+      div.text-center#questionSubmit
+        - var pointerIndex = 0
+        each formattedExercise in formattedExercises
+            //- if ((formattedExercise.renderedQuestions).length > 0)
+            each renderedQuestion, index in formattedExercise.renderedQuestions
+              form(name='question')
+                .row.rendered-question(style="max-width: 720px; margin:auto")
+                  | !{renderedQuestion}
+                  for unknown in formattedExercise.unknowns[index]
+                    .row.form-group(style="width:40%; margin:auto;")
+                      .col-md-2
+                        label.control-label(style="font-size: 150%") #{unknown}
+                      .col-md-10
+                        input.form-control.answerInput(name=`${unknown}` value='')
+                div(class=`resultAnswer_${pointerIndex}`)
+                - pointerIndex++
+                br
+            hr(style="height: 1px")
+      div.text-center(style="margin-bottom:5%;")
+        div.scoreSection
+          p.hidden(id='currentScore')
+          p.hidden(id='submissionError')
+        a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
+        a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+
+append scripts
+  script().
+    window['elapsedTime'] = !{elapsedTime}
+    window['idealTime'] = !{idealTime}
+  script(src=('/assets/vendor/form-serializer/dist/jquery.serialize-object.min.js'))
+  script(src="/assets/vendor/jquery-timer/timer.jquery.js")
+  script(src=`${bundle}`)

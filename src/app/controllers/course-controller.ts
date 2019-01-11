@@ -16,6 +16,7 @@ let Utils = require(path.join(__dirname, '../../lib/utils'))
 
 const TAG = 'CourseController'
 
+// TODO: Should move Topic Exercise-related code to different controller
 class CourseController extends BaseController {
   // Since we're caching static files, we need to hash
   // bundled JS so that they're renewed
@@ -50,6 +51,7 @@ class CourseController extends BaseController {
       let userId = req.user.id
       TopicExerciseService.getFormattedExercise(topicId, userId).then(resp => {
         if (resp.status && resp.data) {
+          console.dir('Elapsed time=' + resp.data.elapsedTime)
           res.locals.idealTime = resp.data.idealTime
           res.locals.elapsedTime = resp.data.elapsedTime
           res.locals.topicName = resp.data.topicName

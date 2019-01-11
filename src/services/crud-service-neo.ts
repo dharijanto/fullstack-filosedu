@@ -84,7 +84,7 @@ export default class CRUDService {
                                  { modelName: string, searchClause: WhereOptions<T>,
                                    order?: Array<Array<string>>,
                                    include?: Array<Model<any, any> | IncludeOptions>,
-                                   limit?: number, trx?: Transaction
+                                   trx?: Transaction
                                  }): Promise<NCResponse<T>> {
     const opts = { modelName, searchClause, order }
     return this.read({ modelName, searchClause, order, include, trx }).then(resp => {

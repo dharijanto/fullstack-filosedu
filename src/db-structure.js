@@ -143,6 +143,16 @@ function addTables (sequelize, models) {
   models.GeneratedTopicExercise.belongsTo(models.Topic)
   models.GeneratedTopicExercise.belongsTo(models.User)
 
+  models.GeneratedCompetencyExercise = sequelize.define('generatedCompetencyExercises', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
+    abandoned: {type: Sequelize.BOOLEAN, defaultValue: false},
+    score: {type: Sequelize.FLOAT},
+    hash: {type: Sequelize.STRING},
+    exerciseDetail: {type: Sequelize.TEXT},
+    onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
+  })
+
   models.Synchronization = sequelize.define('synchronization', {
     schoolIdentifier: {type: Sequelize.STRING}, // Identify which school
     serverHash: {type: Sequelize.STRING}, // Identify which version of school server

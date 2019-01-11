@@ -40,6 +40,7 @@
     "select2": "^4.0.6-rc.1",
     "summernote": "^0.8.8",
     "toastr": "^2.1.2",
+    "tsify": "^4.0.1",
     "uglifyify": "^4.0.4",
     "watchify": "^3.9.0"
   }

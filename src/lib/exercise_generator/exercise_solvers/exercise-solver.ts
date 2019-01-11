@@ -13,6 +13,8 @@ export interface BaseQuestionData {
   printFn: (knowns) => string | Promise<string>
 }
 
+export type QuantityVariableName = 'quantity' | 'reviewQuantity' | 'competencyQuantity'
+
 export default abstract class ExerciseSolver {
   public static readonly solverName: string
   protected question: BaseQuestionData
@@ -50,11 +52,8 @@ export default abstract class ExerciseSolver {
     return (this.question.idealTimePerQuestion * this.question.quantity) || 0
   }
 
-  getQuestionQuantity () {
-    return this.question.quantity || 0
-  }
-
-  abstract generateQuestions (): GeneratedQuestionData[]
+  // quantityVariableName: string indicating variable where quantity is stored (i.e. 'quantity', 'reviewQuantity', or 'competencyQuantity')
+  abstract generateQuestions (quantityVariableName: QuantityVariableName): GeneratedQuestionData[]
 
   isAnswer (known, unknown): boolean {
     return this.question.isAnswerFn(known, unknown)
