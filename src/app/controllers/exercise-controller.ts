@@ -196,20 +196,50 @@ class ExerciseController extends BaseController {
     })
 
     this.routeGet('/competency-test', (req, res, next) => {
-      CompetencyExerciseService.getFormattedExercise(53).then(resp => {
+      const competencyExerciseId = req.session.competencyExerciseId || 0
+
+      CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
         if (resp.status && resp.data) {
-          res.locals.topicName = resp.data.topicName
-          res.locals.formattedExercises = resp.data.formattedExercises
-          res.locals.idealTime = resp.data.idealTime
-          res.locals.elapsedTime = resp.data.elapsedTime
-          res.render('competency-exercise')
-          console.log(JSON.stringify(resp, null, 2))
+          return resp.data
         } else {
-          next(new Error(resp.errMessage))
+          return CompetencyExerciseService.generateAndSaveExercise().then(resp => {
+            if (resp.status && resp.data) {
+              return resp.data
+            } else {
+              next(new Error(`Failed to create generatedCompetencyExercise: ${resp.errMessage}`))
+            }
+          })
         }
-        res.json(resp)
-      }).catch(err => {
-        console.error(err)
+      }).then((generatedExercise: GeneratedCompetencyExercise) => {
+        const resp2 = CompetencyExerciseService.getExerciseState(generatedExercise)
+        if (resp2.status && resp2.data) {
+          const state = resp2.data
+          if (state === 'exercising') {
+            // Continue to exercise page
+            CompetencyExerciseService.continueExercise(generatedExercise).then(resp => {
+              if (resp.status && resp.data) {
+                const formattedExercise = resp.data
+                res.locals.topicName = formattedExercise.topicName
+                res.locals.formattedExercises = formattedExercise.formattedExercises
+                res.locals.idealTime = formattedExercise.idealTime
+                res.locals.elapsedTime = formattedExercise.elapsedTime
+                res.render('competency-exercise')
+              } else {
+                next(new Error(resp.errMessage))
+              }
+              res.json(resp)
+            }).catch(next)
+          } else if (state === 'pendingExercise') {
+            // Show "Start Exercising" page
+          } else if (state === 'finished') {
+            // Show submission page here
+            // Send email so that we know somebody completes an exercise!
+          } else if (state === 'submitted' || state === 'abandoned') {
+            // Show take competency test again here
+            // send email so that we know somebody abandons an exercise!
+          }
+
+        }
       })
     })
   }

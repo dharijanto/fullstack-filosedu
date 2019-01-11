@@ -3,7 +3,8 @@ import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generat
 import CRUDService from './crud-service-neo'
 import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import ExerciseService from './exercise-service'
-import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver';
+import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver'
+import * as Utils from '../lib/utils'
 
 let path = require('path')
 
@@ -13,7 +14,7 @@ let moment = require('moment')
 let Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
-const Utils = require(path.join(__dirname, '../lib/utils'))
+// const Utils = require(path.join(__dirname, '../lib/utils'))
 
 const TAG = 'TopicExerciseService'
 

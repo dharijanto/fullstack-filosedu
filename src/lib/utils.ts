@@ -3,6 +3,7 @@ import * as flatToTrees from 'flatToTrees'
 
 // since: SQL date or Javascript Date
 export function getElapsedTime (since) {
+  console.dir('since=' + since)
   return moment().diff(since) / 1000
 }
 

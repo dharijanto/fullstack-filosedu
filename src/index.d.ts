@@ -89,6 +89,7 @@ interface GeneratedCompetencyExercise extends BaseModel {
   hash: string
   exerciseDetail: string // JSON.stringify(Array<GeneratedTopicExercise>)
   onCloud: boolean 
+  userId: number
 }
 
 // END OF RAW Sequelize Model
@@ -111,4 +112,3 @@ interface FormattedTopicExercise {
   idealTime: number
   elapsedTime: number
 }
-

@@ -152,6 +152,7 @@ function addTables (sequelize, models) {
     exerciseDetail: {type: Sequelize.TEXT},
     onCloud: {type: Sequelize.BOOLEAN, defaultValue: true}
   })
+  models.GeneratedCompetencyExercise.belongsTo(models.User)
 
   models.Synchronization = sequelize.define('synchronization', {
     schoolIdentifier: {type: Sequelize.STRING}, // Identify which school

@@ -55,20 +55,19 @@ export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
   submitted: has been submitted, report page and score are to be shown.
   abandoned: has been abandoned, abandoned page where user can re-take is to be shown.
   finished: exercises has been completed, but not yet submitted, submission page is to be shown.
-  unfinished: there is at least 1 exercise needs to be finished, exercise page is to be shown
+  exercising: in the middle of an exercise.
+  pendingExercise: there's an unsubmitted exercise, but it's not yet started
  */
-export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'unfinished'
+export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising' | 'pendingExercise'
 
 class CompetencyExerciseService extends CRUDService {
 
   // Get an exercise that is not yet finished
-  private getUnsubmittedGeneratedExercise (competencyExerciseId: number): Promise<NCResponse<GeneratedCompetencyExercise>> {
+  getGeneratedExercise (competencyExerciseId: number): Promise<NCResponse<GeneratedCompetencyExercise>> {
     return super.readOne<GeneratedCompetencyExercise>({
       modelName: 'GeneratedCompetencyExercise',
       searchClause: {
-        id: competencyExerciseId,
-        submitted: false,
-        abandoned: false
+        id: competencyExerciseId
       }}
     )
   }
@@ -78,15 +77,17 @@ class CompetencyExerciseService extends CRUDService {
     true: the generated exercise is found
     false: the generated exercise is not found or found but with invalid state
    */
-  private getExerciseState (generatedExercise: GeneratedCompetencyExercise): NCResponse<ExerciseState> {
+  getExerciseState (generatedExercise: GeneratedCompetencyExercise): NCResponse<ExerciseState> {
     let state: ExerciseState
     const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
     if (generatedExercise.submitted) {
       state = 'submitted'
     } else if (generatedExercise.abandoned) {
       state = 'abandoned'
-    } else if (topics.find(topic => !topic.submitted)) {
-      state = 'unfinished'
+    } else if (topics.find(topic => !topic.submitted && topic.createdAt !== null)) {
+      state = 'exercising'
+    } else if (topics.find(topic => !topic.submitted && topic.createdAt === undefined)) {
+      state = 'pendingExercise'
     } else if (topics.find(topic => !topic.submitted) === undefined) {
       state = 'finished'
     } else {
@@ -110,56 +111,110 @@ class CompetencyExerciseService extends CRUDService {
     })
   }
 
-  getFormattedExercise (competencyExerciseId: number): Promise<NCResponse<FormattedTopicExercise>> {
-    if (competencyExerciseId) {
-      return Promise.join<any>(
-        this.getUnsubmittedGeneratedExercise(competencyExerciseId),
-        this.getExerciseHash()
-      ).spread((resp: NCResponse<GeneratedCompetencyExercise>, resp2: NCResponse<string>) => {
-        if (resp2.status && resp2.data) {
-          const latestHash = resp2.data
-          if (resp.status && resp.data) {
-            const generatedExercise = resp.data
-            // Up to date
-            if (generatedExercise.hash === latestHash) {
-              return { status: true, data: generatedExercise }
-            // Exercise(s) have changed since last generated
+  startExercise (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'pendingExercise') {
+        // Update status from 'pendingExercise' to 'exercising'
+        // This is essentially done by adding 'createdAt' into the first unsubmitted GeneratedTopicExercise
+        // Existence of 'createdAt' field identifies that user is currently exercising on that topic
+        const generatedTopicExercises: Partial<GeneratedTopicExercise>[] = JSON.parse(generatedExercise.exerciseDetail)
+        const exerciseToStart = generatedTopicExercises.find(generatedTopicExercise => {
+          return generatedTopicExercise.submitted === false && generatedTopicExercise.createdAt === undefined
+        })
+        if (exerciseToStart !== undefined) {
+          exerciseToStart.createdAt = moment.utc().format('YYYY-MM-DD HH:mm:ss')
+          return super.update<GeneratedCompetencyExercise>({
+            modelName: 'GeneratedTopicExercise',
+            data: { id: generatedExercise.id, exerciseDetail: JSON.stringify(generatedTopicExercises) }
+          }).then(resp => {
+            if (resp.status) {
+              // We can just pass generatedExercise with exerciseDetail updated manually, but
+              // we wanna make that the update really went through, so we re-read it.
+              return this.getGeneratedExercise(generatedExercise.id).then(resp => {
+                if (resp.status && resp.data) {
+                  return this.continueExercise(resp.data)
+                } else {
+                  return { status: false, errMessage: 'Failed to get generatedExercise!' }
+                }
+              })
             } else {
-              return this.generateAndSaveExercise()
+              return { status: false, errMessage: 'Failed to update generatedCompetencyExercise!' }
             }
-          // There's no generatedExercise to be restored
-          } else {
-            return this.generateAndSaveExercise()
-          }
+          })
         } else {
-          return { status: false, errMessage: `Failed to retrieve exercise hash: ${resp2.errMessage}`}
+          return Promise.resolve({ status: false, errMessage: 'There is no topic exercise to start!' })
         }
-      }).then(resp => {
-        if (resp.status && resp.data) {
-          const generatedExercise = resp.data
-          const resp2 = this.getExerciseState(generatedExercise)
-          if (resp2.status && resp2.data) {
-            const state: ExerciseState = resp2.data
-            if (state !== 'unfinished') {
-              return { status: false, errMessage: `Invalid exercise state: ${state}. Only unfinished exercise can be formatted!` }
-            } else {
-              return this.formatExercise(generatedExercise)
-            }
-          } else {
-            return { status: false, errMessage: `Failed to get exercise state: ${resp.errMessage}` }
-          }
-        } else {
-          return { status: false, errMessage: `Failed to get generatedExercise: ${resp.errMessage}` }
-        }
-      })
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only 'pendingExercise' can be started!` })
+      }
     } else {
-      return Promise.resolve({ status: false, errMessage: 'competencyExerciseId is required!' })
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
+  }
+
+  continueExercise (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'exercising') {
+        return this.formatExercise(generatedExercise)
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only 'exercising' can be continued!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
+  }
+
+  submitExercise (generatedExercise: GeneratedCompetencyExercise, userId: number): Promise<NCResponse<number>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'finished') {
+        const generatedTopicExercises: Partial<GeneratedTopicExercise>[] = JSON.parse(generatedExercise.exerciseDetail)
+        const score = generatedTopicExercises.reduce((score, generatedTopicExercise) => {
+          return score + generatedExercise.score
+        }, 0)
+        return super.update<GeneratedCompetencyExercise>({
+          modelName: 'GeneratedCompetencyExercise',
+          data: {
+            id: generatedExercise.id,
+            submitted: true,
+            score,
+            userId
+          }
+        })
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only 'finished' exercise can be submitted!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
+  }
+
+  abandonExercise (generatedExercise: GeneratedCompetencyExercise, userId: number): Promise<NCResponse<number>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data !== 'finished') {
+        return super.update<GeneratedCompetencyExercise>({
+          modelName: 'GeneratedCompetencyExercise',
+          data: {
+            id: generatedExercise.id,
+            abandoned: true,
+            submitted: false,
+            userId
+          }
+        })
+      } else {
+        return Promise.resolve({ status: false, errMessage: `'finished' exercise can't be abandoned!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
     }
   }
 
   // For CompetencyExercise, formatting is done per topic, the first that hasn't been submitted
   // We're not rendering everything one-shot like TopicExercise or Exercise
-  formatExercise (generatedCompetencyExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
+  private formatExercise (generatedCompetencyExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
     const generatedTopicExercises = JSON.parse(generatedCompetencyExercise.exerciseDetail) as Partial<GeneratedTopicExercise>[]
     const generatedTopicExercise = generatedTopicExercises.find(topic => !topic.submitted)
     if (!generatedTopicExercise) {
@@ -218,7 +273,7 @@ class CompetencyExerciseService extends CRUDService {
     return ExerciseGenerator.getHash(allHashes)
   }
 
-  private generateAndSaveExercise (): Promise<NCResponse<GeneratedCompetencyExercise>> {
+  generateAndSaveExercise (): Promise<NCResponse<GeneratedCompetencyExercise>> {
     return this.generateExercise().then(resp => {
       if (resp.status && resp.data) {
         const generatedExercise = resp.data
