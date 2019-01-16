@@ -169,7 +169,7 @@ class ExerciseService extends CRUDService {
             knowns: JSON.stringify(knowns), // Stringified JSON
             unknowns: JSON.stringify(unknowns), // Stringified JSON
             submitted: false,
-            idealTime: exerciseSolver.getExerciseIdealTime(),
+            idealTime: exerciseSolver.getExerciseIdealTime(questions.length),
             exerciseId: exercise.id
           }
         }

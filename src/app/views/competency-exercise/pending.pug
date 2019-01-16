@@ -1,0 +1,27 @@
+extends ../layout/index.pug
+include ../includes/utils.pug
+
+append head
+  link(rel="stylesheet" href="/assets/css/topics-style.css")
+
+append initialization
+  - const activePage = 'modules'
+
+block contents
+  div.container
+    if user
+      p= 'Selamat Datang, ' + user.fullName || user.username
+    .row
+      .col-md-12
+        img(src="source")
+    .row
+      .col-md-12
+        .jumbotron
+          p.
+            #[h1 #{topicName}]
+            <br>
+            Modul ke #{topicNo} dari #{topicQuantity}
+            <br>
+            Jumlah soal: #{questionQuantity}
+            <br>
+            Waktu pengerjaan: #{idealTime} detik.

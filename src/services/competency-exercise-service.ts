@@ -6,6 +6,7 @@ import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import ExerciseService from './exercise-service'
 import TopicExerciseService from './topic-exercise-service'
 import * as Utils from '../lib/utils'
+import { resolvePtr } from 'dns';
 
 let path = require('path')
 
@@ -32,7 +33,6 @@ Step:
 2. Check if submitted ==== false && abandoned === false
 3. Check competency exercise hash. If it has changed, re-create.
 4. Show "time to take a break" page
-5. 
  */
 
 interface TopicWithExercises {
@@ -45,6 +45,14 @@ interface TopicWithExercises {
   }[]
 }
 
+interface TopicInformation {
+  topicName: string
+  topicNo: number
+  topicQuantity: number
+  questionQuantity: number
+  idealTime: number
+}
+
 export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
 
 /*
@@ -52,12 +60,21 @@ export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
   This state is inferred from GeneratedCompetencyExercise, but is presented
   in a more user-friendly way for controller to use.
 
-  submitted: has been submitted, report page and score are to be shown.
-  abandoned: has been abandoned, abandoned page where user can re-take is to be shown.
-  finished: exercises has been completed, but not yet submitted, submission page is to be shown.
-  exercising: in the middle of an exercise.
-  pendingExercise: there's an unsubmitted exercise, but it's not yet started
- */
+  submitted: Has been submitted, report page and score are to be shown.
+             This is identified by submitted column = true
+  abandoned: Has been abandoned, abandoned page where user can re-take is to be shown.
+             This is identified by abandoned column = true
+             finished: exercises has been completed, but not yet submitted, submission page is to be shown.
+             This is identified by all generatedTopicExercises' submitted = true
+  exercising: In the middle of a topic exercise.
+              This is identified by at least one generatedTopicExercise with submitted = false that
+              has createdAt field defined.
+  pendingExercise: There's a topic exercise to do, but not started
+                   This is identified by the at least one generatedTopicExercise with submitted = true that
+                   doesn't have createdAt field defined.
+
+The most unintuitive things are probably exercising and pendingExercise state.
+*/
 export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising' | 'pendingExercise'
 
 class CompetencyExerciseService extends CRUDService {
@@ -84,7 +101,7 @@ class CompetencyExerciseService extends CRUDService {
       state = 'submitted'
     } else if (generatedExercise.abandoned) {
       state = 'abandoned'
-    } else if (topics.find(topic => !topic.submitted && topic.createdAt !== null)) {
+    } else if (topics.find(topic => !topic.submitted && 'createdAt' in topic)) {
       state = 'exercising'
     } else if (topics.find(topic => !topic.submitted && topic.createdAt === undefined)) {
       state = 'pendingExercise'
@@ -111,6 +128,65 @@ class CompetencyExerciseService extends CRUDService {
     })
   }
 
+  // Given an exercise with state 'pendingExercise', return "break page" associated with it
+  getPendingTopicInformation (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<TopicInformation>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'pendingExercise') {
+        const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
+        let generatedTopicExercise: Partial<GeneratedTopicExercise> | null = null
+        let idx
+        for (idx = 0; idx < topics.length; idx++) {
+          const topic = topics[idx]
+          if (!topic.submitted && topic.createdAt === undefined) {
+            generatedTopicExercise = topics[idx]
+            break
+          }
+        }
+        // const generatedTopicExercise = topics.find(topic => !topic.submitted && topic.createdAt === undefined)
+        if (generatedTopicExercise !== null) {
+          try {
+            const generatedExercises = JSON.parse(generatedTopicExercise.exerciseDetail || '') as GeneratedExercise[]
+            const { questionQuantity, idealTime } = generatedExercises.reduce(({ questionQuantity, idealTime }, genExercise) => {
+              return {
+                questionQuantity: questionQuantity + JSON.parse(genExercise.knowns).length,
+                idealTime: idealTime + genExercise.idealTime
+              }
+            }, { questionQuantity: 0, idealTime: 0 })
+            // const questionQuantity = generatedExercises.length
+            return CourseService.getTopic(generatedTopicExercise.topicId).then(resp => {
+              if (resp.status && resp.data) {
+                return {
+                  status: true,
+                  data: {
+                    topicName: resp.data.topic,
+                    topicNo: idx + 1,
+                    topicQuantity: topics.length,
+                    questionQuantity,
+                    idealTime
+                  }
+                } as NCResponse<TopicInformation>
+              } else {
+                return { status: false, errMessage: `Failed to retrieve topic: ${resp.errMessage}` }
+              }
+            })
+          } catch (err) {
+            return Promise.reject(err)
+          }
+        } else {
+          return Promise.resolve({ status: false, errMessage: `Couldn't retrieve pending generatedTopicExercise!` })
+        }
+
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only information about 'pendingExercise' can be retrieved!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
+  }
+
+  // Given an exercise with 'pendingExercise' state, turn it to 'exercising' and return
+  // formatted exercise
   startExercise (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
     const resp2 = this.getExerciseState(generatedExercise)
     if (resp2.status && resp2.data) {
@@ -153,6 +229,7 @@ class CompetencyExerciseService extends CRUDService {
     }
   }
 
+  // Given an exercise with 'exercising' state, return formatted version of it
   continueExercise (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
     const resp2 = this.getExerciseState(generatedExercise)
     if (resp2.status && resp2.data) {
@@ -166,6 +243,7 @@ class CompetencyExerciseService extends CRUDService {
     }
   }
 
+  // Given an exercise with 'finished' state, submit it
   submitExercise (generatedExercise: GeneratedCompetencyExercise, userId: number): Promise<NCResponse<number>> {
     const resp2 = this.getExerciseState(generatedExercise)
     if (resp2.status && resp2.data) {
@@ -191,6 +269,7 @@ class CompetencyExerciseService extends CRUDService {
     }
   }
 
+  // Given an exercise with 'finished' state, abandon it
   abandonExercise (generatedExercise: GeneratedCompetencyExercise, userId: number): Promise<NCResponse<number>> {
     const resp2 = this.getExerciseState(generatedExercise)
     if (resp2.status && resp2.data) {
@@ -303,7 +382,6 @@ class CompetencyExerciseService extends CRUDService {
               const generatedTopicExercise = resp.data
               return {
                 topicId: topic.id,
-                topicName: topic.topic,
                 topicExerciseHash: generatedTopicExercise.topicExerciseHash,
                 idealTime: generatedTopicExercise.idealTime,
                 exerciseDetail: generatedTopicExercise.exerciseDetail

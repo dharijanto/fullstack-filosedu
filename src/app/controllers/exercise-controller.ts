@@ -195,7 +195,7 @@ class ExerciseController extends BaseController {
       })
     })
 
-    this.routeGet('/competency-test', (req, res, next) => {
+    this.routeGet('/uji-kompetensi', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
 
       CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
@@ -206,7 +206,7 @@ class ExerciseController extends BaseController {
             if (resp.status && resp.data) {
               return resp.data
             } else {
-              next(new Error(`Failed to create generatedCompetencyExercise: ${resp.errMessage}`))
+              throw new Error(`Failed to create generatedCompetencyExercise: ${resp.errMessage}`)
             }
           })
         }
@@ -214,6 +214,7 @@ class ExerciseController extends BaseController {
         const resp2 = CompetencyExerciseService.getExerciseState(generatedExercise)
         if (resp2.status && resp2.data) {
           const state = resp2.data
+          console.log('Exercise state=' + state)
           if (state === 'exercising') {
             // Continue to exercise page
             CompetencyExerciseService.continueExercise(generatedExercise).then(resp => {
@@ -223,13 +224,25 @@ class ExerciseController extends BaseController {
                 res.locals.formattedExercises = formattedExercise.formattedExercises
                 res.locals.idealTime = formattedExercise.idealTime
                 res.locals.elapsedTime = formattedExercise.elapsedTime
-                res.render('competency-exercise')
+                res.render('competency-exercise/exercise')
               } else {
-                next(new Error(resp.errMessage))
+                throw new Error(`Failed to continue exercise: ${resp.errMessage}`)
               }
-              res.json(resp)
-            }).catch(next)
+            })
           } else if (state === 'pendingExercise') {
+            CompetencyExerciseService.getPendingTopicInformation(generatedExercise).then(resp => {
+              if (resp.status && resp.data) {
+                const topicInformation = resp.data
+                res.locals.topicName = topicInformation.topicName
+                res.locals.topicNo = topicInformation.topicNo
+                res.locals.topicQuantity = topicInformation.topicQuantity
+                res.locals.questionQuantity = topicInformation.questionQuantity
+                res.locals.idealTime = topicInformation.idealTime
+                res.render('competency-exercise/pending')
+              } else {
+                throw new Error(`Failed to getPendingTopicInformation: ${resp.errMessage}`)
+              }
+            })
             // Show "Start Exercising" page
           } else if (state === 'finished') {
             // Show submission page here
@@ -238,8 +251,9 @@ class ExerciseController extends BaseController {
             // Show take competency test again here
             // send email so that we know somebody abandons an exercise!
           }
-
         }
+      }).catch(err => {
+        next(err)
       })
     })
   }

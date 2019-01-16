@@ -48,8 +48,8 @@ export default abstract class ExerciseSolver {
     return this.question.idealTimePerQuestion || 0
   }
 
-  getExerciseIdealTime () {
-    return (this.question.idealTimePerQuestion * this.question.quantity) || 0
+  getExerciseIdealTime (quantity) {
+    return (this.question.idealTimePerQuestion * quantity) || 0
   }
 
   // quantityVariableName: string indicating variable where quantity is stored (i.e. 'quantity', 'reviewQuantity', or 'competencyQuantity')
