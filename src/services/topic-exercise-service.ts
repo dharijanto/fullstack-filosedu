@@ -18,13 +18,13 @@ const AppConfig = require(path.join(__dirname, '../app-config'))
 
 const TAG = 'TopicExerciseService'
 
-export interface GeneratedTopicExerciseDetail {
+/* export interface GeneratedTopicExerciseDetail {
   knowns: string, // stringified JSON
   unknowns: string, // stringified JSON
   userAnswer: string, // stringified JSON
   exerciseHash: string
   exerciseId: number
-}
+} */
 
 export interface TopicExerciseGrade {
   numQuestions: number
@@ -231,14 +231,14 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   // Grade a TopicExercise
-  gradeExercise (generatedExerciseDetails: GeneratedTopicExerciseDetail[], answers: TopicExerciseAnswer): Promise<NCResponse<TopicExerciseGrade>> {
+  gradeExercise (generatedExerciseDetails: Partial<GeneratedExercise>[], answers: TopicExerciseAnswer): Promise<NCResponse<TopicExerciseGrade>> {
     return Promise.map(generatedExerciseDetails, exerciseDetail => {
       return this.readOne<Exercise>({ modelName: 'Exercise', searchClause: { id: exerciseDetail.exerciseId } }).then(resp => {
         if (resp.status && resp.data) {
           const exercise = resp.data
           const exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data)
-          const knowns = JSON.parse(exerciseDetail.knowns)
-          const unknowns = JSON.parse(exerciseDetail.unknowns)
+          const knowns = JSON.parse(exerciseDetail.knowns || '')
+          const unknowns = JSON.parse(exerciseDetail.unknowns || '')
           return knowns.map((known, index) => {
             return { known, correctAnswer: unknowns[index], isAnswerFn: exerciseSolver.isAnswer.bind(exerciseSolver) }
           })
@@ -280,7 +280,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   //       just put the answer there? However current approach makes it really easy
   //       to figure out what mistakes user is making.
   finishExercise (generatedTopicExerciseId: number, score: number, timeFinish: string,
-                  exerciseDetails: GeneratedTopicExerciseDetail[], answers: TopicExerciseAnswer[]): Promise<NCResponse<number>> {
+                  exerciseDetails: Partial<GeneratedExercise>[], answers: TopicExerciseAnswer[]): Promise<NCResponse<number>> {
     // This is a bit annoying..
     // So answer is what a student would submit. It's a one dimensional array of answers for each of the exercises
     // We want to save user answer into exerciseDetail so that we can debug problems. (i.e. wrong scoring)
@@ -292,7 +292,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     let answerIndex = 0
     const exerciseDetail = JSON.stringify(exerciseDetails.map(exerciseDetail => {
       const exerciseDetailAnswers: Array<any> = []
-      JSON.parse(exerciseDetail.knowns).forEach(_ => {
+      JSON.parse(exerciseDetail.knowns || '').forEach(_ => {
         exerciseDetailAnswers.push(answers[answerIndex])
         answerIndex++
       })

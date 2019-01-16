@@ -23,14 +23,18 @@ const TAG = 'ExerciseController'
 
 class ExerciseController extends BaseController {
   private exerciseFrontendJS: string
+  private competencyExerciseLogiscticJS: string
+  private competencyExerciseJS: string
+
   initialize () {
-    return new Promise((resolve, reject) => {
-      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js').then(result => {
-        this.exerciseFrontendJS = result
-        resolve()
-      }).catch(err => {
-        reject(err)
-      })
+    return Promise.join(
+      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js'),
+      PathFormatter.hashAsset('app', '/assets/js/competency-exercise-logistic-app-bundle.js'),
+      PathFormatter.hashAsset('app', '/assets/js/competency-exercise-app-bundle.js')
+    ).spread((result: string, result2: string, result3: string) => {
+      this.exerciseFrontendJS = result
+      this.competencyExerciseLogiscticJS = result2
+      this.competencyExerciseJS = result3
     })
   }
 
@@ -190,68 +194,6 @@ class ExerciseController extends BaseController {
       const value = req.body.value
       analyticsService.addExerciseData(key, value, exerciseId, userId).then(resp => {
         res.json(resp)
-      }).catch(err => {
-        next(err)
-      })
-    })
-
-    this.routeGet('/uji-kompetensi', (req, res, next) => {
-      const competencyExerciseId = req.session.competencyExerciseId || 0
-
-      CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
-        if (resp.status && resp.data) {
-          return resp.data
-        } else {
-          return CompetencyExerciseService.generateAndSaveExercise().then(resp => {
-            if (resp.status && resp.data) {
-              return resp.data
-            } else {
-              throw new Error(`Failed to create generatedCompetencyExercise: ${resp.errMessage}`)
-            }
-          })
-        }
-      }).then((generatedExercise: GeneratedCompetencyExercise) => {
-        const resp2 = CompetencyExerciseService.getExerciseState(generatedExercise)
-        if (resp2.status && resp2.data) {
-          const state = resp2.data
-          console.log('Exercise state=' + state)
-          if (state === 'exercising') {
-            // Continue to exercise page
-            CompetencyExerciseService.continueExercise(generatedExercise).then(resp => {
-              if (resp.status && resp.data) {
-                const formattedExercise = resp.data
-                res.locals.topicName = formattedExercise.topicName
-                res.locals.formattedExercises = formattedExercise.formattedExercises
-                res.locals.idealTime = formattedExercise.idealTime
-                res.locals.elapsedTime = formattedExercise.elapsedTime
-                res.render('competency-exercise/exercise')
-              } else {
-                throw new Error(`Failed to continue exercise: ${resp.errMessage}`)
-              }
-            })
-          } else if (state === 'pendingExercise') {
-            CompetencyExerciseService.getPendingTopicInformation(generatedExercise).then(resp => {
-              if (resp.status && resp.data) {
-                const topicInformation = resp.data
-                res.locals.topicName = topicInformation.topicName
-                res.locals.topicNo = topicInformation.topicNo
-                res.locals.topicQuantity = topicInformation.topicQuantity
-                res.locals.questionQuantity = topicInformation.questionQuantity
-                res.locals.idealTime = topicInformation.idealTime
-                res.render('competency-exercise/pending')
-              } else {
-                throw new Error(`Failed to getPendingTopicInformation: ${resp.errMessage}`)
-              }
-            })
-            // Show "Start Exercising" page
-          } else if (state === 'finished') {
-            // Show submission page here
-            // Send email so that we know somebody completes an exercise!
-          } else if (state === 'submitted' || state === 'abandoned') {
-            // Show take competency test again here
-            // send email so that we know somebody abandons an exercise!
-          }
-        }
       }).catch(err => {
         next(err)
       })

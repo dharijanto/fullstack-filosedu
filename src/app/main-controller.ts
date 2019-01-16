@@ -14,6 +14,7 @@ let BaseController = require(path.join(__dirname, 'controllers/base-controller')
 let CourseController = require(path.join(__dirname, 'controllers/course-controller'))
 let CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 let ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
+import CompetencyExerciseController from './controllers/competency-exercise-controller'
 let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 let SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 let PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
@@ -45,6 +46,7 @@ class Controller extends BaseController {
 
     this.credentialController = new CredentialController(initData)
     this.exerciseController = new ExerciseController(initData)
+    this.competencyExerciseController = new CompetencyExerciseController(initData)
     this.courseController = new CourseController(initData)
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
@@ -56,6 +58,7 @@ class Controller extends BaseController {
     this.routeUse(this.courseController.getRouter())
     this.routeUse(this.subtopicController.getRouter())
     this.routeUse(this.syncController.getRouter())
+    this.routeUse(this.competencyExerciseController.getRouter())
   }
 
   initialize () {
@@ -64,6 +67,7 @@ class Controller extends BaseController {
       this.courseController.initialize(),
       this.subtopicController.initialize(),
       this.exerciseController.initialize(),
+      this.competencyExerciseController.initialize(),
       this.syncController.initialize()
     )
   }

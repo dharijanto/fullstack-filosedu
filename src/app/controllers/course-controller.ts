@@ -2,7 +2,7 @@ import * as Promise from 'bluebird'
 
 import CourseService from '../../services/course-service'
 import ExerciseHelper from '../utils/exercise-helper'
-import TopicExerciseService, { GeneratedTopicExerciseDetail } from '../../services/topic-exercise-service'
+import TopicExerciseService from '../../services/topic-exercise-service'
 
 let path = require('path')
 
@@ -95,7 +95,7 @@ class CourseController extends BaseController {
         if (resp.status && resp.data) {
           const generatedTopicExercise = resp.data
           const generatedTopicExerciseId = resp.data.id
-          let exerciseDetails: GeneratedTopicExerciseDetail[] = JSON.parse(resp.data.exerciseDetail)
+          let exerciseDetails: Partial<GeneratedExercise>[] = JSON.parse(resp.data.exerciseDetail)
           return TopicExerciseService.gradeExercise(exerciseDetails, userAnswers).then(resp2 => {
             // console.log(JSON.stringify(resp2, null, 2))
             if (resp2.status && resp2.data) {

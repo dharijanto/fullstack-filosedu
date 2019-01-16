@@ -84,7 +84,7 @@ function postAnswer () {
         } else {
           $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Hanya nilai 100 yang masuk penilaian. </p>`)
         }
-        if (parseInt(currentScore) < 80) {
+        if (parseInt(grade.score) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
         }
 
@@ -142,7 +142,7 @@ function updateProgressBar () {
     const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
     $('.progress-bar').css('width', currentPercent + '%')
   }
-  $('#elapsedTime').html(`Elapsed: <strong> ${elapsedTime} detik</strong>`)
+  $('#elapsedTime').html(`Elapsed: <strong> ${parseInt(elapsedTime)} detik</strong>`)
 }
 
 // when page first load, first call only
