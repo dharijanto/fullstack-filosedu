@@ -40,8 +40,7 @@ block contents
         p#notes.
           #[strong Catatan:]
           <br>
-          Bila siswa belum mempelajari modul ini, selesaikan sebisanya atau lewati
-          dengan menekan tombol "Submit" di bagian paling bawah tanpa mengisi jawaban.
+          Kerjakan sebisanya, bila sisa belum memahami suatu soal, lewati soal tersebut.
       div.text-center#questionSubmit
         - var pointerIndex = 0
         each formattedExercise in formattedExercises
@@ -64,7 +63,8 @@ block contents
         div.scoreSection
           p.hidden(id='currentScore')
           p.hidden(id='submissionError')
-        a.btn.btn-primary.btn-submit-answer(href="javascript:void(0);") Submit
+        // a.btn.btn-primary.btn-submit-answer(href="javascript:void(0);") Submit
+        button.btn.btn-primary.btn-submit-answer() Masukan Jawaban
         a.btn.btn-primary.btn-retry.hidden(href="") Retry
 
 append scripts

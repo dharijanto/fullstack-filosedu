@@ -1,17 +1,18 @@
 import * as Promise from 'bluebird'
+import * as moment from 'moment-timezone'
 import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
 import CRUDService from './crud-service-neo'
 import CourseService from './course-service'
 import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import ExerciseService from './exercise-service'
-import TopicExerciseService from './topic-exercise-service'
+import ExerciseHelper from '../app/utils/exercise-helper'
+import TopicExerciseService, { TopicExerciseAnswer } from './topic-exercise-service'
 import * as Utils from '../lib/utils'
 
 let path = require('path')
 
 let log = require('npmlog')
 let pug = require('pug')
-let moment = require('moment')
 let Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
@@ -71,10 +72,11 @@ export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
   pendingExercise: There's a topic exercise to do, but not started
                    This is identified by the at least one generatedTopicExercise with submitted = true that
                    doesn't have createdAt field defined.
+  skipped: "Belum belajar" button is pressed. Internally identified with submitted = true, but no createdAt
 
 The most unintuitive things are probably exercising and pendingExercise state.
 */
-export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising' | 'pendingExercise'
+export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising' | 'pendingExercise' | 'skipped'
 
 class CompetencyExerciseService extends CRUDService {
 
@@ -92,6 +94,35 @@ class CompetencyExerciseService extends CRUDService {
     }
   }
 
+  getTopicExerciseByState (state: ExerciseState, topics: Partial<GeneratedTopicExercise>[]): NCResponse<GeneratedTopicExercise> {
+    // const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
+    let topic
+    switch (state) {
+      case 'exercising':
+        topic = topics.find(topic => !topic.submitted && 'createdAt' in topic)
+        if (topic !== undefined) {
+          return { status: true, data: topic }
+        } else {
+          return { status: false, errMessage: `No topic with 'exercising' state!` }
+        }
+      case 'pendingExercise':
+        topic = topics.find(topic => !topic.submitted && !('createdAt' in topic))
+        if (topic !== undefined) {
+          return { status: true, data: topic }
+        } else {
+          return { status: false, errMessage: `No topic with 'pendingExercise' state!` }
+        }
+      /* case 'skipped':
+        topic = topics.find(topic => topic.submitted === true && !('createdAt' in topic))
+        if (topic !== undefined) {
+          return { status: true, data: topic }
+        } else {
+          return { status: false, errMessage: `No topic with 'pendingExercise' state!` }
+        } */
+      default:
+        return { status: false, errMessage: `Unexpected state: ${state}` }
+    }
+  }
   /*
     NCResponse convention:
     true: the generated exercise is found
@@ -106,9 +137,9 @@ class CompetencyExerciseService extends CRUDService {
       state = 'submitted'
     } else if (generatedExercise.abandoned) {
       state = 'abandoned'
-    } else if (topics.find(topic => !topic.submitted && 'createdAt' in topic)) {
+    } else if (this.getTopicExerciseByState('exercising', topics).status) {
       state = 'exercising'
-    } else if (topics.find(topic => !topic.submitted && !('createdAt' in topic))) {
+    } else if (this.getTopicExerciseByState('pendingExercise', topics).status) {
       state = 'pendingExercise'
     } else if (topics.find(topic => !topic.submitted) === undefined) {
       state = 'finished'
@@ -116,16 +147,6 @@ class CompetencyExerciseService extends CRUDService {
       return { status: false, errMessage: 'generatedCompetencyExercise has an invalid state!' }
     }
     return { status: true, data: state }
-  }
-
-  getGenExerciseWithExercisingState (generatedExercise: GeneratedCompetencyExercise): NCResponse<GeneratedTopicExercise> {
-    const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
-    const generatedTopicExercise = topics.find(topic => !topic.submitted && 'createdAt' in topic)
-    if (generatedTopicExercise) {
-      return { status: true, data: generatedTopicExercise }
-    } else {
-      return { status: false, errMessage: `Couldn't find generatedTopicExercise!` }
-    }
   }
 
   getExerciseStateById (competencyExerciseId: number): Promise<NCResponse<ExerciseState>> {
@@ -150,6 +171,7 @@ class CompetencyExerciseService extends CRUDService {
       if (resp2.data === 'pendingExercise') {
         const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
         let generatedTopicExercise: Partial<GeneratedTopicExercise> | null = null
+        // TODO: Can we use this.getTopicExerciseByState instead?
         let idx
         for (idx = 0; idx < topics.length; idx++) {
           const topic = topics[idx]
@@ -215,7 +237,7 @@ class CompetencyExerciseService extends CRUDService {
           return !generatedTopicExercise.submitted && !('createdAt' in generatedTopicExercise)
         })
         if (exerciseIndex !== -1) {
-          generatedTopicExercises[exerciseIndex].createdAt = moment.utc().format('YYYY-MM-DD HH:mm:ss')
+          generatedTopicExercises[exerciseIndex].createdAt = moment().local().format('YYYY-MM-DD HH:mm:ss')
           console.dir('Updateing generatedTopicExercises to be: ' + JSON.stringify(generatedTopicExercises, null, 2))
           return super.update<GeneratedCompetencyExercise>({
             modelName: 'GeneratedCompetencyExercise',
@@ -312,11 +334,9 @@ class CompetencyExerciseService extends CRUDService {
   // We're not rendering everything one-shot like TopicExercise or Exercise
   private formatExercise (generatedCompetencyExercise: GeneratedCompetencyExercise): Promise<NCResponse<FormattedTopicExercise>> {
     const generatedTopicExercises = JSON.parse(generatedCompetencyExercise.exerciseDetail) as Partial<GeneratedTopicExercise>[]
-    const generatedTopicExercise = generatedTopicExercises.find(topic => !topic.submitted)
-    if (!generatedTopicExercise) {
-      return Promise.resolve({ status: false, errMessage: 'Unable to find unsubmitted topic exercise!' })
-    } else {
-      const topicId = generatedTopicExercise.topicId
+    const resp = this.getTopicExerciseByState('exercising', generatedTopicExercises)
+    if (resp.status && resp.data) {
+      const generatedTopicExercise = resp.data
       return TopicExerciseService.formatExercise(generatedTopicExercise).then(resp => {
         if (resp.status && resp.data) {
           return resp
@@ -324,6 +344,8 @@ class CompetencyExerciseService extends CRUDService {
           return { status: false, errMessage: `Failed to format generatedTopicExercise: ${resp.errMessage}` }
         }
       })
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Unable to find topic exercise with 'exercising' state!` })
     }
   }
 
@@ -420,6 +442,53 @@ class CompetencyExerciseService extends CRUDService {
         })
       } else {
         return { status: false, errMessage: `Failed to retrieve topics: ${resp.errMessage}` }
+      }
+    })
+  }
+
+  submitTopicExercise (competencyExerciseId: number, answers: TopicExerciseAnswer) {
+    return this.getGeneratedExercise(competencyExerciseId).then(resp => {
+      if (resp.status && resp.data) {
+        const generatedExercise = resp.data
+        const resp2 = this.getExerciseState(generatedExercise)
+        if (resp2.status && resp2.data) {
+          const state = resp2.data
+          console.log('Exercise state=' + state)
+          if (state === 'exercising') {
+            const topics = JSON.parse(generatedExercise.exerciseDetail)
+            const resp3 = this.getTopicExerciseByState('exercising', topics)
+            if (resp3.status && resp3.data) {
+              const topic = resp3.data
+              const generatedTopicExerciseDetail = JSON.parse(topic.exerciseDetail) as Partial<GeneratedExercise>[]
+              return TopicExerciseService.gradeExercise(generatedTopicExerciseDetail, answers).then(resp2 => {
+                if (resp2.status && resp2.data) {
+                  topic.submitted = true
+                  topic.submittedAt = moment().local().format('YYYY-MM-DD HH:mm:ss')
+                  topic.score = resp2.data.score
+                  topic.timeFinish = ExerciseHelper.countTimeFinish(topic.createdAt)
+                  topic.exerciseDetail = JSON.stringify(TopicExerciseService.insertAnswers(generatedTopicExerciseDetail, answers))
+                  return super.update<GeneratedCompetencyExercise>({
+                    modelName: 'GeneratedCompetencyExercise',
+                    data: {
+                      id: generatedExercise.id,
+                      exerciseDetail: JSON.stringify(topics)
+                    }
+                  })
+                } else {
+                  return { status: false, errMessage: `Failed to grade exercise: ${resp2.errMessage}` }
+                }
+              })
+            } else {
+              return { status: false, errMessage: `Failed to get 'exercising' exercise: ${resp3.errMessage}` }
+            }
+          } else {
+            return { status: false, errMessage: `Expecting 'exercising' state, but get '${state}' instead!` }
+          }
+        } else {
+          return { status: false, errMessage: `Failed to getExerciseState: ${resp2.errMessage}` }
+        }
+      } else {
+        return { status: false, errMessage: `Failed to getGeneratedExercise: ${resp.errMessage}` }
       }
     })
   }

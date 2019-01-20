@@ -58,7 +58,7 @@ class Controller extends BaseController {
     this.routeUse(this.courseController.getRouter())
     this.routeUse(this.subtopicController.getRouter())
     this.routeUse(this.syncController.getRouter())
-    this.routeUse(this.competencyExerciseController.getRouter())
+    this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
   }
 
   initialize () {

@@ -275,12 +275,8 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     })
   }
 
-  // Update GeneratedTopicExercise as submitted
-  // TODO: We added userAnswer column to GeneratedTopicExercise, so we should be able to
-  //       just put the answer there? However current approach makes it really easy
-  //       to figure out what mistakes user is making.
-  finishExercise (generatedTopicExerciseId: number, score: number, timeFinish: string,
-                  exerciseDetails: Partial<GeneratedExercise>[], answers: TopicExerciseAnswer[]): Promise<NCResponse<number>> {
+  // Assign answers to GeneratedExercise[]
+  insertAnswers (exerciseDetails: Partial<GeneratedExercise>[], answers: TopicExerciseAnswer): Partial<GeneratedExercise>[] {
     // This is a bit annoying..
     // So answer is what a student would submit. It's a one dimensional array of answers for each of the exercises
     // We want to save user answer into exerciseDetail so that we can debug problems. (i.e. wrong scoring)
@@ -290,7 +286,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
     // 2. Remember that exerciseDetail there is stringified version of each of generatedExercises that makes up
     //    a topic exercise.
     let answerIndex = 0
-    const exerciseDetail = JSON.stringify(exerciseDetails.map(exerciseDetail => {
+    return exerciseDetails.map(exerciseDetail => {
       const exerciseDetailAnswers: Array<any> = []
       JSON.parse(exerciseDetail.knowns || '').forEach(_ => {
         exerciseDetailAnswers.push(answers[answerIndex])
@@ -298,7 +294,16 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
       })
       exerciseDetail.userAnswer = JSON.stringify(exerciseDetailAnswers)
       return exerciseDetail
-    }))
+    })
+  }
+
+  // Update GeneratedTopicExercise as submitted
+  // TODO: We added userAnswer column to GeneratedTopicExercise, so we should be able to
+  //       just put the answer there? However current approach makes it really easy
+  //       to figure out what mistakes user is making.
+  finishExercise (generatedTopicExerciseId: number, score: number, timeFinish: string,
+                  exerciseDetail: Partial<GeneratedExercise>[], answers: TopicExerciseAnswer): Promise<NCResponse<number>> {
+    const updatedExerciseDetail = this.insertAnswers(exerciseDetail, answers)
     return this.update<GeneratedTopicExercise>({
       modelName: 'GeneratedTopicExercise',
       data: {
@@ -308,7 +313,7 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
         onCloud: AppConfig.CLOUD_SERVER,
         score,
         timeFinish,
-        exerciseDetail
+        exerciseDetail: JSON.stringify(updatedExerciseDetail)
       }
     })
   }

@@ -11,6 +11,11 @@ var SyncService = require(path.join(__dirname, '../../services/sync-client-servi
 
 const TAG = 'SyncController'
 
+/* 
+TODO:
+1. Since sequelize date conversion sucks, we should really use raw query to retrieve
+2. 
+ */
 class SyncController extends BaseController {
   constructor (initData) {
     super(initData)

@@ -3,8 +3,16 @@ import * as flatToTrees from 'flatToTrees'
 
 // since: SQL date or Javascript Date
 export function getElapsedTime (since) {
-  console.dir('since=' + since)
-  return moment().diff(since) / 1000
+  // console.dir('since=' + since)
+  // console.dir(typeof since)
+  // since comes from createdAt, which in turns can have two format: JS Date, or string
+  // TODO: Perhaps we should handle this on the service that whatever passed is of date format?
+  if (typeof since === 'object') {
+    return moment().diff(since) / 1000
+  } else {
+    const momentSince = moment.tz(since, 'Asia/Jakarta').utc().format('YYYY-MM-DD HH:mm:ss')
+    return moment().diff(momentSince) / 1000
+  }
 }
 
 // Convert flat SQL array into Object. Delimiter is "."

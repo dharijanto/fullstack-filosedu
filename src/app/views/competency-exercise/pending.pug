@@ -2,7 +2,7 @@ extends ../layout/index.pug
 include ../includes/utils.pug
 
 append head
-  link(rel="stylesheet" href="/assets/css/topics-style.css")
+  link(rel="stylesheet" href="/assets/vendor/toastr/toastr.css")
   style.
     .btn {
       margin: 1%;
@@ -43,6 +43,7 @@ block contents
             Estimasi Waktu Pengerjaan: #{idealTime} detik.
         .col-md-12
           button.btn.btn-primary#btn-start-exercise Mulai
+          button.btn.btn-secondary#btn-skip Belum Belajar
           button.btn#btn-abandon-exercise Batalkan
 
 append scripts
