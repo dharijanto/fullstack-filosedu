@@ -1,0 +1,57 @@
+extends ../layout/index.pug
+include ../includes/utils.pug
+
+append head
+  link(rel="stylesheet" href="/assets/vendor/toastr/toastr.css")
+  style.
+    .btn {
+      margin: 1%;
+    }
+
+    #notes {
+      font-size: 120%;
+      background-color: #ffc800;
+      padding: 1%;
+    }
+    .input-group {
+      margin: auto;
+    }
+    .topic-result {
+      margin: 1%;
+    }
+
+append initialization
+  - const activePage = 'modules'
+
+block contents
+  div.container
+    if user
+      p= 'Selamat Datang, ' + user.fullName || user.username
+    .row
+      .col-md-4.jumbotron.text-center.topic-result
+        p.
+          #[h2 Uji Kompetensi Telah Selesai]
+          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
+          menggambarkan kemampuan putra/putri anda sepenuhnya.
+          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
+      .col-md-4.jumbotron.text-center.topic-result
+        p.
+          #[h2 Uji Kompetensi Telah Selesai]
+          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
+          menggambarkan kemampuan putra/putri anda sepenuhnya.
+          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
+      .col-md-4.jumbotron.text-center.topic-result
+        p.
+          #[h2 Uji Kompetensi Telah Selesai]
+          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
+          menggambarkan kemampuan putra/putri anda sepenuhnya.
+          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
+      .col-md-4.jumbotron.text-center.topic-result
+        p.
+          #[h2 Uji Kompetensi Telah Selesai]
+          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
+          menggambarkan kemampuan putra/putri anda sepenuhnya.
+          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
+
+append scripts
+  script(src=`${bundle}`)

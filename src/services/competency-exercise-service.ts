@@ -17,7 +17,7 @@ let Sequelize = require('sequelize')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
 
-const TAG = 'TopicExerciseService'
+const TAG = 'CompetencyExerciseService'
 
 /*
 Design:
@@ -35,22 +35,21 @@ Step:
 4. Show "time to take a break" page
  */
 
-interface TopicWithExercises {
-  id: number
-  topic: string
-  subtopics: {
-    id: number
-    subtopic: string
-    exercises: Exercise[]
-  }[]
-}
-
 interface TopicInformation {
   topicName: string
   topicNo: number
   topicQuantity: number
   questionQuantity: number
   idealTime: number
+}
+
+interface TopicResult {
+  topicName: string
+  skipped: boolean
+  score: number
+  idealTime: number
+  timeFinish: string
+  timeScore: number // X <= idealTime:  100. idealTime < X <= 2 * idealTime: 75%. 2 * idealTime < X <= 3 * idealTime: 50%.
 }
 
 export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
@@ -77,6 +76,7 @@ export type CompetencyExerciseAnswer = Array<{[key: string]: any}>
 The most unintuitive things are probably exercising and pendingExercise state.
 */
 export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising' | 'pendingExercise' | 'skipped'
+type TopicState = 'finished' | 'skipped' | 'pending'
 
 class CompetencyExerciseService extends CRUDService {
 
@@ -94,6 +94,8 @@ class CompetencyExerciseService extends CRUDService {
     }
   }
 
+  // This function is supposed to return the original reference to the GeneratedTopicExercise,
+  // instead of a clone of it. This behavior is expected by other functions that use this.
   getTopicExerciseByState (state: ExerciseState, topics: Partial<GeneratedTopicExercise>[]): NCResponse<GeneratedTopicExercise> {
     // const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
     let topic
@@ -123,6 +125,26 @@ class CompetencyExerciseService extends CRUDService {
         return { status: false, errMessage: `Unexpected state: ${state}` }
     }
   }
+
+  /*
+    NOTE: This returns the state for a topic, not for the entire competency exercise.
+          For example, an exercise is 'finished' if it's ready to be submitted. But a topic
+          is finished if it is already submitted. The semantics are a bit different
+  */
+  private getTopicState (generatedTopicExercise: Partial<GeneratedTopicExercise>): NCResponse<TopicState> {
+    let state: TopicState
+    if (generatedTopicExercise.createdAt && generatedTopicExercise.submitted) {
+      state = 'finished'
+    } else if (!('createdAt' in generatedTopicExercise) && generatedTopicExercise.submitted) {
+      state = 'skipped'
+    } else if (!('createdAt' in generatedTopicExercise) && !generatedTopicExercise.submitted) {
+      state = 'pending'
+    } else {
+      return { status: false, errMessage: 'Unexpected state!' }
+    }
+    return { status: true, data: state }
+  }
+
   /*
     NCResponse convention:
     true: the generated exercise is found
@@ -131,8 +153,7 @@ class CompetencyExerciseService extends CRUDService {
   getExerciseState (generatedExercise: GeneratedCompetencyExercise): NCResponse<ExerciseState> {
     let state: ExerciseState
     const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
-    console.log('getExerciseState: topics=')
-    console.dir(topics)
+    log.verbose(TAG, 'getExerciseState: topics=' + JSON.stringify(topics, null, 2))
     if (generatedExercise.submitted) {
       state = 'submitted'
     } else if (generatedExercise.abandoned) {
@@ -162,6 +183,50 @@ class CompetencyExerciseService extends CRUDService {
         return { status: false, errMessage: 'generatedCompetencyExercise could not be found: ' + resp.errMessage }
       }
     })
+  }
+
+  getSubmittedExerciseInformation (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<TopicResult[]>> {
+    function computeTimeScore (idealTime, timeFinish) {
+      if (timeFinish <= idealTime) {
+        return 100
+      } else if (timeFinish > idealTime && timeFinish <= idealTime * 2) {
+        return 75
+      } else if (timeFinish > idealTime * 2 && timeFinish <= idealTime * 3) {
+        return 50
+      } else if (timeFinish > idealTime * 3 && timeFinish <= idealTime * 4) {
+        return 25
+      } else {
+        return 0
+      }
+    }
+
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'submitted') {
+        const topics = JSON.parse(generatedExercise.exerciseDetail || '') as GeneratedTopicExercise[]
+        return Promise.map(topics, topic => {
+          const resp = this.getTopicState(topic)
+          if (resp.status) {
+            return {
+              topicName: topic.topicName,
+              skipped: resp.data === 'skipped',
+              score: topic.score,
+              idealTime: topic.idealTime,
+              timeFinish: topic.timeFinish,
+              timeScore: computeTimeScore(topic.idealTime, topic.timeFinish)
+            }
+          } else {
+            throw new Error('Failed to get topic state: ' + resp.errMessage)
+          }
+        }).then(results => {
+          return { status: true, data: results }
+        })
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only 'submitted' exercise can be processed!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
   }
 
   // Given an exercise with state 'pendingExercise', return "break page" associated with it
@@ -283,29 +348,29 @@ class CompetencyExerciseService extends CRUDService {
   }
 
   // Given an exercise with 'finished' state, submit it
-  submitExercise (generatedExercise: GeneratedCompetencyExercise, userId?: number): Promise<NCResponse<number>> {
-    const resp2 = this.getExerciseState(generatedExercise)
-    if (resp2.status && resp2.data) {
-      if (resp2.data === 'finished') {
-        const generatedTopicExercises: Partial<GeneratedTopicExercise>[] = JSON.parse(generatedExercise.exerciseDetail)
-        const score = generatedTopicExercises.reduce((score, generatedTopicExercise) => {
-          return score + generatedExercise.score
-        }, 0)
-        return super.update<GeneratedCompetencyExercise>({
-          modelName: 'GeneratedCompetencyExercise',
-          data: {
-            id: generatedExercise.id,
-            submitted: true,
-            score,
-            userId
+  submitExercise (competencyExerciseId: number, { name, phone, email }): Promise<NCResponse<number>> {
+    return this.getGeneratedExercise(competencyExerciseId).then(resp => {
+      if (resp.status && resp.data) {
+        const generatedExercise = resp.data
+        const resp2 = this.getExerciseState(generatedExercise)
+        if (resp2.status && resp2.data) {
+          if (resp2.data === 'finished') {
+            const topics = JSON.parse(generatedExercise.exerciseDetail) as Partial<GeneratedTopicExercise>[]
+            const score = topics.reduce((acc, topic) => acc + (topic.score || 0), 0)
+            return super.update<GeneratedCompetencyExercise>({
+              modelName: 'GeneratedCompetencyExercise',
+              data: { id: generatedExercise.id, score, submitted: true, name, phone, email }
+            })
+          } else {
+            return Promise.resolve({ status: false, errMessage: `Unexpected exercise state: 'resp2.data'` })
           }
-        })
+        } else {
+          return Promise.resolve({ status: false, errMessage: 'Failed to get exercise state: ' + resp2.errMessage })
+        }
       } else {
-        return Promise.resolve({ status: false, errMessage: `Only 'finished' exercise can be submitted!` })
+        return { status: false, errMessage: `Failed to getGeneratedExercise: ${competencyExerciseId}` }
       }
-    } else {
-      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
-    }
+    })
   }
 
   // Given an exercise with 'finished' state, abandon it
@@ -324,6 +389,35 @@ class CompetencyExerciseService extends CRUDService {
         })
       } else {
         return Promise.resolve({ status: false, errMessage: `'finished' exercise can't be abandoned!` })
+      }
+    } else {
+      return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
+    }
+  }
+
+  skipTopic (generatedExercise: GeneratedCompetencyExercise): Promise<NCResponse<number>> {
+    const resp2 = this.getExerciseState(generatedExercise)
+    if (resp2.status && resp2.data) {
+      if (resp2.data === 'pendingExercise') {
+        const topics = JSON.parse(generatedExercise.exerciseDetail) as Partial<GeneratedTopicExercise>[]
+        const resp3 = this.getTopicExerciseByState('pendingExercise', topics)
+        if (resp3.status && resp3.data) {
+          const pendingGeneratedExercise = resp3.data
+          pendingGeneratedExercise.submitted = true
+          return super.update<GeneratedCompetencyExercise>({
+            modelName: 'GeneratedCompetencyExercise',
+            data: {
+              id: generatedExercise.id,
+              exerciseDetail: JSON.stringify(topics)
+            }
+          })
+          // console.dir(topics)
+          // return Promise.resolve({ status: true, data: 1 }) as Promise<NCResponse<number>>
+        } else {
+          return Promise.resolve({ status: false, errMessage: `Failed to get pending exercise: ${resp3.errMessage}` })
+        }
+      } else {
+        return Promise.resolve({ status: false, errMessage: `Only exercie with 'pendingExercise' state can be skipped!` })
       }
     } else {
       return Promise.resolve({ status: false, errMessage: `Failed to get exercise state: ${resp2.errMessage}` })
@@ -431,12 +525,17 @@ class CompetencyExerciseService extends CRUDService {
             }
           })
         }).then(results => {
+          // We want to skip over topics that don't have exercise
+          const filteredResults = results.filter(result => {
+            const topicExerciseDetail = JSON.parse(result.exerciseDetail || '')
+            return topicExerciseDetail.length > 0
+          })
           return {
             status: true,
             data: {
               hash: this.getHashFromTopicHashes(results.map(result => result.topicExerciseHash || '')),
               topics: results,
-              exerciseDetail: JSON.stringify(results)
+              exerciseDetail: JSON.stringify(filteredResults)
             }
           } as NCResponse<Partial<GeneratedCompetencyExercise>>
         })

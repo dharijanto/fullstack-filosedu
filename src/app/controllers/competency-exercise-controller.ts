@@ -5,6 +5,7 @@ import CompetencyExerciseService from '../../services/competency-exercise-servic
 import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 import ExerciseHelper from '../utils/exercise-helper'
 import TopicExerciseService from '../../services/topic-exercise-service'
+import { Response } from 'aws-sdk';
 
 let path = require('path')
 
@@ -43,7 +44,7 @@ export default class CompetencyExerciseController extends BaseController {
       next()
     })
 
-    this.routePost('/start', (req, res, next) => {
+    this.routePost('/start-topic', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
       if (competencyExerciseId) {
         CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
@@ -87,14 +88,59 @@ export default class CompetencyExerciseController extends BaseController {
           } else {
             return res.json({ status: false, errMessage: `Failed to getGeneratedExercise: ${resp.errMessage}` })
           }
+        }).catch(err => {
+          log.error(TAG, err)
+          res.json({ status: false, errMessage: 'Failed: ' + err.message })
         })
       } else {
         res.json({ status: false, errMessage: `competencyExerciseId is not found! Session expired?`, errCode: 1 })
       }
     })
 
+    this.routePost('/skip-topic', (req, res, next) => {
+      const competencyExerciseId = req.session.competencyExerciseId || 0
+      if (competencyExerciseId) {
+        CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
+          if (resp.status && resp.data) {
+            return CompetencyExerciseService.skipTopic(resp.data).then(resp => {
+              if (resp.status) {
+                res.json({ status: true })
+              } else {
+                res.json({ status: false, errMessage: `Failed to abandonExercise: ${resp.errMessage}` })
+              }
+            })
+          } else {
+            return res.json({ status: false, errMessage: `Failed to getGeneratedExercise: ${resp.errMessage}` })
+          }
+        })
+      } else {
+        res.json({ status: false, errMessage: `competencyExerciseId is not found! Session expired?`, errCode: 1 })
+      }
+    })
+
+    this.routePost('/submit', (req, res, next) => {
+      const competencyExerciseId = req.session.competencyExerciseId || 0
+      const { name, phone, email } = req.body
+      log.info(TAG, '/.GET: competencyExerciseId=' + competencyExerciseId)
+      CompetencyExerciseService.submitExercise(competencyExerciseId, { name, phone, email }).then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        log.error(TAG, err)
+        res.json({ status: false, errMessage: err.message })
+      })
+    })
+
+    this.routeGet('/debug/finished', (req, res, next) => {
+      res.render('competency-exercise/finished')
+    })
+
+    this.routeGet('/debug/submitted', (req, res, next) => {
+      res.render('competency-exercise/submitted')
+    })
+
     this.routeGet('/', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
+      log.info(TAG, '/.GET: competencyExerciseId=' + competencyExerciseId)
       CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
         if (resp.status && resp.data) {
           return resp.data
@@ -124,7 +170,7 @@ export default class CompetencyExerciseController extends BaseController {
                 res.locals.idealTime = formattedExercise.idealTime
                 res.locals.elapsedTime = formattedExercise.elapsedTime
                 res.locals.bundle = this.competencyExerciseJS
-                res.render('competency-exercise/exercise')
+                res.render('competency-exercise/exercising')
               } else {
                 throw new Error(`Failed to continue exercise: ${resp.errMessage}`)
               }
@@ -148,12 +194,19 @@ export default class CompetencyExerciseController extends BaseController {
           } else if (state === 'finished') {
             // Show submission page here
             // Send email so that we know somebody completes an exercise!
+            res.locals.bundle = this.competencyExerciseLogiscticJS
+            res.render('competency-exercise/finished')
           } else if (state === 'submitted') {
-            // haha
+            CompetencyExerciseService.getSubmittedExerciseInformation(generatedExercise).then(resp => {
+              if (resp.status && resp.data) {
+                res.locals.topicResults = resp.data
+                // Show score here
+                res.render('competency-exercise/submitted')
+              } else {
+              }
+            })
           } else if (state === 'abandoned') {
             res.redirect('/abandoned-competency-exercise')
-            // Show take competency test again here
-            // send email so that we know somebody abandons an exercise!
           } else {
             throw new Error(`Unexpected state: ${state}!`)
           }

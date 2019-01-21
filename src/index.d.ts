@@ -84,11 +84,14 @@ interface GeneratedTopicExercise extends BaseModel {
 
 interface GeneratedCompetencyExercise extends BaseModel {
   submitted: boolean
+  name: string
+  phone: string
+  email: string
   abandoned: boolean
   score: number
   hash: string
   exerciseDetail: string // JSON.stringify(Array<GeneratedTopicExercise>)
-  onCloud: boolean 
+  onCloud: boolean
   userId: number
 }
 

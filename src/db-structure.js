@@ -145,6 +145,9 @@ function addTables (sequelize, models) {
 
   models.GeneratedCompetencyExercise = sequelize.define('generatedCompetencyExercises', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: Sequelize.STRING},
+    phone: {type: Sequelize.STRING},
+    email: {type: Sequelize.STRING},
     submitted: {type: Sequelize.BOOLEAN, defaultValue: false},
     abandoned: {type: Sequelize.BOOLEAN, defaultValue: false},
     score: {type: Sequelize.FLOAT},
