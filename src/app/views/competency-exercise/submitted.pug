@@ -18,6 +18,7 @@ append head
     }
     .topic-result {
       margin: 1%;
+      min-height: 350px;
     }
 
 append initialization
@@ -28,30 +29,33 @@ block contents
     if user
       p= 'Selamat Datang, ' + user.fullName || user.username
     .row
-      .col-md-4.jumbotron.text-center.topic-result
-        p.
-          #[h2 Uji Kompetensi Telah Selesai]
-          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
-          menggambarkan kemampuan putra/putri anda sepenuhnya.
-          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
-      .col-md-4.jumbotron.text-center.topic-result
-        p.
-          #[h2 Uji Kompetensi Telah Selesai]
-          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
-          menggambarkan kemampuan putra/putri anda sepenuhnya.
-          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
-      .col-md-4.jumbotron.text-center.topic-result
-        p.
-          #[h2 Uji Kompetensi Telah Selesai]
-          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
-          menggambarkan kemampuan putra/putri anda sepenuhnya.
-          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
-      .col-md-4.jumbotron.text-center.topic-result
-        p.
-          #[h2 Uji Kompetensi Telah Selesai]
-          Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
-          menggambarkan kemampuan putra/putri anda sepenuhnya.
-          Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
-
+      for topicResult, idx in topicResults
+        .col-md-4.jumbotron.text-center.topic-result
+          p
+            h2 #{idx + 1}. #{topicResult.topicName}
+            if (topicResult.skipped)
+              | Topik ini dilewati.
+            else
+              h4 Nilai:
+              strong #{topicResult.score} / 100
+              br
+              span #[+renderScoreStars(topicResult.score, 20)]
+              br
+              br
+              h4 Ketangkasan:
+              if (topicResult.score >= 75)
+                strong #{topicResult.timeScore} / 100
+                br
+                span #[+renderScoreStars(topicResult.timeScore, 20)]
+                br
+                br
+                | Waktu selesai: #[strong #{topicResult.timeFinish}] detik
+                br
+                | Waktu ideal: <= #[strong #{topicResult.idealTime}] detik
+              else
+                | Hanya nilai diatas 75 yang mendapat penilaian ketangkasan
+    .row
+      .col-md-12
+        a.btn.btn-primary#btn-retake-exercise(href="/competency-exercise") Ulangi
 append scripts
   script(src=`${bundle}`)

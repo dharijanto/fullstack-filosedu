@@ -77,7 +77,6 @@ interface GeneratedTopicExercise extends BaseModel {
   idealTime: number
   onCloud: boolean
   topicId: number
-  topicName: string
   userId: number
   topic?: Topic
 }

@@ -207,14 +207,20 @@ class CompetencyExerciseService extends CRUDService {
         return Promise.map(topics, topic => {
           const resp = this.getTopicState(topic)
           if (resp.status) {
-            return {
-              topicName: topic.topicName,
-              skipped: resp.data === 'skipped',
-              score: topic.score,
-              idealTime: topic.idealTime,
-              timeFinish: topic.timeFinish,
-              timeScore: computeTimeScore(topic.idealTime, topic.timeFinish)
-            }
+            return CourseService.getTopic(topic.topicId).then(resp2 => {
+              if (resp2.status && resp2.data) {
+                return {
+                  topicName: resp2.data.topic,
+                  skipped: resp.data === 'skipped',
+                  score: parseInt('' + topic.score, 10),
+                  idealTime: parseInt('' + topic.idealTime, 10),
+                  timeFinish: '' + parseInt('' + topic.timeFinish, 10),
+                  timeScore: computeTimeScore(topic.idealTime, topic.timeFinish)
+                }
+              } else {
+                throw new Error(`Failed to get topic information: ${resp2.errMessage}`)
+              }
+            })
           } else {
             throw new Error('Failed to get topic state: ' + resp.errMessage)
           }

@@ -65,13 +65,7 @@ export default class CompetencyExerciseController extends BaseController {
       }
     })
 
-    this.routeGet('/abandoned', (req, res, next) => {
-      // Delete id from session, so that user can re-take the competency test
-      delete req.session['competencyExerciseId']
-      res.render('competency-exercise/abandoned')
-    })
-
-    this.routePost('/abandon-topic', (req, res, next) => {
+    this.routePost('/abandon-exercise', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
       if (competencyExerciseId) {
         CompetencyExerciseService.getGeneratedExercise(competencyExerciseId).then(resp => {
@@ -80,7 +74,13 @@ export default class CompetencyExerciseController extends BaseController {
               if (resp.status) {
                 // Delete id from session, so that user can re-take the competency test
                 delete req.session['competencyExerciseId']
-                res.json({ status: true })
+                req.session.save(err => {
+                  if (err) {
+                    res.json({ status: false, errMessage: err.message })
+                  } else {
+                    res.json({ status: true })
+                  }
+                })
               } else {
                 res.json({ status: false, errMessage: `Failed to abandonExercise: ${resp.errMessage}` })
               }
@@ -136,6 +136,17 @@ export default class CompetencyExerciseController extends BaseController {
 
     this.routeGet('/debug/submitted', (req, res, next) => {
       res.render('competency-exercise/submitted')
+    })
+
+    this.routePost('/retake-exercise', (req, res, next) => {
+      delete req.session['competencyExerciseId']
+      req.session.save(err => {
+        if (err) {
+          res.json({ status: false, errMessage: `Failed to save session: ${err.message}` })
+        } else {
+          res.json({ status: true })
+        }
+      })
     })
 
     this.routeGet('/', (req, res, next) => {
@@ -199,14 +210,17 @@ export default class CompetencyExerciseController extends BaseController {
           } else if (state === 'submitted') {
             CompetencyExerciseService.getSubmittedExerciseInformation(generatedExercise).then(resp => {
               if (resp.status && resp.data) {
+                console.dir(resp)
                 res.locals.topicResults = resp.data
                 // Show score here
+                res.locals.bundle = this.competencyExerciseLogiscticJS
                 res.render('competency-exercise/submitted')
               } else {
+                throw new Error(`Failed to get submitted exercise information: ${resp.errMessage}`)
               }
             })
           } else if (state === 'abandoned') {
-            res.redirect('/abandoned-competency-exercise')
+            res.render('competency-exercise/abandoned')
           } else {
             throw new Error(`Unexpected state: ${state}!`)
           }

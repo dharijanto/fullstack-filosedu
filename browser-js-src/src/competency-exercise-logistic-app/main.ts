@@ -23,10 +23,10 @@ $(document).ready(() => {
 
   $('#btn-abandon-exercise').on('click', () => {
     if (confirm('Semua progres akan hilang. Apakah anda yakin?')) {
-      axios.post('/competency-exercise/abandon-topic').then(rawResp => {
+      axios.post('/competency-exercise/abandon-exercise').then(rawResp => {
         const resp = rawResp.data
         if (resp.status) {
-          window.location.replace('/competency-exercise/abandoned')
+          window.location.reload()
         } else {
           toastr.error('Gagal membatalkan uji kompetensi: ' + resp.errMessage)
           console.error(resp.errMessage)
@@ -97,5 +97,17 @@ $(document).ready(() => {
         }
       }).catch(errHandler)
     }
+  })
+
+  $('#btn-retake-exercise').on('click', () => {
+    axios.post('/competency-exercise/retake-exercise').then(rawResp => {
+      const resp = rawResp.data
+      if (resp.status) {
+        window.location.reload()
+      } else {
+        toastr.error('Gagal membatalkan uji kompetensi: ' + resp.errMessage)
+        console.error(resp.errMessage)
+      }
+    }).catch(errHandler)
   })
 })
