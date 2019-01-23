@@ -1,3 +1,7 @@
+mixin renderScoreStars(score, size)
+  // Multiple of 25 gets 1 star
+  +renderExerciseStars(score / 25, size)
+
 mixin renderExerciseStars(numStars, size)
   - var stars = numStars > 4 ? 4 : numStars
   - var emptyStars = 4 - stars
@@ -5,6 +9,7 @@ mixin renderExerciseStars(numStars, size)
     img(src="/assets/img/star.png" width=size || 30)
   while emptyStars-- > 0
     img(src="/assets/img/star_empty.png" width=size || 30)
+
 
 mixin renderExerciseRanking (data)
   table.table.table-bordered

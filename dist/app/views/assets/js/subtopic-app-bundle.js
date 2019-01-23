@@ -1,66 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 15000
-};
-
-},{}],2:[function(require,module,exports){
-'use strict';
-
-require('es6-promise').polyfill();
-var axios = require('axios');
-var Config = require('../config.js');
-module.exports = axios.create({
-  timeout: Config.NETWORK_TIMEOUT
-});
-
-},{"../config.js":1,"axios":4,"es6-promise":29}],3:[function(require,module,exports){
-'use strict';
-
-var logLevelOrders = ['debug', 'verbose', 'info', 'error'];
-
-var logLevel = 'debug';
-var log = {};
-
-function doLog(level, tag, message) {
-  var settingLevel = logLevelOrders.indexOf(logLevel);
-  var currentLevel = logLevelOrders.indexOf(level);
-  // console.log('doLog(): currentLevel=' + currentLevel + ' settingLevel=' + settingLevel)
-  if (currentLevel >= settingLevel) {
-    // In some older browsers, console.log has to be called within the context of console.
-    // Without binding to console, it's called with global context
-    var logger = level === 'error' ? console.error.bind(console) : console.log.bind(console);
-    logger('[' + tag + '] ' + message);
-  }
-}
-
-log.debug = function (tag, message) {
-  doLog('debug', tag, message);
-};
-
-log.verbose = function (tag, message) {
-  doLog('verbose', tag, message);
-};
-
-log.info = function (tag, message) {
-  doLog('info', tag, message);
-};
-
-log.error = function (tag, message) {
-  doLog('error', tag, message);
-};
-
-log.setLogLevel = function (level) {
-  logLevel = level;
-};
-
-module.exports = log;
-
-},{}],4:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":6}],5:[function(require,module,exports){
+},{"./lib/axios":3}],2:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -244,7 +184,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":12,"./../core/settle":15,"./../helpers/btoa":19,"./../helpers/buildURL":20,"./../helpers/cookies":22,"./../helpers/isURLSameOrigin":24,"./../helpers/parseHeaders":26,"./../utils":28,"_process":31}],6:[function(require,module,exports){
+},{"../core/createError":9,"./../core/settle":12,"./../helpers/btoa":16,"./../helpers/buildURL":17,"./../helpers/cookies":19,"./../helpers/isURLSameOrigin":21,"./../helpers/parseHeaders":23,"./../utils":25,"_process":28}],3:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -298,7 +238,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":7,"./cancel/CancelToken":8,"./cancel/isCancel":9,"./core/Axios":10,"./defaults":17,"./helpers/bind":18,"./helpers/spread":27,"./utils":28}],7:[function(require,module,exports){
+},{"./cancel/Cancel":4,"./cancel/CancelToken":5,"./cancel/isCancel":6,"./core/Axios":7,"./defaults":14,"./helpers/bind":15,"./helpers/spread":24,"./utils":25}],4:[function(require,module,exports){
 'use strict';
 
 /**
@@ -319,7 +259,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -378,14 +318,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":7}],9:[function(require,module,exports){
+},{"./Cancel":4}],6:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],10:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -466,7 +406,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":17,"./../utils":28,"./InterceptorManager":11,"./dispatchRequest":13}],11:[function(require,module,exports){
+},{"./../defaults":14,"./../utils":25,"./InterceptorManager":8,"./dispatchRequest":10}],8:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -520,7 +460,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":28}],12:[function(require,module,exports){
+},{"./../utils":25}],9:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -540,7 +480,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":14}],13:[function(require,module,exports){
+},{"./enhanceError":11}],10:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -628,7 +568,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":9,"../defaults":17,"./../helpers/combineURLs":21,"./../helpers/isAbsoluteURL":23,"./../utils":28,"./transformData":16}],14:[function(require,module,exports){
+},{"../cancel/isCancel":6,"../defaults":14,"./../helpers/combineURLs":18,"./../helpers/isAbsoluteURL":20,"./../utils":25,"./transformData":13}],11:[function(require,module,exports){
 'use strict';
 
 /**
@@ -651,7 +591,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -679,7 +619,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":12}],16:[function(require,module,exports){
+},{"./createError":9}],13:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -701,7 +641,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":28}],17:[function(require,module,exports){
+},{"./../utils":25}],14:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -797,7 +737,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":5,"./adapters/xhr":5,"./helpers/normalizeHeaderName":25,"./utils":28,"_process":31}],18:[function(require,module,exports){
+},{"./adapters/http":2,"./adapters/xhr":2,"./helpers/normalizeHeaderName":22,"./utils":25,"_process":28}],15:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -810,7 +750,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],19:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -848,7 +788,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],20:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -918,7 +858,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":28}],21:[function(require,module,exports){
+},{"./../utils":25}],18:[function(require,module,exports){
 'use strict';
 
 /**
@@ -934,7 +874,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],22:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -989,7 +929,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":28}],23:[function(require,module,exports){
+},{"./../utils":25}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1005,7 +945,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],24:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1075,7 +1015,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":28}],25:[function(require,module,exports){
+},{"./../utils":25}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1089,7 +1029,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":28}],26:[function(require,module,exports){
+},{"../utils":25}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1144,7 +1084,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":28}],27:[function(require,module,exports){
+},{"./../utils":25}],24:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1173,7 +1113,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],28:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1478,7 +1418,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":18,"is-buffer":30}],29:[function(require,module,exports){
+},{"./helpers/bind":15,"is-buffer":27}],26:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2661,7 +2601,7 @@ return Promise$1;
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":31}],30:[function(require,module,exports){
+},{"_process":28}],27:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -2684,7 +2624,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2869,6 +2809,66 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
+
+},{}],29:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  // Max time before a POST/GET request is aborted
+  NETWORK_TIMEOUT: 15000
+};
+
+},{}],30:[function(require,module,exports){
+'use strict';
+
+require('es6-promise').polyfill();
+var axios = require('axios');
+var Config = require('../config.js');
+module.exports = axios.create({
+  timeout: Config.NETWORK_TIMEOUT
+});
+
+},{"../config.js":29,"axios":1,"es6-promise":26}],31:[function(require,module,exports){
+'use strict';
+
+var logLevelOrders = ['debug', 'verbose', 'info', 'error'];
+
+var logLevel = 'debug';
+var log = {};
+
+function doLog(level, tag, message) {
+  var settingLevel = logLevelOrders.indexOf(logLevel);
+  var currentLevel = logLevelOrders.indexOf(level);
+  // console.log('doLog(): currentLevel=' + currentLevel + ' settingLevel=' + settingLevel)
+  if (currentLevel >= settingLevel) {
+    // In some older browsers, console.log has to be called within the context of console.
+    // Without binding to console, it's called with global context
+    var logger = level === 'error' ? console.error.bind(console) : console.log.bind(console);
+    logger('[' + tag + '] ' + message);
+  }
+}
+
+log.debug = function (tag, message) {
+  doLog('debug', tag, message);
+};
+
+log.verbose = function (tag, message) {
+  doLog('verbose', tag, message);
+};
+
+log.info = function (tag, message) {
+  doLog('info', tag, message);
+};
+
+log.error = function (tag, message) {
+  doLog('error', tag, message);
+};
+
+log.setLogLevel = function (level) {
+  logLevel = level;
+};
+
+module.exports = log;
 
 },{}],32:[function(require,module,exports){
 (function (global){
@@ -3059,4 +3059,4 @@ $(document).ready(function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../libs/axios-wrapper":2,"../libs/logger":3}]},{},[32]);
+},{"../libs/axios-wrapper":30,"../libs/logger":31}]},{},[32]);

@@ -1,109 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 15000
-};
-
-},{}],2:[function(require,module,exports){
-'use strict';
-
-require('es6-promise').polyfill();
-var axios = require('axios');
-var Config = require('../config.js');
-module.exports = axios.create({
-  timeout: Config.NETWORK_TIMEOUT
-});
-
-},{"../config.js":1,"axios":5,"es6-promise":31}],3:[function(require,module,exports){
-'use strict';
-
-var logLevelOrders = ['debug', 'verbose', 'info', 'error'];
-
-var logLevel = 'debug';
-var log = {};
-
-function doLog(level, tag, message) {
-  var settingLevel = logLevelOrders.indexOf(logLevel);
-  var currentLevel = logLevelOrders.indexOf(level);
-  // console.log('doLog(): currentLevel=' + currentLevel + ' settingLevel=' + settingLevel)
-  if (currentLevel >= settingLevel) {
-    // In some older browsers, console.log has to be called within the context of console.
-    // Without binding to console, it's called with global context
-    var logger = level === 'error' ? console.error.bind(console) : console.log.bind(console);
-    logger('[' + tag + '] ' + message);
-  }
-}
-
-log.debug = function (tag, message) {
-  doLog('debug', tag, message);
-};
-
-log.verbose = function (tag, message) {
-  doLog('verbose', tag, message);
-};
-
-log.info = function (tag, message) {
-  doLog('info', tag, message);
-};
-
-log.error = function (tag, message) {
-  doLog('error', tag, message);
-};
-
-log.setLogLevel = function (level) {
-  logLevel = level;
-};
-
-module.exports = log;
-
-},{}],4:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Promise = require('bluebird');
-
-var Utils = function () {
-  function Utils() {
-    _classCallCheck(this, Utils);
-  }
-
-  _createClass(Utils, null, [{
-    key: 'sleep',
-
-    // Usage: await sleep(500)
-    // i.e. used to simulate network delay
-    value: function sleep(ms) {
-      return new Promise(function (resolve) {
-        return setTimeout(resolve, ms);
-      });
-    }
-
-    // Take the result of form.serializeArray() and convert it to JSON object
-
-  }, {
-    key: 'objectifyForm',
-    value: function objectifyForm(formArray) {
-      var returnArray = {};
-      for (var i = 0; i < formArray.length; i++) {
-        returnArray[formArray[i]['name']] = formArray[i]['value'];
-      }
-      return returnArray;
-    }
-  }]);
-
-  return Utils;
-}();
-
-module.exports = Utils;
-
-},{"bluebird":30}],5:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":7}],6:[function(require,module,exports){
+},{"./lib/axios":3}],2:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -287,7 +184,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":13,"./../core/settle":16,"./../helpers/btoa":20,"./../helpers/buildURL":21,"./../helpers/cookies":23,"./../helpers/isURLSameOrigin":25,"./../helpers/parseHeaders":27,"./../utils":29,"_process":33}],7:[function(require,module,exports){
+},{"../core/createError":9,"./../core/settle":12,"./../helpers/btoa":16,"./../helpers/buildURL":17,"./../helpers/cookies":19,"./../helpers/isURLSameOrigin":21,"./../helpers/parseHeaders":23,"./../utils":25,"_process":29}],3:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -341,7 +238,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":8,"./cancel/CancelToken":9,"./cancel/isCancel":10,"./core/Axios":11,"./defaults":18,"./helpers/bind":19,"./helpers/spread":28,"./utils":29}],8:[function(require,module,exports){
+},{"./cancel/Cancel":4,"./cancel/CancelToken":5,"./cancel/isCancel":6,"./core/Axios":7,"./defaults":14,"./helpers/bind":15,"./helpers/spread":24,"./utils":25}],4:[function(require,module,exports){
 'use strict';
 
 /**
@@ -362,7 +259,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],9:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -421,14 +318,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":8}],10:[function(require,module,exports){
+},{"./Cancel":4}],6:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],11:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -509,7 +406,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":18,"./../utils":29,"./InterceptorManager":12,"./dispatchRequest":14}],12:[function(require,module,exports){
+},{"./../defaults":14,"./../utils":25,"./InterceptorManager":8,"./dispatchRequest":10}],8:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -563,7 +460,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":29}],13:[function(require,module,exports){
+},{"./../utils":25}],9:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -583,7 +480,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":15}],14:[function(require,module,exports){
+},{"./enhanceError":11}],10:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -671,7 +568,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":10,"../defaults":18,"./../helpers/combineURLs":22,"./../helpers/isAbsoluteURL":24,"./../utils":29,"./transformData":17}],15:[function(require,module,exports){
+},{"../cancel/isCancel":6,"../defaults":14,"./../helpers/combineURLs":18,"./../helpers/isAbsoluteURL":20,"./../utils":25,"./transformData":13}],11:[function(require,module,exports){
 'use strict';
 
 /**
@@ -694,7 +591,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -722,7 +619,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":13}],17:[function(require,module,exports){
+},{"./createError":9}],13:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -744,7 +641,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":29}],18:[function(require,module,exports){
+},{"./../utils":25}],14:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -840,7 +737,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":6,"./adapters/xhr":6,"./helpers/normalizeHeaderName":26,"./utils":29,"_process":33}],19:[function(require,module,exports){
+},{"./adapters/http":2,"./adapters/xhr":2,"./helpers/normalizeHeaderName":22,"./utils":25,"_process":29}],15:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -853,7 +750,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],20:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -891,7 +788,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],21:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -961,7 +858,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":29}],22:[function(require,module,exports){
+},{"./../utils":25}],18:[function(require,module,exports){
 'use strict';
 
 /**
@@ -977,7 +874,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1032,7 +929,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],24:[function(require,module,exports){
+},{"./../utils":25}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1048,7 +945,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],25:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1118,7 +1015,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],26:[function(require,module,exports){
+},{"./../utils":25}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1132,7 +1029,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":29}],27:[function(require,module,exports){
+},{"../utils":25}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1187,7 +1084,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":29}],28:[function(require,module,exports){
+},{"./../utils":25}],24:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1216,7 +1113,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],29:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1521,7 +1418,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":19,"is-buffer":32}],30:[function(require,module,exports){
+},{"./helpers/bind":15,"is-buffer":28}],26:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -7147,7 +7044,7 @@ module.exports = ret;
 },{"./es5":13}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":33}],31:[function(require,module,exports){
+},{"_process":29}],27:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -8330,7 +8227,7 @@ return Promise$1;
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":33}],32:[function(require,module,exports){
+},{"_process":29}],28:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -8353,7 +8250,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],33:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -8539,7 +8436,116 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],34:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  // Max time before a POST/GET request is aborted
+  NETWORK_TIMEOUT: 15000
+};
+
+},{}],31:[function(require,module,exports){
+'use strict';
+
+require('es6-promise').polyfill();
+var axios = require('axios');
+var Config = require('../config.js');
+module.exports = axios.create({
+  timeout: Config.NETWORK_TIMEOUT
+});
+
+},{"../config.js":30,"axios":1,"es6-promise":27}],32:[function(require,module,exports){
+'use strict';
+
+var logLevelOrders = ['debug', 'verbose', 'info', 'error'];
+
+var logLevel = 'debug';
+var log = {};
+
+function doLog(level, tag, message) {
+  var settingLevel = logLevelOrders.indexOf(logLevel);
+  var currentLevel = logLevelOrders.indexOf(level);
+  // console.log('doLog(): currentLevel=' + currentLevel + ' settingLevel=' + settingLevel)
+  if (currentLevel >= settingLevel) {
+    // In some older browsers, console.log has to be called within the context of console.
+    // Without binding to console, it's called with global context
+    var logger = level === 'error' ? console.error.bind(console) : console.log.bind(console);
+    logger('[' + tag + '] ' + message);
+  }
+}
+
+log.debug = function (tag, message) {
+  doLog('debug', tag, message);
+};
+
+log.verbose = function (tag, message) {
+  doLog('verbose', tag, message);
+};
+
+log.info = function (tag, message) {
+  doLog('info', tag, message);
+};
+
+log.error = function (tag, message) {
+  doLog('error', tag, message);
+};
+
+log.setLogLevel = function (level) {
+  logLevel = level;
+};
+
+module.exports = log;
+
+},{}],33:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Promise = require('bluebird');
+
+var Utils = function () {
+  function Utils() {
+    _classCallCheck(this, Utils);
+  }
+
+  _createClass(Utils, null, [{
+    key: 'sleep',
+
+    // Usage: await sleep(500)
+    // i.e. used to simulate network delay
+    value: function sleep(ms) {
+      return new Promise(function (resolve) {
+        return setTimeout(resolve, ms);
+      });
+    }
+
+    // Take the result of form.serializeArray() and convert it to JSON object
+
+  }, {
+    key: 'objectifyForm',
+    value: function objectifyForm(formArray) {
+      var returnArray = {};
+      for (var i = 0; i < formArray.length; i++) {
+        returnArray[formArray[i]['name']] = formArray[i]['value'];
+      }
+      return returnArray;
+    }
+  }, {
+    key: 'validateEmail',
+    value: function validateEmail(email) {
+      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+  }]);
+
+  return Utils;
+}();
+
+module.exports = Utils;
+
+},{"bluebird":26}],34:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -8608,44 +8614,47 @@ function postAnswer() {
         $('input').prop('disabled', true);
         $('input').prop('read-only', true);
 
-        var realAnswers = resp.data.summaryAnswers;
-        var currentScore = resp.data.currentScore;
+        var grade = resp.data.grade;
         var starsHTML = resp.data.starsHTML;
         var timersHTML = resp.data.timersHTML;
         var ranking = resp.data.ranking;
-        var currentTimeFinish = resp.data.currentTimeFinish;
+        var timeFinish = resp.data.timeFinish;
         var currentRanking = resp.data.currentRanking;
         var totalRanking = resp.data.totalRanking;
-        var isPerfectScore = resp.data.isPerfectScore;
 
         $('#currentScore').removeClass('hidden');
-        $('#currentScore').text('Nilai yang diperoleh: ' + currentScore);
+        $('#currentScore').text('Nilai yang diperoleh: ' + grade.score);
         $('.bestScore').html(starsHTML);
         $('.bestTimer').html(timersHTML);
         $('.rankingScore').html(ranking);
 
-        if (isPerfectScore) {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
+        if (parseInt(grade.score) === 100) {
+          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + timeFinish + ' detik</b>. Waktu ini ada di urutan ' + currentRanking + ' dari ' + totalRanking + '</p>');
         } else {
-          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + currentTimeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
+          $('.rankingScore').append('<p>Soal diselesaikan dalam <b>' + timeFinish + ' detik</b>. Hanya nilai 100 yang masuk penilaian. </p>');
         }
-        if (parseInt(currentScore) < 80) {
+        if (parseInt(grade.score) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>');
         }
 
-        realAnswers.forEach(function (realAnswer, index) {
-          var correctUnknowns = [];
-          for (var x in realAnswer.unknown) {
-            correctUnknowns.push(x + ' = ' + realAnswer.unknown[x]);
+        grade.correctAnswers.forEach(function (correctAnswer, index) {
+          var stringifiedCorrectAnswer = null;
+          for (var key in correctAnswer) {
+            if (stringifiedCorrectAnswer === null) {
+              stringifiedCorrectAnswer = key + '=' + correctAnswer[key];
+            } else {
+              stringifiedCorrectAnswer += ' ' + key + '=' + correctAnswer[key];
+            }
+          }
+
+          var answerMessage = void 0;
+          if (grade.isCorrect[index]) {
+            answerMessage = $('<p style="color:green">Benar</p>');
+          } else {
+            answerMessage = $('<p style="color:red;">Salah. Jawaban yang benar: ' + stringifiedCorrectAnswer + '</p>');
           }
           $('.resultAnswer_' + index).empty();
-          var answer = null;
-          if (realAnswer.isCorrect) {
-            answer = $('<p style="color:green">Benar</p>');
-          } else {
-            answer = $('<p style="color:red;">Salah. Jawaban yang benar: ' + correctUnknowns.join(', ') + '</p>');
-          }
-          $('.resultAnswer_' + index).append(answer);
+          $('.resultAnswer_' + index).append(answerMessage);
         });
 
         $('.btn_submit_answer').addClass('hidden');
@@ -8682,7 +8691,7 @@ function updateProgressBar() {
     var currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0;
     $('.progress-bar').css('width', currentPercent + '%');
   }
-  $('#elapsedTime').html('Elapsed: <strong> ' + elapsedTime + ' detik</strong>');
+  $('#elapsedTime').html('Elapsed: <strong> ' + parseInt(elapsedTime) + ' detik</strong>');
 }
 
 // when page first load, first call only
@@ -8691,4 +8700,4 @@ updateProgressBar();
 // ------------------------------------------------------
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../libs/axios-wrapper":2,"../libs/logger":3,"../libs/utils":4}]},{},[34]);
+},{"../libs/axios-wrapper":31,"../libs/logger":32,"../libs/utils":33}]},{},[34]);

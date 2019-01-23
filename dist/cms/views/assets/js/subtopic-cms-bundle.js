@@ -1,551 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var Presenter = require('./src/presenter.js');
-var DefaultModel = require('./src/model.js');
-var MockModel = require('./src/mock-model.js');
-var DefaultView = require('./src/view.js');
-
-$.fn.NCImagePicker = function (_ref) {
-  var callbackFn = _ref.callbackFn,
-      postURL = _ref.postURL,
-      getURL = _ref.getURL,
-      deleteURL = _ref.deleteURL,
-      _ref$useMockModel = _ref.useMockModel,
-      useMockModel = _ref$useMockModel === undefined ? false : _ref$useMockModel,
-      customView = _ref.customView;
-
-  var divImage = this;
-  var Model = useMockModel ? MockModel : DefaultModel;
-  var View = customView || DefaultView;
-
-  var model = new Model(postURL, getURL, deleteURL);
-  var view = new View(divImage);
-  var presenter = new Presenter(view, model);
-
-  presenter.initializeElement(callbackFn);
-};
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./src/mock-model.js":3,"./src/model.js":4,"./src/presenter.js":5,"./src/view.js":6}],2:[function(require,module,exports){
-module.exports={
-    "status" : "true",
-    "data" :
-    {
-        "resources": [
-            {
-                "public_id": "daniaja/10788-ryzen-power-campaign-imagery-1260x709",
-                "format": "jpg",
-                "version": 1507798302,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:51:42Z",
-                "bytes": 516751,
-                "width": 1260,
-                "height": 709,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/10788-ryzen-power-campaign-imagery-1260x709.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/10788-ryzen-power-campaign-imagery-1260x709.jpg"
-            },
-            {
-                "public_id": "daniaja/24301-ryzen3-pib-1260x709_0",
-                "format": "jpg",
-                "version": 1507798302,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:51:42Z",
-                "bytes": 178881,
-                "width": 1260,
-                "height": 709,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/24301-ryzen3-pib-1260x709_0.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/24301-ryzen3-pib-1260x709_0.jpg"
-            },
-            {
-                "public_id": "daniaja/734546229001_5371716434001_5371613458001-vs",
-                "format": "jpg",
-                "version": 1507798301,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:51:41Z",
-                "bytes": 80730,
-                "width": 960,
-                "height": 540,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798301/daniaja/734546229001_5371716434001_5371613458001-vs.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798301/daniaja/734546229001_5371716434001_5371613458001-vs.jpg"
-            },
-            {
-                "public_id": "daniaja/AB54875",
-                "format": "jpg",
-                "version": 1507779316,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T03:35:16Z",
-                "bytes": 155528,
-                "width": 550,
-                "height": 414,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507779316/daniaja/AB54875.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507779316/daniaja/AB54875.jpg"
-            },
-            {
-                "public_id": "daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5",
-                "format": "jpg",
-                "version": 1507796909,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:28:29Z",
-                "bytes": 367925,
-                "width": 1574,
-                "height": 884,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5.jpg"
-            },
-            {
-                "public_id": "daniaja/AMD-Radeon-RX-Vega-64-Reference",
-                "format": "jpg",
-                "version": 1507796909,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:28:29Z",
-                "bytes": 97482,
-                "width": 1024,
-                "height": 576,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Radeon-RX-Vega-64-Reference.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Radeon-RX-Vega-64-Reference.jpg"
-            },
-            {
-                "public_id": "daniaja/amd-ryzen-pricing-100713729-orig",
-                "format": "jpg",
-                "version": 1507798303,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:51:43Z",
-                "bytes": 598102,
-                "width": 4418,
-                "height": 2325,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/amd-ryzen-pricing-100713729-orig.jpg",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/amd-ryzen-pricing-100713729-orig.jpg"
-            },
-            {
-                "public_id": "daniaja/badge-7th-gen-core-family-left-facing",
-                "format": "png",
-                "version": 1507798303,
-                "resource_type": "image",
-                "type": "upload",
-                "created_at": "2017-10-12T08:51:43Z",
-                "bytes": 942928,
-                "width": 1920,
-                "height": 1920,
-                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/badge-7th-gen-core-family-left-facing.png",
-                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/badge-7th-gen-core-family-left-facing.png"
-            }
-        ],
-        "next_cursor": "d69958430c1ef3e1c90659bd997ce330f9ff3fa1407c96c117ac691e08de8cbba84fce1c322985bf2a12cbf1c82a12a21e27976088284ce6a46d760a2d917f1b",
-        "rate_limit_allowed": 500,
-        "rate_limit_reset_at": "2017-10-12T09:00:00.000Z",
-        "rate_limit_remaining": 475
-    }
-}
-},{}],3:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var axios = require('axios');
-var Promise = require('bluebird');
-
-var axiosFileupload = require('axios-fileupload');
-
-var imageData = require('./imageData.json');
-
-var Model = function () {
-  function Model(postURL, getURL, deleteURL) {
-    _classCallCheck(this, Model);
-
-    this._postURL = postURL;
-    this._getURL = getURL;
-    this._deleteURL = deleteURL;
-  }
-
-  _createClass(Model, [{
-    key: 'getImages',
-    value: function getImages() {
-      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-      return new Promise(function (resolve, reject) {
-        resolve(imageData);
-      });
-    }
-  }, {
-    key: 'deleteImage',
-    value: function deleteImage(publicId) {
-      return new Promise(function (resolve, reject) {
-        resolve({ status: true });
-        // resolve({status: false})
-      });
-    }
-  }, {
-    key: 'uploadImage',
-    value: function uploadImage(image) {
-      return new Promise(function (resolve, reject) {
-        resolve({
-          status: true,
-          data: {
-            url: '/img/amdpicture.jpg',
-            public_id: 'amd_pic',
-            original_name: 'AMD Picture Game',
-            created_at: '2017-01-01'
-          }
-        });
-      });
-    }
-  }]);
-
-  return Model;
-}();
-
-module.exports = Model;
-
-},{"./imageData.json":2,"axios":33,"axios-fileupload":7,"bluebird":58}],4:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var axios = require('axios');
-var Promise = require('bluebird');
-var axiosFileupload = require('axios-fileupload');
-
-var Model = function () {
-  function Model(postURL, getURL, deleteURL) {
-    _classCallCheck(this, Model);
-
-    this._postURL = postURL;
-    this._getURL = getURL;
-    this._deleteURL = deleteURL;
-  }
-
-  _createClass(Model, [{
-    key: 'getImages',
-    value: function getImages() {
-      var _this = this;
-
-      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-      return new Promise(function (resolve, reject) {
-        axios.get(_this._getURL + '?nextCursor=' + nextCursor).then(function (response) {
-          resolve(response.data);
-        }).catch(function (err) {
-          reject(err);
-        });
-      });
-    }
-  }, {
-    key: 'deleteImage',
-    value: function deleteImage(publicId) {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
-        axios.post(_this2._deleteURL + '?publicId=' + publicId).then(function (response) {
-          resolve(response);
-        }).catch(function (err) {
-          reject(err);
-        });
-      });
-    }
-  }, {
-    key: 'uploadImage',
-    value: function uploadImage(image) {
-      var _this3 = this;
-
-      return new Promise(function (resolve, reject) {
-        axiosFileupload(_this3._postURL, image).then(function (resp) {
-          if (resp.data.status) {
-            resolve({ status: true,
-              data: {
-                url: resp.data.data.url,
-                public_id: resp.data.data.public_id,
-                original_name: resp.data.data.originalName,
-                created_at: resp.data.data.created_at
-              } });
-          } else {
-            resolve({ status: false, errMessage: resp.data.errMessage });
-          }
-        }).catch(function (err) {
-          reject(err);
-        });
-      });
-    }
-  }]);
-
-  return Model;
-}();
-
-module.exports = Model;
-
-},{"axios":33,"axios-fileupload":7,"bluebird":58}],5:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Promise = require('bluebird');
-
-var PresenterController = function () {
-  function PresenterController(view, model) {
-    _classCallCheck(this, PresenterController);
-
-    this._model = model;
-    this._view = view;
-    this._nextCursor = null;
-  }
-
-  _createClass(PresenterController, [{
-    key: 'initializeElement',
-    value: function initializeElement(callbackFn) {
-      this._view.initializeElement(this._deleteButtonClicked.bind(this), this._loadMoreClicked.bind(this), this._uploadClicked.bind(this), callbackFn);
-      this._getImages();
-    }
-  }, {
-    key: '_getImages',
-    value: function _getImages() {
-      var _this = this;
-
-      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-      return this._model.getImages(nextCursor).then(function (resp) {
-        if (resp.status) {
-          _this._nextCursor = resp.data.next_cursor;
-          resp.data.resources.forEach(function (data) {
-            _this._view.appendImage(data);
-          });
-          if (resp.data.next_cursor) {
-            _this._view.loadMoreButtonVisible(resp.data.next_cursor);
-          } else {
-            _this._view.loadMoreButtonVisible(false);
-          }
-        } else {
-          alert('Whoops!! Image is not loaded properly.');
-        }
-      }).catch(function (err) {
-        console.error(err);
-        alert('Image failed to load. Internal server error.');
-      });
-    }
-  }, {
-    key: '_deleteButtonClicked',
-    value: function _deleteButtonClicked(publicId) {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
-        _this2._model.deleteImage(publicId).then(function (resp) {
-          resolve(resp);
-        }).catch(function (err) {
-          reject(err);
-        });
-      });
-    }
-  }, {
-    key: '_loadMoreClicked',
-    value: function _loadMoreClicked() {
-      this._getImages(this._nextCursor);
-    }
-  }, {
-    key: '_uploadClicked',
-    value: function _uploadClicked(image) {
-      var _this3 = this;
-
-      return new Promise(function (resolve, reject) {
-        if (image) {
-          _this3._model.uploadImage(image).then(function (resp) {
-            resolve(resp);
-          }).catch(function (err) {
-            reject(err);
-          });
-        } else {
-          resolve({ status: false, data: { errMessage: 'Please select the upload picture' } });
-        }
-      });
-    }
-  }]);
-
-  return PresenterController;
-}();
-
-module.exports = PresenterController;
-
-},{"bluebird":58}],6:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-
-var View = function () {
-  function View(divId) {
-    var _this = this;
-
-    _classCallCheck(this, View);
-
-    var self = this;
-    this._rootElement = divId;
-    this._UploadandViewGallery = $('<div> <button class="btn btn-success" data-toggle="modal" data-target="#___fileupload">Upload File</button> </div>');
-    this._imageInitialization = $('<div class="row"></div>');
-
-    this._modalContentImage = $('<div id="modalUpload" class="modal fade" role="dialog" style="overflow-y:auto;"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload Image</h4> </div> <div class="modal-body"></div> <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
-    $('body').append(this._modalContentImage);
-    this._modalContentImage.find('div.modal-body').append(this._UploadandViewGallery);
-    this._modalContentImage.find('div.modal-body').append(this._imageInitialization);
-    this._buttonNextCursor = $('<button class="btn btn-primary" data-next="">LOAD MORE</button>');
-    this._linkInsideTextImage = $('<a href="javascript:void(0);" class="data-image-url" data-url="">Click to trigger Callback !!</a>');
-
-    this._buttonNextCursor.on('click', function (e) {
-      _this._onLoadMoreClicked();
-    });
-
-    // Modal section
-    this._modalDelete = $('<!-- Modal Delete File--><div id="___deletepicture" class="modal fade" role="dialog"> <div class="modal-dialog"> <!-- Modal content--> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete</h4> </div> <div class="modal-body"> <p>Are you sure you want to delete this picture?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-danger btn-delete">YES</button> <button type="button" class="btn btn-default" data-dismiss="modal">NO</button> </div> </div> </div></div>');
-    this._modalDeleteCompleted = $('<div class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete Successful</h4> </div><div class="modal-body"> <p class="text-center">Your image has been deleted.</p></div><div class="modal-footer" style="text-align:center"> <button type="button" class="btn btn-default" data-dismiss="modal">Back to Image Gallery</button> </div></div></div></div>');
-    this._modalDeleteFailed = $('<div class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete Failed</h4> </div><div class="modal-body"> <p class="text-center">Internal Server Error!</p></div><div class="modal-footer" style="text-align:center"> <button type="button" class="btn btn-default" data-dismiss="modal">Back to Image Gallery</button> </div></div></div></div>');
-    this._modalUpload = $('<!-- Modal Upload File--><div id="___fileupload" class="modal fade" role="dialog"> <div class="modal-dialog"> <!-- Modal content--> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File</h4> </div> <div class="modal-body"> <p>Below is the button to upload file : </p> <form><div class="form-group"><label for="uploadbutton">Upload File:</label><input id="fileupload" type="file" name="image[]" ></div> </form>  <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div> </div> </div></div>');
-    this._modalUploadSuccess = $('<div id="___fileuploadsuccess" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Success</h4> </div><div class="modal-body"> <div class="info_result text-center hidden"> <p>Success upload your file ! Below is your link : </p> <!-- <img src="" class="img-responsive result_image" style="margin:0 auto;"> <input type="text" readonly value="" class="form-control result_image_text"> --> </div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
-    this._modalUploadFailed = $('<div id="___fileuploadfailed" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Failed</h4> </div><div class="modal-body"> <div class="info_result text-center"> <p class="text_message_failed">Failed upload your file !</p></div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
-
-    this._publicId = '';
-    this._imgThumbnail = '';
-    $(this._modalDelete).find('button.btn-delete').on('click', function (e) {
-      _this._onDeleteClicked(_this._publicId).then(function (resp) {
-        if (resp.status) {
-          _this._imgThumbnail.remove();
-          _this._modalDeleteCompleted.modal('show');
-          _this._modalDelete.modal('hide');
-        } else {
-          _this._modalDelete.modal('hide');
-          _this._modalDeleteFailed.modal('show');
-        }
-      }).catch(function (err) {
-        console.error(err);
-        self._modalDelete.modal('hide');
-        self._modalDeleteFailed.modal('show');
-      });
-    });
-  }
-
-  _createClass(View, [{
-    key: 'initializeElement',
-    value: function initializeElement(onDeleteClicked, onLoadMoreClicked, onUploadClicked, callbackFn) {
-      var _this2 = this;
-
-      var self = this;
-      $(this._rootElement).on('click', function (e) {
-        _this2._modalContentImage.modal('show');
-      });
-
-      this._onDeleteClicked = onDeleteClicked;
-      this._onLoadMoreClicked = onLoadMoreClicked;
-      self._onUploadClicked = onUploadClicked;
-      this._callbackFn = callbackFn;
-      this._initializeModal();
-
-      this._modalUpload.on('change', function (e) {
-        var uploadFile = e.target.files[0];
-        self._onUploadClicked(uploadFile).then(function (resp) {
-          if (resp.status) {
-            var linkpicture = resp.data;
-
-            $(_this2._modalUploadSuccess).find('.result_image_text').val(linkpicture.url);
-            $(_this2._modalUploadSuccess).find('.result_image').attr('src', linkpicture.url);
-            $(_this2._modalUploadSuccess).find('.info_result').removeClass('hidden');
-            _this2.appendImage(linkpicture, 1);
-            _this2._modalUpload.modal('hide');
-            _this2._modalUploadSuccess.modal('show');
-          } else {
-            if (resp.errMessage) {
-              $(_this2._modalUploadFailed).find('.text_message_failed').text(resp.errMessage);
-            } else {
-              $(_this2._modalUploadFailed).find('.text_message_failed').text('Internal Server Error !');
-            }
-            _this2._modalUpload.modal('hide');
-            _this2._modalUploadFailed.modal('show');
-          }
-        });
-      });
-    }
-  }, {
-    key: '_initializeModal',
-    value: function _initializeModal() {
-      $('body').append(this._modalUpload);
-      $('body').append(this._modalDelete);
-      $('body').append(this._modalDeleteCompleted);
-    }
-  }, {
-    key: 'appendImage',
-    value: function appendImage(dataImage) {
-      var _this3 = this;
-
-      var latest = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      var imageURL = dataImage.url;
-      var imagePublicId = dataImage.public_id;
-
-      var imageData = $('<div class="gallery_product col-md-4 filter hdpe" style="margin-top:15px;height:30%"></div>');
-      var textImage = $('<div class="text-center textImage" style=""></div>');
-      var overlayImage = $('<div class="overlay" > </div>');
-      var imageSrc = $('<img src="' + imageURL + '" class="img-responsive" style="max-height:100%">');
-      var btnDeleteImage = $('<div class="btn btn-danger btn-close" style="float:right" data-toggle="modal" data-target="#___deletepicture" data-public-id="\'' + imagePublicId + '\'"> <span>X</span> </div>');
-      var imageHref = $('<a href="javascript:void(0);" class="data-image-url" data-url="' + imageURL + '" data-public-id="' + imagePublicId + '">Select Image</a>');
-
-      textImage.append(imageHref);
-      overlayImage.append(btnDeleteImage);
-      overlayImage.append(textImage);
-      imageData.append(imageSrc);
-      imageData.append(overlayImage);
-
-      if (latest === false) {
-        this._imageInitialization.append(imageData);
-      } else {
-        this._imageInitialization.prepend(imageData);
-      }
-
-      $(imageHref).on('click', function (e) {
-        var imageURL = imageHref.data('url');
-        var imagePublicId = imageHref.data('public-id');
-        _this3._callbackFn(imageURL, imagePublicId);
-      });
-
-      $(btnDeleteImage).on('click', function (e) {
-        _this3._imgThumbnail = $(e.currentTarget).parent().parent();
-        _this3._publicId = $(e.currentTarget).data('public-id');
-      });
-    }
-  }, {
-    key: 'loadMoreButtonVisible',
-    value: function loadMoreButtonVisible(dataCursor) {
-      if (dataCursor === false) {
-        this._buttonNextCursor.parent().empty();
-      } else {
-        this._buttonNextCursor.attr('data-next', dataCursor);
-        var divNextCursor = $('<div class="text-center"></div>');
-        divNextCursor.append(this._buttonNextCursor);
-        this._modalContentImage.find('div.modal-body').append(divNextCursor);
-      }
-    }
-  }]);
-
-  return View;
-}();
-
-module.exports = View;
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
 'use strict';
 const axios = require('axios')
 module.exports = (url, file,name='file') => {
@@ -562,9 +15,9 @@ module.exports = (url, file,name='file') => {
     return  axios.post(url, formData,config)
 };
 
-},{"axios":8}],8:[function(require,module,exports){
+},{"axios":2}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":10}],9:[function(require,module,exports){
+},{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -745,7 +198,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":16,"./../core/settle":19,"./../helpers/btoa":23,"./../helpers/buildURL":24,"./../helpers/cookies":26,"./../helpers/isURLSameOrigin":28,"./../helpers/parseHeaders":30,"./../utils":32,"_process":66}],10:[function(require,module,exports){
+},{"../core/createError":10,"./../core/settle":13,"./../helpers/btoa":17,"./../helpers/buildURL":18,"./../helpers/cookies":20,"./../helpers/isURLSameOrigin":22,"./../helpers/parseHeaders":24,"./../utils":26,"_process":60}],4:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -799,7 +252,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":11,"./cancel/CancelToken":12,"./cancel/isCancel":13,"./core/Axios":14,"./defaults":21,"./helpers/bind":22,"./helpers/spread":31,"./utils":32}],11:[function(require,module,exports){
+},{"./cancel/Cancel":5,"./cancel/CancelToken":6,"./cancel/isCancel":7,"./core/Axios":8,"./defaults":15,"./helpers/bind":16,"./helpers/spread":25,"./utils":26}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -820,7 +273,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],12:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -879,14 +332,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":11}],13:[function(require,module,exports){
+},{"./Cancel":5}],7:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],14:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -973,7 +426,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":21,"./../helpers/combineURLs":25,"./../helpers/isAbsoluteURL":27,"./../utils":32,"./InterceptorManager":15,"./dispatchRequest":17}],15:[function(require,module,exports){
+},{"./../defaults":15,"./../helpers/combineURLs":19,"./../helpers/isAbsoluteURL":21,"./../utils":26,"./InterceptorManager":9,"./dispatchRequest":11}],9:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1027,7 +480,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":32}],16:[function(require,module,exports){
+},{"./../utils":26}],10:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -1046,7 +499,7 @@ module.exports = function createError(message, config, code, response) {
   return enhanceError(error, config, code, response);
 };
 
-},{"./enhanceError":18}],17:[function(require,module,exports){
+},{"./enhanceError":12}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1127,7 +580,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":13,"../defaults":21,"./../utils":32,"./transformData":20}],18:[function(require,module,exports){
+},{"../cancel/isCancel":7,"../defaults":15,"./../utils":26,"./transformData":14}],12:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1148,7 +601,7 @@ module.exports = function enhanceError(error, config, code, response) {
   return error;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -1175,7 +628,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":16}],20:[function(require,module,exports){
+},{"./createError":10}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1197,7 +650,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":32}],21:[function(require,module,exports){
+},{"./../utils":26}],15:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -1294,7 +747,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":9,"./adapters/xhr":9,"./helpers/normalizeHeaderName":29,"./utils":32,"_process":66}],22:[function(require,module,exports){
+},{"./adapters/http":3,"./adapters/xhr":3,"./helpers/normalizeHeaderName":23,"./utils":26,"_process":60}],16:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -1307,7 +760,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -1345,7 +798,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],24:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1415,7 +868,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":32}],25:[function(require,module,exports){
+},{"./../utils":26}],19:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1429,7 +882,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
   return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
 };
 
-},{}],26:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1484,7 +937,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":32}],27:[function(require,module,exports){
+},{"./../utils":26}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1500,7 +953,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],28:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1570,7 +1023,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":32}],29:[function(require,module,exports){
+},{"./../utils":26}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1584,7 +1037,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":32}],30:[function(require,module,exports){
+},{"../utils":26}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1623,7 +1076,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":32}],31:[function(require,module,exports){
+},{"./../utils":26}],25:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1652,7 +1105,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],32:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1953,9 +1406,9 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":22}],33:[function(require,module,exports){
-arguments[4][8][0].apply(exports,arguments)
-},{"./lib/axios":35,"dup":8}],34:[function(require,module,exports){
+},{"./helpers/bind":16}],27:[function(require,module,exports){
+arguments[4][2][0].apply(exports,arguments)
+},{"./lib/axios":29,"dup":2}],28:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -2139,15 +1592,15 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":41,"./../core/settle":44,"./../helpers/btoa":48,"./../helpers/buildURL":49,"./../helpers/cookies":51,"./../helpers/isURLSameOrigin":53,"./../helpers/parseHeaders":55,"./../utils":57,"_process":66}],35:[function(require,module,exports){
-arguments[4][10][0].apply(exports,arguments)
-},{"./cancel/Cancel":36,"./cancel/CancelToken":37,"./cancel/isCancel":38,"./core/Axios":39,"./defaults":46,"./helpers/bind":47,"./helpers/spread":56,"./utils":57,"dup":10}],36:[function(require,module,exports){
-arguments[4][11][0].apply(exports,arguments)
-},{"dup":11}],37:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"./Cancel":36,"dup":12}],38:[function(require,module,exports){
-arguments[4][13][0].apply(exports,arguments)
-},{"dup":13}],39:[function(require,module,exports){
+},{"../core/createError":35,"./../core/settle":38,"./../helpers/btoa":42,"./../helpers/buildURL":43,"./../helpers/cookies":45,"./../helpers/isURLSameOrigin":47,"./../helpers/parseHeaders":49,"./../utils":51,"_process":60}],29:[function(require,module,exports){
+arguments[4][4][0].apply(exports,arguments)
+},{"./cancel/Cancel":30,"./cancel/CancelToken":31,"./cancel/isCancel":32,"./core/Axios":33,"./defaults":40,"./helpers/bind":41,"./helpers/spread":50,"./utils":51,"dup":4}],30:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],31:[function(require,module,exports){
+arguments[4][6][0].apply(exports,arguments)
+},{"./Cancel":30,"dup":6}],32:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"dup":7}],33:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -2228,9 +1681,9 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":46,"./../utils":57,"./InterceptorManager":40,"./dispatchRequest":42}],40:[function(require,module,exports){
-arguments[4][15][0].apply(exports,arguments)
-},{"./../utils":57,"dup":15}],41:[function(require,module,exports){
+},{"./../defaults":40,"./../utils":51,"./InterceptorManager":34,"./dispatchRequest":36}],34:[function(require,module,exports){
+arguments[4][9][0].apply(exports,arguments)
+},{"./../utils":51,"dup":9}],35:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -2250,7 +1703,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":43}],42:[function(require,module,exports){
+},{"./enhanceError":37}],36:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -2338,7 +1791,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":38,"../defaults":46,"./../helpers/combineURLs":50,"./../helpers/isAbsoluteURL":52,"./../utils":57,"./transformData":45}],43:[function(require,module,exports){
+},{"../cancel/isCancel":32,"../defaults":40,"./../helpers/combineURLs":44,"./../helpers/isAbsoluteURL":46,"./../utils":51,"./transformData":39}],37:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2361,7 +1814,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],44:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -2389,9 +1842,9 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":41}],45:[function(require,module,exports){
-arguments[4][20][0].apply(exports,arguments)
-},{"./../utils":57,"dup":20}],46:[function(require,module,exports){
+},{"./createError":35}],39:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"./../utils":51,"dup":14}],40:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -2487,13 +1940,13 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":34,"./adapters/xhr":34,"./helpers/normalizeHeaderName":54,"./utils":57,"_process":66}],47:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}],48:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"dup":23}],49:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./../utils":57,"dup":24}],50:[function(require,module,exports){
+},{"./adapters/http":28,"./adapters/xhr":28,"./helpers/normalizeHeaderName":48,"./utils":51,"_process":60}],41:[function(require,module,exports){
+arguments[4][16][0].apply(exports,arguments)
+},{"dup":16}],42:[function(require,module,exports){
+arguments[4][17][0].apply(exports,arguments)
+},{"dup":17}],43:[function(require,module,exports){
+arguments[4][18][0].apply(exports,arguments)
+},{"./../utils":51,"dup":18}],44:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2509,15 +1962,15 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],51:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"./../utils":57,"dup":26}],52:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"dup":27}],53:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"./../utils":57,"dup":28}],54:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"../utils":57,"dup":29}],55:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
+arguments[4][20][0].apply(exports,arguments)
+},{"./../utils":51,"dup":20}],46:[function(require,module,exports){
+arguments[4][21][0].apply(exports,arguments)
+},{"dup":21}],47:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"./../utils":51,"dup":22}],48:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"../utils":51,"dup":23}],49:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -2572,9 +2025,9 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":57}],56:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"dup":31}],57:[function(require,module,exports){
+},{"./../utils":51}],50:[function(require,module,exports){
+arguments[4][25][0].apply(exports,arguments)
+},{"dup":25}],51:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -2879,7 +2332,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":47,"is-buffer":62}],58:[function(require,module,exports){
+},{"./helpers/bind":41,"is-buffer":56}],52:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -8505,7 +7958,7 @@ module.exports = ret;
 },{"./es5":13}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":66}],59:[function(require,module,exports){
+},{"_process":60}],53:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -18172,7 +17625,7 @@ return CodeMirror$1;
 
 })));
 
-},{}],60:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -19049,7 +18502,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"../../lib/codemirror":59}],61:[function(require,module,exports){
+},{"../../lib/codemirror":53}],55:[function(require,module,exports){
 'use strict';
 
 var deselectCurrent = require('toggle-selection');
@@ -19129,7 +18582,7 @@ function copy(text, options) {
 
 module.exports = copy;
 
-},{"toggle-selection":69}],62:[function(require,module,exports){
+},{"toggle-selection":63}],56:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -19152,7 +18605,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],63:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 (function (global){
 /*
  * Copyright 2015, Michael Brook, All rights reserved.
@@ -20878,7 +20331,7 @@ else window.attachEvent("onmessage", simpleUpload.postMessageCallback);
 
 }));
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],64:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -37966,7 +37419,7 @@ else window.attachEvent("onmessage", simpleUpload.postMessageCallback);
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],65:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 (function (global){
 /**
  * marked - a markdown parser
@@ -39256,7 +38709,7 @@ if (typeof module !== 'undefined' && typeof exports === 'object') {
 }());
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],66:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -39442,7 +38895,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],67:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 (function (global){
 /**
  * Super simple wysiwyg editor v0.8.8
@@ -47433,7 +46886,7 @@ process.umask = function() { return 0; };
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],68:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 (function (global){
 /*
  * Toastr
@@ -47448,7 +46901,7 @@ process.umask = function() { return 0; };
  * Project: https://github.com/CodeSeven/toastr
  */
 /* global define */
-; (function (define) {
+(function (define) {
     define(['jquery'], function ($) {
         return (function () {
             var $container;
@@ -47470,7 +46923,7 @@ process.umask = function() { return 0; };
                 options: {},
                 subscribe: subscribe,
                 success: success,
-                version: '2.1.2',
+                version: '2.1.4',
                 warning: warning
             };
 
@@ -47581,9 +47034,7 @@ process.umask = function() { return 0; };
             function createContainer(options) {
                 $container = $('<div/>')
                     .attr('id', options.containerId)
-                    .addClass(options.positionClass)
-                    .attr('aria-live', 'polite')
-                    .attr('role', 'alert');
+                    .addClass(options.positionClass);
 
                 $container.appendTo($(options.target));
                 return $container;
@@ -47607,6 +47058,7 @@ process.umask = function() { return 0; };
                     closeMethod: false,
                     closeDuration: false,
                     closeEasing: false,
+                    closeOnHover: true,
 
                     extendedTimeOut: 1000,
                     iconClasses: {
@@ -47623,9 +47075,12 @@ process.umask = function() { return 0; };
                     escapeHtml: false,
                     target: 'body',
                     closeHtml: '<button type="button">&times;</button>',
+                    closeClass: 'toast-close-button',
                     newestOnTop: true,
                     preventDuplicates: false,
-                    progressBar: false
+                    progressBar: false,
+                    progressClass: 'toast-progress',
+                    rtl: false
                 };
             }
 
@@ -47683,10 +47138,11 @@ process.umask = function() { return 0; };
                 return $toastElement;
 
                 function escapeHtml(source) {
-                    if (source == null)
-                        source = "";
+                    if (source == null) {
+                        source = '';
+                    }
 
-                    return new String(source)
+                    return source
                         .replace(/&/g, '&amp;')
                         .replace(/"/g, '&quot;')
                         .replace(/'/g, '&#39;')
@@ -47700,11 +47156,29 @@ process.umask = function() { return 0; };
                     setMessage();
                     setCloseButton();
                     setProgressBar();
+                    setRTL();
                     setSequence();
+                    setAria();
+                }
+
+                function setAria() {
+                    var ariaValue = '';
+                    switch (map.iconClass) {
+                        case 'toast-success':
+                        case 'toast-info':
+                            ariaValue =  'polite';
+                            break;
+                        default:
+                            ariaValue = 'assertive';
+                    }
+                    $toastElement.attr('aria-live', ariaValue);
                 }
 
                 function handleEvents() {
-                    $toastElement.hover(stickAround, delayedHideToast);
+                    if (options.closeOnHover) {
+                        $toastElement.hover(stickAround, delayedHideToast);
+                    }
+
                     if (!options.onclick && options.tapToDismiss) {
                         $toastElement.click(hideToast);
                     }
@@ -47716,6 +47190,11 @@ process.umask = function() { return 0; };
                             } else if (event.cancelBubble !== undefined && event.cancelBubble !== true) {
                                 event.cancelBubble = true;
                             }
+
+                            if (options.onCloseClick) {
+                                options.onCloseClick(event);
+                            }
+
                             hideToast(true);
                         });
                     }
@@ -47761,29 +47240,43 @@ process.umask = function() { return 0; };
 
                 function setTitle() {
                     if (map.title) {
-                        $titleElement.append(!options.escapeHtml ? map.title : escapeHtml(map.title)).addClass(options.titleClass);
+                        var suffix = map.title;
+                        if (options.escapeHtml) {
+                            suffix = escapeHtml(map.title);
+                        }
+                        $titleElement.append(suffix).addClass(options.titleClass);
                         $toastElement.append($titleElement);
                     }
                 }
 
                 function setMessage() {
                     if (map.message) {
-                        $messageElement.append(!options.escapeHtml ? map.message : escapeHtml(map.message)).addClass(options.messageClass);
+                        var suffix = map.message;
+                        if (options.escapeHtml) {
+                            suffix = escapeHtml(map.message);
+                        }
+                        $messageElement.append(suffix).addClass(options.messageClass);
                         $toastElement.append($messageElement);
                     }
                 }
 
                 function setCloseButton() {
                     if (options.closeButton) {
-                        $closeElement.addClass('toast-close-button').attr('role', 'button');
+                        $closeElement.addClass(options.closeClass).attr('role', 'button');
                         $toastElement.prepend($closeElement);
                     }
                 }
 
                 function setProgressBar() {
                     if (options.progressBar) {
-                        $progressElement.addClass('toast-progress');
+                        $progressElement.addClass(options.progressClass);
                         $toastElement.prepend($progressElement);
+                    }
+                }
+
+                function setRTL() {
+                    if (options.rtl) {
+                        $toastElement.addClass('rtl');
                     }
                 }
 
@@ -47812,6 +47305,7 @@ process.umask = function() { return 0; };
                         easing: easing,
                         complete: function () {
                             removeToast($toastElement);
+                            clearTimeout(intervalId);
                             if (options.onHidden && response.state !== 'hidden') {
                                 options.onHidden();
                             }
@@ -47872,7 +47366,7 @@ process.umask = function() { return 0; };
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],69:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 
 module.exports = function () {
   var selection = document.getSelection();
@@ -47913,6 +47407,553 @@ module.exports = function () {
   };
 };
 
+},{}],64:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var Presenter = require('./src/presenter.js');
+var DefaultModel = require('./src/model.js');
+var MockModel = require('./src/mock-model.js');
+var DefaultView = require('./src/view.js');
+
+$.fn.NCImagePicker = function (_ref) {
+  var callbackFn = _ref.callbackFn,
+      postURL = _ref.postURL,
+      getURL = _ref.getURL,
+      deleteURL = _ref.deleteURL,
+      _ref$useMockModel = _ref.useMockModel,
+      useMockModel = _ref$useMockModel === undefined ? false : _ref$useMockModel,
+      customView = _ref.customView;
+
+  var divImage = this;
+  var Model = useMockModel ? MockModel : DefaultModel;
+  var View = customView || DefaultView;
+
+  var model = new Model(postURL, getURL, deleteURL);
+  var view = new View(divImage);
+  var presenter = new Presenter(view, model);
+
+  presenter.initializeElement(callbackFn);
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./src/mock-model.js":66,"./src/model.js":67,"./src/presenter.js":68,"./src/view.js":69}],65:[function(require,module,exports){
+module.exports={
+    "status" : "true",
+    "data" :
+    {
+        "resources": [
+            {
+                "public_id": "daniaja/10788-ryzen-power-campaign-imagery-1260x709",
+                "format": "jpg",
+                "version": 1507798302,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:51:42Z",
+                "bytes": 516751,
+                "width": 1260,
+                "height": 709,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/10788-ryzen-power-campaign-imagery-1260x709.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/10788-ryzen-power-campaign-imagery-1260x709.jpg"
+            },
+            {
+                "public_id": "daniaja/24301-ryzen3-pib-1260x709_0",
+                "format": "jpg",
+                "version": 1507798302,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:51:42Z",
+                "bytes": 178881,
+                "width": 1260,
+                "height": 709,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/24301-ryzen3-pib-1260x709_0.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798302/daniaja/24301-ryzen3-pib-1260x709_0.jpg"
+            },
+            {
+                "public_id": "daniaja/734546229001_5371716434001_5371613458001-vs",
+                "format": "jpg",
+                "version": 1507798301,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:51:41Z",
+                "bytes": 80730,
+                "width": 960,
+                "height": 540,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798301/daniaja/734546229001_5371716434001_5371613458001-vs.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798301/daniaja/734546229001_5371716434001_5371613458001-vs.jpg"
+            },
+            {
+                "public_id": "daniaja/AB54875",
+                "format": "jpg",
+                "version": 1507779316,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T03:35:16Z",
+                "bytes": 155528,
+                "width": 550,
+                "height": 414,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507779316/daniaja/AB54875.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507779316/daniaja/AB54875.jpg"
+            },
+            {
+                "public_id": "daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5",
+                "format": "jpg",
+                "version": 1507796909,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:28:29Z",
+                "bytes": 367925,
+                "width": 1574,
+                "height": 884,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Polaris-10-and-Polaris-11-Radeon-RX-480-RX-470-RX-460-GPUs_5.jpg"
+            },
+            {
+                "public_id": "daniaja/AMD-Radeon-RX-Vega-64-Reference",
+                "format": "jpg",
+                "version": 1507796909,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:28:29Z",
+                "bytes": 97482,
+                "width": 1024,
+                "height": 576,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Radeon-RX-Vega-64-Reference.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507796909/daniaja/AMD-Radeon-RX-Vega-64-Reference.jpg"
+            },
+            {
+                "public_id": "daniaja/amd-ryzen-pricing-100713729-orig",
+                "format": "jpg",
+                "version": 1507798303,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:51:43Z",
+                "bytes": 598102,
+                "width": 4418,
+                "height": 2325,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/amd-ryzen-pricing-100713729-orig.jpg",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/amd-ryzen-pricing-100713729-orig.jpg"
+            },
+            {
+                "public_id": "daniaja/badge-7th-gen-core-family-left-facing",
+                "format": "png",
+                "version": 1507798303,
+                "resource_type": "image",
+                "type": "upload",
+                "created_at": "2017-10-12T08:51:43Z",
+                "bytes": 942928,
+                "width": 1920,
+                "height": 1920,
+                "url": "http://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/badge-7th-gen-core-family-left-facing.png",
+                "secure_url": "https://res.cloudinary.com/nusantara-cloud/image/upload/v1507798303/daniaja/badge-7th-gen-core-family-left-facing.png"
+            }
+        ],
+        "next_cursor": "d69958430c1ef3e1c90659bd997ce330f9ff3fa1407c96c117ac691e08de8cbba84fce1c322985bf2a12cbf1c82a12a21e27976088284ce6a46d760a2d917f1b",
+        "rate_limit_allowed": 500,
+        "rate_limit_reset_at": "2017-10-12T09:00:00.000Z",
+        "rate_limit_remaining": 475
+    }
+}
+},{}],66:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var axios = require('axios');
+var Promise = require('bluebird');
+
+var axiosFileupload = require('axios-fileupload');
+
+var imageData = require('./imageData.json');
+
+var Model = function () {
+  function Model(postURL, getURL, deleteURL) {
+    _classCallCheck(this, Model);
+
+    this._postURL = postURL;
+    this._getURL = getURL;
+    this._deleteURL = deleteURL;
+  }
+
+  _createClass(Model, [{
+    key: 'getImages',
+    value: function getImages() {
+      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+      return new Promise(function (resolve, reject) {
+        resolve(imageData);
+      });
+    }
+  }, {
+    key: 'deleteImage',
+    value: function deleteImage(publicId) {
+      return new Promise(function (resolve, reject) {
+        resolve({ status: true });
+        // resolve({status: false})
+      });
+    }
+  }, {
+    key: 'uploadImage',
+    value: function uploadImage(image) {
+      return new Promise(function (resolve, reject) {
+        resolve({
+          status: true,
+          data: {
+            url: '/img/amdpicture.jpg',
+            public_id: 'amd_pic',
+            original_name: 'AMD Picture Game',
+            created_at: '2017-01-01'
+          }
+        });
+      });
+    }
+  }]);
+
+  return Model;
+}();
+
+module.exports = Model;
+
+},{"./imageData.json":65,"axios":27,"axios-fileupload":1,"bluebird":52}],67:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var axios = require('axios');
+var Promise = require('bluebird');
+var axiosFileupload = require('axios-fileupload');
+
+var Model = function () {
+  function Model(postURL, getURL, deleteURL) {
+    _classCallCheck(this, Model);
+
+    this._postURL = postURL;
+    this._getURL = getURL;
+    this._deleteURL = deleteURL;
+  }
+
+  _createClass(Model, [{
+    key: 'getImages',
+    value: function getImages() {
+      var _this = this;
+
+      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+      return new Promise(function (resolve, reject) {
+        axios.get(_this._getURL + '?nextCursor=' + nextCursor).then(function (response) {
+          resolve(response.data);
+        }).catch(function (err) {
+          reject(err);
+        });
+      });
+    }
+  }, {
+    key: 'deleteImage',
+    value: function deleteImage(publicId) {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        axios.post(_this2._deleteURL + '?publicId=' + publicId).then(function (response) {
+          resolve(response);
+        }).catch(function (err) {
+          reject(err);
+        });
+      });
+    }
+  }, {
+    key: 'uploadImage',
+    value: function uploadImage(image) {
+      var _this3 = this;
+
+      return new Promise(function (resolve, reject) {
+        axiosFileupload(_this3._postURL, image).then(function (resp) {
+          if (resp.data.status) {
+            resolve({ status: true,
+              data: {
+                url: resp.data.data.url,
+                public_id: resp.data.data.public_id,
+                original_name: resp.data.data.originalName,
+                created_at: resp.data.data.created_at
+              } });
+          } else {
+            resolve({ status: false, errMessage: resp.data.errMessage });
+          }
+        }).catch(function (err) {
+          reject(err);
+        });
+      });
+    }
+  }]);
+
+  return Model;
+}();
+
+module.exports = Model;
+
+},{"axios":27,"axios-fileupload":1,"bluebird":52}],68:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Promise = require('bluebird');
+
+var PresenterController = function () {
+  function PresenterController(view, model) {
+    _classCallCheck(this, PresenterController);
+
+    this._model = model;
+    this._view = view;
+    this._nextCursor = null;
+  }
+
+  _createClass(PresenterController, [{
+    key: 'initializeElement',
+    value: function initializeElement(callbackFn) {
+      this._view.initializeElement(this._deleteButtonClicked.bind(this), this._loadMoreClicked.bind(this), this._uploadClicked.bind(this), callbackFn);
+      this._getImages();
+    }
+  }, {
+    key: '_getImages',
+    value: function _getImages() {
+      var _this = this;
+
+      var nextCursor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+      return this._model.getImages(nextCursor).then(function (resp) {
+        if (resp.status) {
+          _this._nextCursor = resp.data.next_cursor;
+          resp.data.resources.forEach(function (data) {
+            _this._view.appendImage(data);
+          });
+          if (resp.data.next_cursor) {
+            _this._view.loadMoreButtonVisible(resp.data.next_cursor);
+          } else {
+            _this._view.loadMoreButtonVisible(false);
+          }
+        } else {
+          alert('Whoops!! Image is not loaded properly.');
+        }
+      }).catch(function (err) {
+        console.error(err);
+        alert('Image failed to load. Internal server error.');
+      });
+    }
+  }, {
+    key: '_deleteButtonClicked',
+    value: function _deleteButtonClicked(publicId) {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        _this2._model.deleteImage(publicId).then(function (resp) {
+          resolve(resp);
+        }).catch(function (err) {
+          reject(err);
+        });
+      });
+    }
+  }, {
+    key: '_loadMoreClicked',
+    value: function _loadMoreClicked() {
+      this._getImages(this._nextCursor);
+    }
+  }, {
+    key: '_uploadClicked',
+    value: function _uploadClicked(image) {
+      var _this3 = this;
+
+      return new Promise(function (resolve, reject) {
+        if (image) {
+          _this3._model.uploadImage(image).then(function (resp) {
+            resolve(resp);
+          }).catch(function (err) {
+            reject(err);
+          });
+        } else {
+          resolve({ status: false, data: { errMessage: 'Please select the upload picture' } });
+        }
+      });
+    }
+  }]);
+
+  return PresenterController;
+}();
+
+module.exports = PresenterController;
+
+},{"bluebird":52}],69:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+
+var View = function () {
+  function View(divId) {
+    var _this = this;
+
+    _classCallCheck(this, View);
+
+    var self = this;
+    this._rootElement = divId;
+    this._UploadandViewGallery = $('<div> <button class="btn btn-success" data-toggle="modal" data-target="#___fileupload">Upload File</button> </div>');
+    this._imageInitialization = $('<div class="row"></div>');
+
+    this._modalContentImage = $('<div id="modalUpload" class="modal fade" role="dialog" style="overflow-y:auto;"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload Image</h4> </div> <div class="modal-body"></div> <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
+    $('body').append(this._modalContentImage);
+    this._modalContentImage.find('div.modal-body').append(this._UploadandViewGallery);
+    this._modalContentImage.find('div.modal-body').append(this._imageInitialization);
+    this._buttonNextCursor = $('<button class="btn btn-primary" data-next="">LOAD MORE</button>');
+    this._linkInsideTextImage = $('<a href="javascript:void(0);" class="data-image-url" data-url="">Click to trigger Callback !!</a>');
+
+    this._buttonNextCursor.on('click', function (e) {
+      _this._onLoadMoreClicked();
+    });
+
+    // Modal section
+    this._modalDelete = $('<!-- Modal Delete File--><div id="___deletepicture" class="modal fade" role="dialog"> <div class="modal-dialog"> <!-- Modal content--> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete</h4> </div> <div class="modal-body"> <p>Are you sure you want to delete this picture?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-danger btn-delete">YES</button> <button type="button" class="btn btn-default" data-dismiss="modal">NO</button> </div> </div> </div></div>');
+    this._modalDeleteCompleted = $('<div class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete Successful</h4> </div><div class="modal-body"> <p class="text-center">Your image has been deleted.</p></div><div class="modal-footer" style="text-align:center"> <button type="button" class="btn btn-default" data-dismiss="modal">Back to Image Gallery</button> </div></div></div></div>');
+    this._modalDeleteFailed = $('<div class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Delete Failed</h4> </div><div class="modal-body"> <p class="text-center">Internal Server Error!</p></div><div class="modal-footer" style="text-align:center"> <button type="button" class="btn btn-default" data-dismiss="modal">Back to Image Gallery</button> </div></div></div></div>');
+    this._modalUpload = $('<!-- Modal Upload File--><div id="___fileupload" class="modal fade" role="dialog"> <div class="modal-dialog"> <!-- Modal content--> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File</h4> </div> <div class="modal-body"> <p>Below is the button to upload file : </p> <form><div class="form-group"><label for="uploadbutton">Upload File:</label><input id="fileupload" type="file" name="image[]" ></div> </form>  <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div> </div> </div></div>');
+    this._modalUploadSuccess = $('<div id="___fileuploadsuccess" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Success</h4> </div><div class="modal-body"> <div class="info_result text-center hidden"> <p>Success upload your file ! Below is your link : </p> <!-- <img src="" class="img-responsive result_image" style="margin:0 auto;"> <input type="text" readonly value="" class="form-control result_image_text"> --> </div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
+    this._modalUploadFailed = $('<div id="___fileuploadfailed" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">&times;</button> <h4 class="modal-title">Modal Upload File Failed</h4> </div><div class="modal-body"> <div class="info_result text-center"> <p class="text_message_failed">Failed upload your file !</p></div></div><div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div></div></div></div>');
+
+    this._publicId = '';
+    this._imgThumbnail = '';
+    $(this._modalDelete).find('button.btn-delete').on('click', function (e) {
+      _this._onDeleteClicked(_this._publicId).then(function (resp) {
+        if (resp.status) {
+          _this._imgThumbnail.remove();
+          _this._modalDeleteCompleted.modal('show');
+          _this._modalDelete.modal('hide');
+        } else {
+          _this._modalDelete.modal('hide');
+          _this._modalDeleteFailed.modal('show');
+        }
+      }).catch(function (err) {
+        console.error(err);
+        self._modalDelete.modal('hide');
+        self._modalDeleteFailed.modal('show');
+      });
+    });
+  }
+
+  _createClass(View, [{
+    key: 'initializeElement',
+    value: function initializeElement(onDeleteClicked, onLoadMoreClicked, onUploadClicked, callbackFn) {
+      var _this2 = this;
+
+      var self = this;
+      $(this._rootElement).on('click', function (e) {
+        _this2._modalContentImage.modal('show');
+      });
+
+      this._onDeleteClicked = onDeleteClicked;
+      this._onLoadMoreClicked = onLoadMoreClicked;
+      self._onUploadClicked = onUploadClicked;
+      this._callbackFn = callbackFn;
+      this._initializeModal();
+
+      this._modalUpload.on('change', function (e) {
+        var uploadFile = e.target.files[0];
+        self._onUploadClicked(uploadFile).then(function (resp) {
+          if (resp.status) {
+            var linkpicture = resp.data;
+
+            $(_this2._modalUploadSuccess).find('.result_image_text').val(linkpicture.url);
+            $(_this2._modalUploadSuccess).find('.result_image').attr('src', linkpicture.url);
+            $(_this2._modalUploadSuccess).find('.info_result').removeClass('hidden');
+            _this2.appendImage(linkpicture, 1);
+            _this2._modalUpload.modal('hide');
+            _this2._modalUploadSuccess.modal('show');
+          } else {
+            if (resp.errMessage) {
+              $(_this2._modalUploadFailed).find('.text_message_failed').text(resp.errMessage);
+            } else {
+              $(_this2._modalUploadFailed).find('.text_message_failed').text('Internal Server Error !');
+            }
+            _this2._modalUpload.modal('hide');
+            _this2._modalUploadFailed.modal('show');
+          }
+        });
+      });
+    }
+  }, {
+    key: '_initializeModal',
+    value: function _initializeModal() {
+      $('body').append(this._modalUpload);
+      $('body').append(this._modalDelete);
+      $('body').append(this._modalDeleteCompleted);
+    }
+  }, {
+    key: 'appendImage',
+    value: function appendImage(dataImage) {
+      var _this3 = this;
+
+      var latest = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      var imageURL = dataImage.url;
+      var imagePublicId = dataImage.public_id;
+
+      var imageData = $('<div class="gallery_product col-md-4 filter hdpe" style="margin-top:15px;height:30%"></div>');
+      var textImage = $('<div class="text-center textImage" style=""></div>');
+      var overlayImage = $('<div class="overlay" > </div>');
+      var imageSrc = $('<img src="' + imageURL + '" class="img-responsive" style="max-height:100%">');
+      var btnDeleteImage = $('<div class="btn btn-danger btn-close" style="float:right" data-toggle="modal" data-target="#___deletepicture" data-public-id="\'' + imagePublicId + '\'"> <span>X</span> </div>');
+      var imageHref = $('<a href="javascript:void(0);" class="data-image-url" data-url="' + imageURL + '" data-public-id="' + imagePublicId + '">Select Image</a>');
+
+      textImage.append(imageHref);
+      overlayImage.append(btnDeleteImage);
+      overlayImage.append(textImage);
+      imageData.append(imageSrc);
+      imageData.append(overlayImage);
+
+      if (latest === false) {
+        this._imageInitialization.append(imageData);
+      } else {
+        this._imageInitialization.prepend(imageData);
+      }
+
+      $(imageHref).on('click', function (e) {
+        var imageURL = imageHref.data('url');
+        var imagePublicId = imageHref.data('public-id');
+        _this3._callbackFn(imageURL, imagePublicId);
+      });
+
+      $(btnDeleteImage).on('click', function (e) {
+        _this3._imgThumbnail = $(e.currentTarget).parent().parent();
+        _this3._publicId = $(e.currentTarget).data('public-id');
+      });
+    }
+  }, {
+    key: 'loadMoreButtonVisible',
+    value: function loadMoreButtonVisible(dataCursor) {
+      if (dataCursor === false) {
+        this._buttonNextCursor.parent().empty();
+      } else {
+        this._buttonNextCursor.attr('data-next', dataCursor);
+        var divNextCursor = $('<div class="text-center"></div>');
+        divNextCursor.append(this._buttonNextCursor);
+        this._modalContentImage.find('div.modal-body').append(divNextCursor);
+      }
+    }
+  }]);
+
+  return View;
+}();
+
+module.exports = View;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],70:[function(require,module,exports){
 (function (global){
 'use strict';
@@ -48192,4 +48233,4 @@ window.onbeforeunload = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../nc-image-picker/main":1,"axios":33,"codemirror":59,"codemirror/mode/javascript/javascript":60,"copy-to-clipboard":61,"jquery-simple-upload":63,"lodash":64,"marked":65,"summernote":67,"toastr":68}]},{},[70]);
+},{"../nc-image-picker/main":64,"axios":27,"codemirror":53,"codemirror/mode/javascript/javascript":54,"copy-to-clipboard":55,"jquery-simple-upload":57,"lodash":58,"marked":59,"summernote":61,"toastr":62}]},{},[70]);

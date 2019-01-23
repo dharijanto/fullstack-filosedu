@@ -1,245 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 15000
-};
-
-},{}],2:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-
-require('nc-input-library');
-var NCInputManager = require('./nc-input-manager');
-
-$(document).ready(function () {
-  var ncInputs = NCInputManager.initializeEditors('#subjectEditor', '#topicEditor', '#topicDependencyEditor', '#subtopicEditor');
-});
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./nc-input-manager":3,"nc-input-library":14}],3:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var Config = require('../config');
-var rootPath = (typeof window !== "undefined" ? window['rootPath'] : typeof global !== "undefined" ? global['rootPath'] : null);
-var toastr = require('toastr');
-
-var selectedIds = {};
-var NCInputs = {};
-
-// -----------------------------------------
-// Where to GET the data from
-// -----------------------------------------
-function getModelURL(model) {
-  return rootPath + 'get/' + model;
-}
-
-function getSubjectURL() {
-  return getModelURL('Subject');
-}
-
-function getTopicURL() {
-  return getModelURL('Topic?subjectId=') + selectedIds.subject;
-}
-
-function getTopicDependencyURL() {
-  return getModelURL('TopicDependency?topicId=') + selectedIds.topic;
-}
-
-function getSubtopicURL() {
-  return getModelURL('Subtopic?topicId=') + selectedIds.topic;
-}
-// -----------------------------------------
-
-// -----------------------------------------
-// Where to POST the data into
-// -----------------------------------------
-var postTo = {
-  subject: {
-    add: function add() {
-      return rootPath + 'add/Subject';
-    },
-    edit: function edit() {
-      return rootPath + 'edit/Subject';
-    },
-    delete: function _delete() {
-      return rootPath + 'delete/Subject';
-    }
-  },
-  topic: {
-    add: function add() {
-      var topicAddURL = rootPath + 'add/Topic?subjectId=' + selectedIds.subject;
-      console.log('topicAddURL=' + topicAddURL);
-      return topicAddURL;
-    },
-    edit: function edit() {
-      return rootPath + 'edit/Topic';
-    },
-    delete: function _delete() {
-      return rootPath + 'delete/Topic';
-    }
-  },
-  topicDependency: {
-    add: function add() {
-      return rootPath + 'add/TopicDependency?topicId=' + selectedIds.topic;
-    },
-    edit: function edit() {
-      return rootPath + 'edit/TopicDependency?topicId=' + selectedIds.topic;
-    },
-    delete: function _delete() {
-      return rootPath + 'delete/TopicDependency?topicId=' + selectedIds.topic;
-    }
-  },
-  subtopic: {
-    add: function add() {
-      return rootPath + 'add/Subtopic?topicId=' + selectedIds.topic;
-    },
-    edit: function edit() {
-      return rootPath + 'edit/Subtopic';
-    },
-    delete: function _delete() {
-      return rootPath + 'delete/Subtopic';
-    }
-  }
-  // -----------------------------------------
-
-  // -----------------------------------------
-  // What should happen when the table is sclicked
-  // -----------------------------------------
-};function onSubjectClicked(data) {
-  // console.log('onSubjectClicked(): ' + JSON.stringify(data))
-  selectedIds.subject = data.id;
-  NCInputs.topicNcInput.reloadTable();
-}
-
-function onTopicClicked(data) {
-  // console.log('onTopicClicked(): ' + JSON.stringify(data))
-  selectedIds.topic = data.id;
-  NCInputs.topicDependencyInput.reloadTable();
-  NCInputs.subtopicNcInput.reloadTable();
-}
-
-function onTopicDependencyClicked(data) {
-  console.warn('NOT IMPLEMENTED!');
-}
-
-function onSubtopicClicked(data) {
-  toastr.info('Click on highlighted row to open subtopic-management page');
-  // When highlighted row is clicked, open management page
-  if (selectedIds.subtopic === data.id) {
-    // window.location = rootPath + 'subtopic/' + data.id
-    window.open(rootPath + 'subtopic/' + data.id + '/');
-  }
-  // console.log('onSubtopicClicked(): ' + JSON.stringify(data))
-  selectedIds.subtopic = data.id;
-}
-// -----------------------------------------
-
-// -----------------------------------------
-// NC-Input-Library configuration
-// -----------------------------------------
-
-var tableConfig = {
-  subjectHeader: {
-    design: {
-      title: 'Subject',
-      panelColor: 'green'
-    },
-    table: {
-      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }],
-      conf: {
-        orderBy: 'updatedAt',
-        getURL: getSubjectURL,
-        onRowClicked: onSubjectClicked
-      }
-    },
-    buttons: {
-      conf: {
-        networkTimeout: Config.NETWORK_TIMEOUT
-      },
-      ui: [{ id: 'add', desc: 'Add', postTo: postTo.subject.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subject.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subject.delete }]
-    }
-  },
-  topicHeader: {
-    design: {
-      title: 'Topic'
-    },
-    table: {
-      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'topic', desc: 'Topic', dataTable: true, input: 'text', disabled: false }, { id: 'topicNo', desc: 'Topic No', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
-      conf: {
-        orderType: 'asc',
-        orderBy: 'topicNo',
-        getURL: getTopicURL,
-        onRowClicked: onTopicClicked
-      }
-    },
-    buttons: {
-      conf: {
-        networkTimeout: Config.NETWORK_TIMEOUT
-      },
-      ui: [{ id: 'add', desc: 'Add', postTo: postTo.topic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topic.delete }]
-    }
-  },
-  topicDependencyHeader: {
-    design: {
-      title: 'Topic Dependency'
-    },
-    table: {
-      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'dependencyName', desc: 'Dependency Name', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
-      conf: {
-        orderBy: 'updatedAt',
-        getURL: getTopicDependencyURL,
-        onRowClicked: onTopicDependencyClicked
-      }
-    },
-    buttons: {
-      conf: {
-        networkTimeout: Config.NETWORK_TIMEOUT
-      },
-      ui: [{ id: 'add', desc: 'Add', postTo: postTo.topicDependency.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topicDependency.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topicDependency.delete }]
-    }
-  },
-  subtopicHeader: {
-    design: {
-      title: 'Subtopic'
-    },
-    table: {
-      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'subtopic', desc: 'Subtopic', dataTable: true, input: 'text', disabled: false }, { id: 'subtopicNo', desc: 'Subtopic No', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
-      conf: {
-        orderType: 'asc',
-        orderBy: 'subtopicNo',
-        getURL: getSubtopicURL,
-        onRowClicked: onSubtopicClicked
-      }
-    },
-    buttons: {
-      conf: {
-        networkTimeout: Config.NETWORK_TIMEOUT
-      },
-      ui: [{ id: 'add', desc: 'Add', postTo: postTo.subtopic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subtopic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subtopic.delete }]
-    }
-  }
-  // -----------------------------------------
-
-};function initializeEditors(subjectEditorId, topicEditorId, dependencyEditorId, subtopicEditorId) {
-  NCInputs.subjectNcInput = $(subjectEditorId).NCInputLibrary(tableConfig.subjectHeader);
-  NCInputs.topicNcInput = $(topicEditorId).NCInputLibrary(tableConfig.topicHeader);
-  NCInputs.topicDependencyInput = $(dependencyEditorId).NCInputLibrary(tableConfig.topicDependencyHeader);
-  NCInputs.subtopicNcInput = $(subtopicEditorId).NCInputLibrary(tableConfig.subtopicHeader);
-  NCInputs.subjectNcInput.reloadTable();
-
-  return NCInputs;
-}
-
-module.exports = { initializeEditors: initializeEditors };
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config":1,"toastr":46}],4:[function(require,module,exports){
 /*! Responsive 2.2.3
  * 2014-2018 SpryMedia Ltd - datatables.net/license
  */
@@ -1634,7 +1393,7 @@ $(document).on( 'preInit.dt.dtr', function (e, settings, json) {
 return Responsive;
 }));
 
-},{"datatables.net":5}],5:[function(require,module,exports){
+},{"datatables.net":2}],2:[function(require,module,exports){
 (function (global){
 /*! DataTables 1.10.16
  * ©2008-2017 SpryMedia Ltd - datatables.net/license
@@ -16880,7 +16639,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 /*! version : 4.17.47
  =========================================================
@@ -19520,7 +19279,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"moment":12}],7:[function(require,module,exports){
+},{"moment":9}],4:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -19543,7 +19302,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -36631,7 +36390,7 @@ function isSlowBuffer (obj) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports={
 	"version": "2018e",
 	"zones": [
@@ -37231,11 +36990,11 @@ module.exports={
 		"Pacific/Tarawa|Pacific/Wallis"
 	]
 }
-},{}],10:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var moment = module.exports = require("./moment-timezone");
 moment.tz.load(require('./data/packed/latest.json'));
 
-},{"./data/packed/latest.json":9,"./moment-timezone":11}],11:[function(require,module,exports){
+},{"./data/packed/latest.json":6,"./moment-timezone":8}],8:[function(require,module,exports){
 //! moment-timezone.js
 //! version : 0.5.21
 //! Copyright (c) JS Foundation and other contributors
@@ -37850,7 +37609,7 @@ moment.tz.load(require('./data/packed/latest.json'));
 	return moment;
 }));
 
-},{"moment":12}],12:[function(require,module,exports){
+},{"moment":9}],9:[function(require,module,exports){
 //! moment.js
 //! version : 2.20.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -42387,7 +42146,7 @@ return hooks;
 
 })));
 
-},{}],13:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 const logLevelOrders = ['debug', 'verbose', 'info', 'error']
 
 var logLevel = 'info'
@@ -42425,7 +42184,7 @@ log.setLogLevel = level => {
 
 module.exports = log
 
-},{}],14:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global){
 
 // var path = require('path')
@@ -42453,9 +42212,9 @@ $.fn.NCInputLibrary = function (conf) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/logger":13,"./src/model.js":40,"./src/presenter.js":41,"./src/view.js":42}],15:[function(require,module,exports){
+},{"./lib/logger":10,"./src/model.js":37,"./src/presenter.js":38,"./src/view.js":39}],12:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":17}],16:[function(require,module,exports){
+},{"./lib/axios":14}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -42639,7 +42398,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":23,"./../core/settle":26,"./../helpers/btoa":30,"./../helpers/buildURL":31,"./../helpers/cookies":33,"./../helpers/isURLSameOrigin":35,"./../helpers/parseHeaders":37,"./../utils":39,"_process":44}],17:[function(require,module,exports){
+},{"../core/createError":20,"./../core/settle":23,"./../helpers/btoa":27,"./../helpers/buildURL":28,"./../helpers/cookies":30,"./../helpers/isURLSameOrigin":32,"./../helpers/parseHeaders":34,"./../utils":36,"_process":41}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -42693,7 +42452,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":18,"./cancel/CancelToken":19,"./cancel/isCancel":20,"./core/Axios":21,"./defaults":28,"./helpers/bind":29,"./helpers/spread":38,"./utils":39}],18:[function(require,module,exports){
+},{"./cancel/Cancel":15,"./cancel/CancelToken":16,"./cancel/isCancel":17,"./core/Axios":18,"./defaults":25,"./helpers/bind":26,"./helpers/spread":35,"./utils":36}],15:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42714,7 +42473,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],19:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -42773,14 +42532,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":18}],20:[function(require,module,exports){
+},{"./Cancel":15}],17:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],21:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -42868,7 +42627,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":28,"./../helpers/combineURLs":32,"./../helpers/isAbsoluteURL":34,"./../utils":39,"./InterceptorManager":22,"./dispatchRequest":24}],22:[function(require,module,exports){
+},{"./../defaults":25,"./../helpers/combineURLs":29,"./../helpers/isAbsoluteURL":31,"./../utils":36,"./InterceptorManager":19,"./dispatchRequest":21}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -42922,7 +42681,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":39}],23:[function(require,module,exports){
+},{"./../utils":36}],20:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -42942,7 +42701,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":25}],24:[function(require,module,exports){
+},{"./enhanceError":22}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43023,7 +42782,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":20,"../defaults":28,"./../utils":39,"./transformData":27}],25:[function(require,module,exports){
+},{"../cancel/isCancel":17,"../defaults":25,"./../utils":36,"./transformData":24}],22:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43046,7 +42805,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -43074,7 +42833,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":23}],27:[function(require,module,exports){
+},{"./createError":20}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43096,7 +42855,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":39}],28:[function(require,module,exports){
+},{"./../utils":36}],25:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -43192,7 +42951,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":16,"./adapters/xhr":16,"./helpers/normalizeHeaderName":36,"./utils":39,"_process":44}],29:[function(require,module,exports){
+},{"./adapters/http":13,"./adapters/xhr":13,"./helpers/normalizeHeaderName":33,"./utils":36,"_process":41}],26:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -43205,7 +42964,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],30:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -43243,7 +43002,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43313,7 +43072,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":39}],32:[function(require,module,exports){
+},{"./../utils":36}],29:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43329,7 +43088,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43384,7 +43143,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":39}],34:[function(require,module,exports){
+},{"./../utils":36}],31:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43400,7 +43159,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],35:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43470,7 +43229,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":39}],36:[function(require,module,exports){
+},{"./../utils":36}],33:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -43484,7 +43243,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":39}],37:[function(require,module,exports){
+},{"../utils":36}],34:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43523,7 +43282,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":39}],38:[function(require,module,exports){
+},{"./../utils":36}],35:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43552,7 +43311,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],39:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -43857,7 +43616,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":29,"is-buffer":7}],40:[function(require,module,exports){
+},{"./helpers/bind":26,"is-buffer":4}],37:[function(require,module,exports){
 var axios = require('axios')
 var log = require('../lib/logger')
 
@@ -43902,7 +43661,7 @@ class Model {
 
 module.exports = Model
 
-},{"../lib/logger":13,"axios":15}],41:[function(require,module,exports){
+},{"../lib/logger":10,"axios":12}],38:[function(require,module,exports){
 var _ = require('lodash')
 
 var log = require('../lib/logger')
@@ -44058,7 +43817,7 @@ class Presenter {
 
 module.exports = Presenter
 
-},{"../lib/logger":13,"lodash":8}],42:[function(require,module,exports){
+},{"../lib/logger":10,"lodash":5}],39:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null)
 require('datatables.net-responsive')(window, $)
@@ -44597,7 +44356,7 @@ class View {
 module.exports = View
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../lib/logger":13,"datatables.net-responsive":4,"eonasdan-bootstrap-datetimepicker":6,"moment-timezone":10,"nprogress":43,"select2":45}],43:[function(require,module,exports){
+},{"../lib/logger":10,"datatables.net-responsive":1,"eonasdan-bootstrap-datetimepicker":3,"moment-timezone":7,"nprogress":40,"select2":42}],40:[function(require,module,exports){
 /* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
  * @license MIT */
 
@@ -45075,7 +44834,7 @@ module.exports = View
 });
 
 
-},{}],44:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -45261,7 +45020,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],45:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function (global){
 /*!
  * Select2 4.0.6-rc.1
@@ -51112,7 +50871,7 @@ S2.define('jquery.select2',[
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],46:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (global){
 /*
  * Toastr
@@ -51127,7 +50886,7 @@ S2.define('jquery.select2',[
  * Project: https://github.com/CodeSeven/toastr
  */
 /* global define */
-; (function (define) {
+(function (define) {
     define(['jquery'], function ($) {
         return (function () {
             var $container;
@@ -51149,7 +50908,7 @@ S2.define('jquery.select2',[
                 options: {},
                 subscribe: subscribe,
                 success: success,
-                version: '2.1.2',
+                version: '2.1.4',
                 warning: warning
             };
 
@@ -51260,9 +51019,7 @@ S2.define('jquery.select2',[
             function createContainer(options) {
                 $container = $('<div/>')
                     .attr('id', options.containerId)
-                    .addClass(options.positionClass)
-                    .attr('aria-live', 'polite')
-                    .attr('role', 'alert');
+                    .addClass(options.positionClass);
 
                 $container.appendTo($(options.target));
                 return $container;
@@ -51286,6 +51043,7 @@ S2.define('jquery.select2',[
                     closeMethod: false,
                     closeDuration: false,
                     closeEasing: false,
+                    closeOnHover: true,
 
                     extendedTimeOut: 1000,
                     iconClasses: {
@@ -51302,9 +51060,12 @@ S2.define('jquery.select2',[
                     escapeHtml: false,
                     target: 'body',
                     closeHtml: '<button type="button">&times;</button>',
+                    closeClass: 'toast-close-button',
                     newestOnTop: true,
                     preventDuplicates: false,
-                    progressBar: false
+                    progressBar: false,
+                    progressClass: 'toast-progress',
+                    rtl: false
                 };
             }
 
@@ -51362,10 +51123,11 @@ S2.define('jquery.select2',[
                 return $toastElement;
 
                 function escapeHtml(source) {
-                    if (source == null)
-                        source = "";
+                    if (source == null) {
+                        source = '';
+                    }
 
-                    return new String(source)
+                    return source
                         .replace(/&/g, '&amp;')
                         .replace(/"/g, '&quot;')
                         .replace(/'/g, '&#39;')
@@ -51379,11 +51141,29 @@ S2.define('jquery.select2',[
                     setMessage();
                     setCloseButton();
                     setProgressBar();
+                    setRTL();
                     setSequence();
+                    setAria();
+                }
+
+                function setAria() {
+                    var ariaValue = '';
+                    switch (map.iconClass) {
+                        case 'toast-success':
+                        case 'toast-info':
+                            ariaValue =  'polite';
+                            break;
+                        default:
+                            ariaValue = 'assertive';
+                    }
+                    $toastElement.attr('aria-live', ariaValue);
                 }
 
                 function handleEvents() {
-                    $toastElement.hover(stickAround, delayedHideToast);
+                    if (options.closeOnHover) {
+                        $toastElement.hover(stickAround, delayedHideToast);
+                    }
+
                     if (!options.onclick && options.tapToDismiss) {
                         $toastElement.click(hideToast);
                     }
@@ -51395,6 +51175,11 @@ S2.define('jquery.select2',[
                             } else if (event.cancelBubble !== undefined && event.cancelBubble !== true) {
                                 event.cancelBubble = true;
                             }
+
+                            if (options.onCloseClick) {
+                                options.onCloseClick(event);
+                            }
+
                             hideToast(true);
                         });
                     }
@@ -51440,29 +51225,43 @@ S2.define('jquery.select2',[
 
                 function setTitle() {
                     if (map.title) {
-                        $titleElement.append(!options.escapeHtml ? map.title : escapeHtml(map.title)).addClass(options.titleClass);
+                        var suffix = map.title;
+                        if (options.escapeHtml) {
+                            suffix = escapeHtml(map.title);
+                        }
+                        $titleElement.append(suffix).addClass(options.titleClass);
                         $toastElement.append($titleElement);
                     }
                 }
 
                 function setMessage() {
                     if (map.message) {
-                        $messageElement.append(!options.escapeHtml ? map.message : escapeHtml(map.message)).addClass(options.messageClass);
+                        var suffix = map.message;
+                        if (options.escapeHtml) {
+                            suffix = escapeHtml(map.message);
+                        }
+                        $messageElement.append(suffix).addClass(options.messageClass);
                         $toastElement.append($messageElement);
                     }
                 }
 
                 function setCloseButton() {
                     if (options.closeButton) {
-                        $closeElement.addClass('toast-close-button').attr('role', 'button');
+                        $closeElement.addClass(options.closeClass).attr('role', 'button');
                         $toastElement.prepend($closeElement);
                     }
                 }
 
                 function setProgressBar() {
                     if (options.progressBar) {
-                        $progressElement.addClass('toast-progress');
+                        $progressElement.addClass(options.progressClass);
                         $toastElement.prepend($progressElement);
+                    }
+                }
+
+                function setRTL() {
+                    if (options.rtl) {
+                        $toastElement.addClass('rtl');
                     }
                 }
 
@@ -51491,6 +51290,7 @@ S2.define('jquery.select2',[
                         easing: easing,
                         complete: function () {
                             removeToast($toastElement);
+                            clearTimeout(intervalId);
                             if (options.onHidden && response.state !== 'hidden') {
                                 options.onHidden();
                             }
@@ -51551,4 +51351,245 @@ S2.define('jquery.select2',[
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[2]);
+},{}],44:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  // Max time before a POST/GET request is aborted
+  NETWORK_TIMEOUT: 15000
+};
+
+},{}],45:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+
+require('nc-input-library');
+var NCInputManager = require('./nc-input-manager');
+
+$(document).ready(function () {
+  var ncInputs = NCInputManager.initializeEditors('#subjectEditor', '#topicEditor', '#topicDependencyEditor', '#subtopicEditor');
+});
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./nc-input-manager":46,"nc-input-library":11}],46:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var Config = require('../config');
+var rootPath = (typeof window !== "undefined" ? window['rootPath'] : typeof global !== "undefined" ? global['rootPath'] : null);
+var toastr = require('toastr');
+
+var selectedIds = {};
+var NCInputs = {};
+
+// -----------------------------------------
+// Where to GET the data from
+// -----------------------------------------
+function getModelURL(model) {
+  return rootPath + 'get/' + model;
+}
+
+function getSubjectURL() {
+  return getModelURL('Subject');
+}
+
+function getTopicURL() {
+  return getModelURL('Topic?subjectId=') + selectedIds.subject;
+}
+
+function getTopicDependencyURL() {
+  return getModelURL('TopicDependency?topicId=') + selectedIds.topic;
+}
+
+function getSubtopicURL() {
+  return getModelURL('Subtopic?topicId=') + selectedIds.topic;
+}
+// -----------------------------------------
+
+// -----------------------------------------
+// Where to POST the data into
+// -----------------------------------------
+var postTo = {
+  subject: {
+    add: function add() {
+      return rootPath + 'add/Subject';
+    },
+    edit: function edit() {
+      return rootPath + 'edit/Subject';
+    },
+    delete: function _delete() {
+      return rootPath + 'delete/Subject';
+    }
+  },
+  topic: {
+    add: function add() {
+      var topicAddURL = rootPath + 'add/Topic?subjectId=' + selectedIds.subject;
+      console.log('topicAddURL=' + topicAddURL);
+      return topicAddURL;
+    },
+    edit: function edit() {
+      return rootPath + 'edit/Topic';
+    },
+    delete: function _delete() {
+      return rootPath + 'delete/Topic';
+    }
+  },
+  topicDependency: {
+    add: function add() {
+      return rootPath + 'add/TopicDependency?topicId=' + selectedIds.topic;
+    },
+    edit: function edit() {
+      return rootPath + 'edit/TopicDependency?topicId=' + selectedIds.topic;
+    },
+    delete: function _delete() {
+      return rootPath + 'delete/TopicDependency?topicId=' + selectedIds.topic;
+    }
+  },
+  subtopic: {
+    add: function add() {
+      return rootPath + 'add/Subtopic?topicId=' + selectedIds.topic;
+    },
+    edit: function edit() {
+      return rootPath + 'edit/Subtopic';
+    },
+    delete: function _delete() {
+      return rootPath + 'delete/Subtopic';
+    }
+  }
+  // -----------------------------------------
+
+  // -----------------------------------------
+  // What should happen when the table is sclicked
+  // -----------------------------------------
+};function onSubjectClicked(data) {
+  // console.log('onSubjectClicked(): ' + JSON.stringify(data))
+  selectedIds.subject = data.id;
+  NCInputs.topicNcInput.reloadTable();
+}
+
+function onTopicClicked(data) {
+  // console.log('onTopicClicked(): ' + JSON.stringify(data))
+  selectedIds.topic = data.id;
+  NCInputs.topicDependencyInput.reloadTable();
+  NCInputs.subtopicNcInput.reloadTable();
+}
+
+function onTopicDependencyClicked(data) {
+  console.warn('NOT IMPLEMENTED!');
+}
+
+function onSubtopicClicked(data) {
+  toastr.info('Click on highlighted row to open subtopic-management page');
+  // When highlighted row is clicked, open management page
+  if (selectedIds.subtopic === data.id) {
+    // window.location = rootPath + 'subtopic/' + data.id
+    window.open(rootPath + 'subtopic/' + data.id + '/');
+  }
+  // console.log('onSubtopicClicked(): ' + JSON.stringify(data))
+  selectedIds.subtopic = data.id;
+}
+// -----------------------------------------
+
+// -----------------------------------------
+// NC-Input-Library configuration
+// -----------------------------------------
+
+var tableConfig = {
+  subjectHeader: {
+    design: {
+      title: 'Subject',
+      panelColor: 'green'
+    },
+    table: {
+      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'subject', desc: 'Subject', dataTable: true, input: 'text', disabled: false }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }],
+      conf: {
+        orderBy: 'updatedAt',
+        getURL: getSubjectURL,
+        onRowClicked: onSubjectClicked
+      }
+    },
+    buttons: {
+      conf: {
+        networkTimeout: Config.NETWORK_TIMEOUT
+      },
+      ui: [{ id: 'add', desc: 'Add', postTo: postTo.subject.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subject.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subject.delete }]
+    }
+  },
+  topicHeader: {
+    design: {
+      title: 'Topic'
+    },
+    table: {
+      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'topic', desc: 'Topic', dataTable: true, input: 'text', disabled: false }, { id: 'topicNo', desc: 'Topic No', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
+      conf: {
+        orderType: 'asc',
+        orderBy: 'topicNo',
+        getURL: getTopicURL,
+        onRowClicked: onTopicClicked
+      }
+    },
+    buttons: {
+      conf: {
+        networkTimeout: Config.NETWORK_TIMEOUT
+      },
+      ui: [{ id: 'add', desc: 'Add', postTo: postTo.topic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topic.delete }]
+    }
+  },
+  topicDependencyHeader: {
+    design: {
+      title: 'Topic Dependency'
+    },
+    table: {
+      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'dependencyName', desc: 'Dependency Name', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
+      conf: {
+        orderBy: 'updatedAt',
+        getURL: getTopicDependencyURL,
+        onRowClicked: onTopicDependencyClicked
+      }
+    },
+    buttons: {
+      conf: {
+        networkTimeout: Config.NETWORK_TIMEOUT
+      },
+      ui: [{ id: 'add', desc: 'Add', postTo: postTo.topicDependency.add }, { id: 'edit', desc: 'Edit', postTo: postTo.topicDependency.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.topicDependency.delete }]
+    }
+  },
+  subtopicHeader: {
+    design: {
+      title: 'Subtopic'
+    },
+    table: {
+      ui: [{ id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true }, { id: 'subtopic', desc: 'Subtopic', dataTable: true, input: 'text', disabled: false }, { id: 'subtopicNo', desc: 'Subtopic No', dataTable: true, input: 'text', disabled: false }, { id: 'description', desc: 'Description', dataTable: true, input: 'textArea' }, { id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date' }],
+      conf: {
+        orderType: 'asc',
+        orderBy: 'subtopicNo',
+        getURL: getSubtopicURL,
+        onRowClicked: onSubtopicClicked
+      }
+    },
+    buttons: {
+      conf: {
+        networkTimeout: Config.NETWORK_TIMEOUT
+      },
+      ui: [{ id: 'add', desc: 'Add', postTo: postTo.subtopic.add }, { id: 'edit', desc: 'Edit', postTo: postTo.subtopic.edit }, { id: 'delete', desc: 'Delete', postTo: postTo.subtopic.delete }]
+    }
+  }
+  // -----------------------------------------
+
+};function initializeEditors(subjectEditorId, topicEditorId, dependencyEditorId, subtopicEditorId) {
+  NCInputs.subjectNcInput = $(subjectEditorId).NCInputLibrary(tableConfig.subjectHeader);
+  NCInputs.topicNcInput = $(topicEditorId).NCInputLibrary(tableConfig.topicHeader);
+  NCInputs.topicDependencyInput = $(dependencyEditorId).NCInputLibrary(tableConfig.topicDependencyHeader);
+  NCInputs.subtopicNcInput = $(subtopicEditorId).NCInputLibrary(tableConfig.subtopicHeader);
+  NCInputs.subjectNcInput.reloadTable();
+
+  return NCInputs;
+}
+
+module.exports = { initializeEditors: initializeEditors };
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../config":44,"toastr":43}]},{},[45]);

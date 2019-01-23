@@ -1,12 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-  // Max time before a POST/GET request is aborted
-  NETWORK_TIMEOUT: 15000
-};
-
-},{}],2:[function(require,module,exports){
 /*! Responsive 2.2.3
  * 2014-2018 SpryMedia Ltd - datatables.net/license
  */
@@ -1401,7 +1393,7 @@ $(document).on( 'preInit.dt.dtr', function (e, settings, json) {
 return Responsive;
 }));
 
-},{"datatables.net":3}],3:[function(require,module,exports){
+},{"datatables.net":2}],2:[function(require,module,exports){
 (function (global){
 /*! DataTables 1.10.16
  * ©2008-2017 SpryMedia Ltd - datatables.net/license
@@ -16647,7 +16639,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 /*! version : 4.17.47
  =========================================================
@@ -19287,7 +19279,7 @@ return Responsive;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"moment":10}],5:[function(require,module,exports){
+},{"moment":9}],4:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -19310,7 +19302,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -36398,7 +36390,7 @@ function isSlowBuffer (obj) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports={
 	"version": "2018e",
 	"zones": [
@@ -36998,11 +36990,11 @@ module.exports={
 		"Pacific/Tarawa|Pacific/Wallis"
 	]
 }
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var moment = module.exports = require("./moment-timezone");
 moment.tz.load(require('./data/packed/latest.json'));
 
-},{"./data/packed/latest.json":7,"./moment-timezone":9}],9:[function(require,module,exports){
+},{"./data/packed/latest.json":6,"./moment-timezone":8}],8:[function(require,module,exports){
 //! moment-timezone.js
 //! version : 0.5.21
 //! Copyright (c) JS Foundation and other contributors
@@ -37617,7 +37609,7 @@ moment.tz.load(require('./data/packed/latest.json'));
 	return moment;
 }));
 
-},{"moment":10}],10:[function(require,module,exports){
+},{"moment":9}],9:[function(require,module,exports){
 //! moment.js
 //! version : 2.20.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -42154,7 +42146,7 @@ return hooks;
 
 })));
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 const logLevelOrders = ['debug', 'verbose', 'info', 'error']
 
 var logLevel = 'info'
@@ -42192,7 +42184,7 @@ log.setLogLevel = level => {
 
 module.exports = log
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global){
 
 // var path = require('path')
@@ -42220,9 +42212,9 @@ $.fn.NCInputLibrary = function (conf) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/logger":11,"./src/model.js":38,"./src/presenter.js":39,"./src/view.js":40}],13:[function(require,module,exports){
+},{"./lib/logger":10,"./src/model.js":37,"./src/presenter.js":38,"./src/view.js":39}],12:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":15}],14:[function(require,module,exports){
+},{"./lib/axios":14}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -42406,7 +42398,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":21,"./../core/settle":24,"./../helpers/btoa":28,"./../helpers/buildURL":29,"./../helpers/cookies":31,"./../helpers/isURLSameOrigin":33,"./../helpers/parseHeaders":35,"./../utils":37,"_process":42}],15:[function(require,module,exports){
+},{"../core/createError":20,"./../core/settle":23,"./../helpers/btoa":27,"./../helpers/buildURL":28,"./../helpers/cookies":30,"./../helpers/isURLSameOrigin":32,"./../helpers/parseHeaders":34,"./../utils":36,"_process":41}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -42460,7 +42452,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":16,"./cancel/CancelToken":17,"./cancel/isCancel":18,"./core/Axios":19,"./defaults":26,"./helpers/bind":27,"./helpers/spread":36,"./utils":37}],16:[function(require,module,exports){
+},{"./cancel/Cancel":15,"./cancel/CancelToken":16,"./cancel/isCancel":17,"./core/Axios":18,"./defaults":25,"./helpers/bind":26,"./helpers/spread":35,"./utils":36}],15:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42481,7 +42473,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -42540,14 +42532,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":16}],18:[function(require,module,exports){
+},{"./Cancel":15}],17:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -42635,7 +42627,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":26,"./../helpers/combineURLs":30,"./../helpers/isAbsoluteURL":32,"./../utils":37,"./InterceptorManager":20,"./dispatchRequest":22}],20:[function(require,module,exports){
+},{"./../defaults":25,"./../helpers/combineURLs":29,"./../helpers/isAbsoluteURL":31,"./../utils":36,"./InterceptorManager":19,"./dispatchRequest":21}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -42689,7 +42681,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":37}],21:[function(require,module,exports){
+},{"./../utils":36}],20:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -42709,7 +42701,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":23}],22:[function(require,module,exports){
+},{"./enhanceError":22}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -42790,7 +42782,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":18,"../defaults":26,"./../utils":37,"./transformData":25}],23:[function(require,module,exports){
+},{"../cancel/isCancel":17,"../defaults":25,"./../utils":36,"./transformData":24}],22:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42813,7 +42805,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -42841,7 +42833,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":21}],25:[function(require,module,exports){
+},{"./createError":20}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -42863,7 +42855,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":37}],26:[function(require,module,exports){
+},{"./../utils":36}],25:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -42959,7 +42951,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":14,"./adapters/xhr":14,"./helpers/normalizeHeaderName":34,"./utils":37,"_process":42}],27:[function(require,module,exports){
+},{"./adapters/http":13,"./adapters/xhr":13,"./helpers/normalizeHeaderName":33,"./utils":36,"_process":41}],26:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -42972,7 +42964,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -43010,7 +43002,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43080,7 +43072,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":37}],30:[function(require,module,exports){
+},{"./../utils":36}],29:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43096,7 +43088,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43151,7 +43143,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":37}],32:[function(require,module,exports){
+},{"./../utils":36}],31:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43167,7 +43159,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43237,7 +43229,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":37}],34:[function(require,module,exports){
+},{"./../utils":36}],33:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -43251,7 +43243,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":37}],35:[function(require,module,exports){
+},{"../utils":36}],34:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -43290,7 +43282,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":37}],36:[function(require,module,exports){
+},{"./../utils":36}],35:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43319,7 +43311,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -43624,7 +43616,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":27,"is-buffer":5}],38:[function(require,module,exports){
+},{"./helpers/bind":26,"is-buffer":4}],37:[function(require,module,exports){
 var axios = require('axios')
 var log = require('../lib/logger')
 
@@ -43669,7 +43661,7 @@ class Model {
 
 module.exports = Model
 
-},{"../lib/logger":11,"axios":13}],39:[function(require,module,exports){
+},{"../lib/logger":10,"axios":12}],38:[function(require,module,exports){
 var _ = require('lodash')
 
 var log = require('../lib/logger')
@@ -43825,7 +43817,7 @@ class Presenter {
 
 module.exports = Presenter
 
-},{"../lib/logger":11,"lodash":6}],40:[function(require,module,exports){
+},{"../lib/logger":10,"lodash":5}],39:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null)
 require('datatables.net-responsive')(window, $)
@@ -44364,7 +44356,7 @@ class View {
 module.exports = View
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../lib/logger":11,"datatables.net-responsive":2,"eonasdan-bootstrap-datetimepicker":4,"moment-timezone":8,"nprogress":41,"select2":43}],41:[function(require,module,exports){
+},{"../lib/logger":10,"datatables.net-responsive":1,"eonasdan-bootstrap-datetimepicker":3,"moment-timezone":7,"nprogress":40,"select2":42}],40:[function(require,module,exports){
 /* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
  * @license MIT */
 
@@ -44842,7 +44834,7 @@ module.exports = View
 });
 
 
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -45028,7 +45020,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function (global){
 /*!
  * Select2 4.0.6-rc.1
@@ -50879,6 +50871,14 @@ S2.define('jquery.select2',[
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],43:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  // Max time before a POST/GET request is aborted
+  NETWORK_TIMEOUT: 15000
+};
+
 },{}],44:[function(require,module,exports){
 (function (global){
 'use strict';
@@ -50920,4 +50920,4 @@ setInterval(function () {
 }, 5000);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../config":1,"nc-input-library":12}]},{},[44]);
+},{"../config":43,"nc-input-library":11}]},{},[44]);

@@ -35,9 +35,12 @@ block contents
           .bestTimer
             + renderTimerProgress(exercise.timers)
         br
-      if !isAuthenticated
+      //if !isAuthenticated
         br
-        h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan dan melihat nilai
+        if !cloudServer
+          h4 #[a(href='/login') Login] atau #[a(href='/register') register] untuk mengakses latihan dan melihat nilai
+        else
+          h4 #[a(href='/login') Login] untuk mengakses latihan dan melihat nilai
 
 block footer
   script(src="/assets/vendor/videojs/video.js")
