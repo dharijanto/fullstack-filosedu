@@ -66,14 +66,14 @@ $(document).ready(() => {
     const email = $('#input-email').val()
     const phone = $('#input-phone').val()
 
-    if ((!name && !phone) || (!name && !email)) {
-      alert('Nama dan nomor telepon/email harus diisi')
-    } else {
+    if ((name && phone) || (name && email)) {
       if (email && !Utils.validateEmail(email)) {
         alert('Format email salah')
+      } else {
+        submit(name, email, phone)
       }
-
-      submit(name, email, phone)
+    } else {
+      alert('Nama dan nomor telepon/email harus diisi')
     }
   })
 

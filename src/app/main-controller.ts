@@ -19,8 +19,6 @@ let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-cont
 let SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 let PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
 
-let PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
-
 const TAG = 'FiloseduAppController'
 
 class Controller extends BaseController {
@@ -31,7 +29,7 @@ class Controller extends BaseController {
     // do everything in UTC as well
     moment.tz.setDefault('UTC')
 
-    this.addInterceptor((req, res, next) => {
+    this.routeUse((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
       log.verbose(TAG, 'loggedIn=' + req.isAuthenticated())
       log.verbose(TAG, 'req.on=' + JSON.stringify(req.session))
@@ -42,6 +40,8 @@ class Controller extends BaseController {
       res.locals.user = req.user
       res.locals.loggedIn = req.isAuthenticated()
       res.locals.cloudServer = AppConfig.CLOUD_SERVER
+
+      log.verbose(TAG, 'cloudServer=' + res.locals.cloudServer)
       next()
     })
     SequelizeService.initialize(this.getDb().sequelize, this.getDb().models)
@@ -56,8 +56,8 @@ class Controller extends BaseController {
     this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
     this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
     this.routeUse(this.credentialController.getRouter())
-    this.routeUse(this.exerciseController.getRouter())
     this.routeUse(this.courseController.getRouter())
+    this.routeUse(this.exerciseController.getRouter())
     this.routeUse(this.subtopicController.getRouter())
     this.routeUse(this.syncController.getRouter())
     this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())

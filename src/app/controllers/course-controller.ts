@@ -27,6 +27,7 @@ class CourseController extends BaseController {
     super(initData)
 
     this.addInterceptor((req, res, next) => {
+      log.verbose(TAG, 'req.path=' + req.path)
       next()
     })
 
