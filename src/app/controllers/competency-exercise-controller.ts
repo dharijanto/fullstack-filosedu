@@ -44,6 +44,19 @@ export default class CompetencyExerciseController extends BaseController {
       next()
     })
 
+    this.routePost('/exercise-code', (req, res, next) => {
+      const code = req.body.code
+      CompetencyExerciseService.submitExerciseCode(code).then(resp => {
+        res.json(resp)
+        if (!resp.status) {
+          // TODO: Send email to us so we know there's a wrong attempt
+        }
+      }).catch(err => {
+        log.error(TAG, err)
+        res.json({ status: false, errMessage: err.message })
+      })
+    })
+
     this.routePost('/start-topic', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
       if (competencyExerciseId) {

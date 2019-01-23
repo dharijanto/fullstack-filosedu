@@ -175,6 +175,13 @@ function addTables (sequelize, models) {
     date: {type: Sequelize.STRING}
   })
 
+  models.CompetencyExerciseCode = sequelize.define('competencyExerciseCodes', {
+    id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+    code: { type: Sequelize.STRING, unique: true },
+    description: Sequelize.STRING,
+    hits: Sequelize.INTEGER
+  })
+
   // Information that belongs only to local server and never synced to cloud.
   // When we sync from cloud to local, we essentially do mysql dump and then
   // restore it on the local server, hence this table is empty again on a newly synced local.

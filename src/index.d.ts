@@ -94,6 +94,12 @@ interface GeneratedCompetencyExercise extends BaseModel {
   userId: number
 }
 
+interface CompetencyExerciseCode extends BaseModel {
+  code: string
+  description: string
+  hits: number
+}
+
 // END OF RAW Sequelize Model
 
 interface FormattedExercise {

@@ -79,6 +79,56 @@ export type ExerciseState = 'submitted' | 'abandoned' | 'finished' | 'exercising
 type TopicState = 'finished' | 'skipped' | 'pending'
 
 class CompetencyExerciseService extends CRUDService {
+  getExerciseCodes () {
+    return super.read<CompetencyExerciseCode>({
+      modelName: 'CompetencyExerciseCode',
+      searchClause: {}
+    })
+  }
+
+  addExerciseCode (code: string) {
+    return super.create<CompetencyExerciseCode>({
+      modelName: 'CompetencyExerciseCode',
+      data: {
+        code: code.toLowerCase()
+      }
+    })
+  }
+
+  deleteExerciseCode (id: number) {
+    return super.delete({
+      modelName: 'CompetencyExerciseCode',
+      data: {
+        id
+      }
+    })
+  }
+
+  submitExerciseCode (code: string): Promise<NCResponse<any>> {
+    if (code) {
+      return super.readOne<CompetencyExerciseCode>({
+        modelName: 'CompetencyExerciseCode',
+        searchClause: {
+          code: code.toLowerCase()
+        }
+      }).then(resp => {
+        if (resp.status && resp.data) {
+          const compExerciseCode = resp.data
+          return super.update<CompetencyExerciseCode>({
+            modelName: 'CompetencyExerciseCode',
+            data: {
+              id: compExerciseCode.id,
+              hits: compExerciseCode.hits + 1
+            }
+          })
+        } else {
+          return { status: false, errMessage: 'Code tidak terdaftar' }
+        }
+      })
+    } else {
+      return Promise.resolve({ status: false, errMessage: 'Code harus diisi' })
+    }
+  }
 
   // Get an exercise that is not yet finished
   getGeneratedExercise (competencyExerciseId: number): Promise<NCResponse<GeneratedCompetencyExercise>> {
