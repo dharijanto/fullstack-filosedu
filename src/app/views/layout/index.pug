@@ -60,8 +60,9 @@ body
           if (!loggedIn)
             li(class=`${activePage === 'login' ? 'active' : ''}`)
               a(href="/login") Login
-            li(class=`${activePage === 'register' ? 'active' : ''}`)
-              a(href="/register") Register
+            if !cloudServer
+              li(class=`${activePage === 'register' ? 'active' : ''}`)
+                a(href="/register") Register
           else
             li.dropdown
               a.dropdown-toggle(data-toggle='dropdown')

@@ -19,6 +19,8 @@ let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-cont
 let SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 let PassportManager = require(path.join(__dirname, '../lib/passport-manager'))
 
+let PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
+
 const TAG = 'FiloseduAppController'
 
 class Controller extends BaseController {

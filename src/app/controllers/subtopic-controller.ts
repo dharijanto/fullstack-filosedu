@@ -9,8 +9,9 @@ let log = require('npmlog')
 let AnalyticsService = require(path.join(__dirname, '../../services/analytics-service'))
 let AppConfig = require(path.join(__dirname, '../../app-config'))
 let BaseController = require(path.join(__dirname, 'base-controller'))
-let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
+let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
+let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let VideoService = require(path.join(__dirname, '../../services/video-service'))
 
 const TAG = 'SubtopicController'
@@ -51,7 +52,7 @@ class SubtopicController extends BaseController {
       }
     })
 
-    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       let topicId = req.params.topicId
       let subtopicId = req.params.subtopicId
       if (subtopicId) {
