@@ -412,7 +412,7 @@ class CompetencyExerciseService extends CRUDService {
         if (resp2.status && resp2.data) {
           if (resp2.data === 'finished') {
             const topics = JSON.parse(generatedExercise.exerciseDetail) as Partial<GeneratedTopicExercise>[]
-            const score = topics.reduce((acc, topic) => acc + (topic.score || 0), 0)
+            const score = topics.reduce((acc, topic) => acc + (topic.score || 0), 0) / topics.length
             return super.update<GeneratedCompetencyExercise>({
               modelName: 'GeneratedCompetencyExercise',
               data: { id: generatedExercise.id, score, submitted: true, name, phone, email }
