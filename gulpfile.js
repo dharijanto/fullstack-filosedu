@@ -67,13 +67,13 @@ gulp.task('watchSitesDeps', function () {
 })
 
 gulp.task('sass', function () {
-  return gulp.src('./src/app/views/assets/sass/**/*.scss')
+  return gulp.src('./src/app/views/sass/**/*.scss')
     .pipe(sass().on('error', sass.logError))
     .pipe(gulp.dest('./src/app/views/assets/css/'));
 })
 
 gulp.task('watchSass', function () {
-  return gulp.watch('./src/app/views/assets/sass/**/*.scss', ['sass'])
+  return gulp.watch('./src/app/views/sass/**/*.scss', ['sass'])
 })
 
 gulp.task('watch', ['compileSites', 'copySitesDeps', 'watchSites', 'watchSitesDeps', 'watchSass'])

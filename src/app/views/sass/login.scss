@@ -1,0 +1,71 @@
+@import 'base';
+
+a {
+  color: white;
+}
+
+
+
+body {
+  background: linear-gradient(to bottom, $green-grad-start 0%, $green-grad-end 70%, $grey 70%, $grey 100%);
+}
+
+#left-pane {
+  display: none;
+}
+
+/* Small devices (tablets, 768px and up) */
+@media screen and (min-width: $screen-md-min) {
+  body {
+    display: relative;
+    background: linear-gradient(to right, $grey 0%, $grey 50%, $green-grad-start 50%, $green-grad-end 100%);
+  }
+
+  #bg-image {
+    position: absolute;
+    height: 100%;
+    width: 50%;
+    top: 50;
+    background-image: url('/assets/img/murid-sekolah-dasar.png');
+    background-size: cover;
+    opacity: 0.2;
+  }
+
+  #left-pane {
+    display: block;
+    position: relative;
+    height: 80%;
+    #content {
+      position: absolute;
+      bottom: 0px;
+      width: 80%;
+      font-size: 125%;
+      p#heading {
+        font-size: 150%;
+      }
+    }
+  }
+}
+
+#slogan {
+  height: 14px;
+  font-family: OpenSans;
+  font-size: 12px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  letter-spacing: 0.3px;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 10%;
+}
+
+#login-form {
+  width: 80%;
+  text-align: center;
+  margin: auto;
+}
+
+#login-form > button {
+  width: 100%;
+}
