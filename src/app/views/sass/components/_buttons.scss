@@ -1,11 +1,9 @@
 .form-group {
   button {
-    height: 45px;
     box-shadow: 0 0 32px 0 rgba(0, 0, 0, 0.3);
     background-image: linear-gradient(to right, #4db6bb, rgba(0, 129, 134, 0.8));
-  }
-
-  input {
+    border-style: none;
     height: 50px;
   }
+
 }
