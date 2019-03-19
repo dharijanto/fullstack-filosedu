@@ -32,13 +32,15 @@ a {
 
 #questionSubmit {
   form {
-    padding: 15px;
+    max-width: 600px;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 25px;
     background: white;
     border-radius: 4px;
   }
 
   .rendered-question {
-    max-width: 720px;
     margin:auto;
   }
 

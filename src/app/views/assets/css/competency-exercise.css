@@ -6129,12 +6129,14 @@ a {
   margin-top: 50px; }
 
 #questionSubmit form {
-  padding: 15px;
+  max-width: 600px;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 25px;
   background: white;
   border-radius: 4px; }
 
 #questionSubmit .rendered-question {
-  max-width: 720px;
   margin: auto; }
 
 #questionSubmit .user-answer {
