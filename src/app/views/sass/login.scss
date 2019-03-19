@@ -1,17 +1,42 @@
 @import 'base';
 
-a {
-  color: white;
-}
-
-
-
+/* HTML Generic */
 body {
   background: linear-gradient(to bottom, $green-grad-start 0%, $green-grad-end 70%, $grey 70%, $grey 100%);
 }
 
+a {
+  color: white;
+}
+
+/* Page/framework Specific */
+
+// On small screen (i.e. mobile), we don't show the left-pane
 #left-pane {
   display: none;
+}
+
+#slogan {
+  height: 14px;
+  font-family: OpenSans;
+  font-size: 12px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  letter-spacing: 0.3px;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 10%;
+}
+
+#login-form {
+  width: 80%;
+  text-align: center;
+  margin: auto;
+}
+
+#login-form > button {
+  width: 100%;
 }
 
 /* Small devices (tablets, 768px and up) */
@@ -45,27 +70,4 @@ body {
       }
     }
   }
-}
-
-#slogan {
-  height: 14px;
-  font-family: OpenSans;
-  font-size: 12px;
-  font-weight: 300;
-  font-style: normal;
-  font-stretch: normal;
-  letter-spacing: 0.3px;
-  text-align: center;
-  color: #ffffff;
-  margin-bottom: 10%;
-}
-
-#login-form {
-  width: 80%;
-  text-align: center;
-  margin: auto;
-}
-
-#login-form > button {
-  width: 100%;
 }

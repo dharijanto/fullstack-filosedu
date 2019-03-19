@@ -5,6 +5,7 @@ const TAG = 'Topic-Exercise-App'
 let axios = require('../libs/axios-wrapper')
 let log = require('../libs/logger')
 let Utils = require('../libs/utils')
+let Formatter = require('../libs/formatter')
 
 $('.btn-submit-answer').on('click', function (e) {
   postAnswer()
@@ -52,8 +53,8 @@ setInterval(() => {
 }, 1000)
 
 function updateTimer () {
-  // Get current value of progress bar
-  $('#elapsedTime').html(`Elapsed: <strong> ${parseInt(window['elapsedTime'], 10)} detik</strong>`)
+  const seconds = parseInt(window['elapsedTime'], 10)
+  $('#elapsedTime').html(Formatter.secsToTimerFormat(seconds))
 }
 
 // ------------------------------------------------------

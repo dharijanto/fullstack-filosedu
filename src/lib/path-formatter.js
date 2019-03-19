@@ -7,10 +7,14 @@ var Promise = require('bluebird')
 var AppConfig = require(path.join(__dirname, '../app-config'))
 
 class PathFormatter {
-  /*
-    type (STRING): mean it define either its for app or cms
-    mountPath (STRING): mean its path to the correspondency file
-  */
+  // Used to hash asset with md5 content.
+  // The goal is to bypass frontend caching when the content is updated
+  //
+  // type: 'cms' or 'app'
+  // mountPath: http path where the file is mounted
+  //
+  // TODO: Perhaps this is better to be done as pug utility
+  //       (see expressCDN plugin as reference)
   static hashAsset (type, mountPath) {
     var assetPath = null
     if (type === 'cms') {

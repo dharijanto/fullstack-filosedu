@@ -15,7 +15,7 @@ class BaseController {
     this._db = db
     this.getRouter().set('views', this._viewPath)
     this.getRouter().set('view engine', 'pug')
-    this.getRouter().use('/assets', express.static(this._assetsPath, {maxAge: AppConfig.PRODUCTION ? '1h' : null}))
+    this.getRouter().use('/assets', express.static(this._assetsPath, AppConfig.CLOUD_SERVER ? {maxAge: '1h'} : {}))
     this._interceptors = []
   }
 

@@ -2,52 +2,37 @@ extends ../layout/index.pug
 include ../includes/utils.pug
 
 append head
+  link(rel="stylesheet" href="/assets/css/competency-exercise.css")
   link(rel="stylesheet" href="/assets/vendor/toastr/toastr.css")
-  style.
-    .btn {
-      margin: 1%;
-    }
-
-    #notes {
-      font-size: 120%;
-      background-color: #ffc800;
-      padding: 1%;
-    }
-    .img-responsive {
-      margin: 0 auto;
-    }
-
-append initialization
-  - const activePage = 'modules'
 
 block contents
-  div.container
-    if user
-      p= 'Selamat Datang, ' + user.fullName || user.username
-    .row.jumbotron.text-center
-      .row
-        .col-md-12
-          p#notes.
-            #[strong Catatan:]
-            <br>
-            Uji kompetensi terdiri dari beberapa modul dengan topik matematika berbeda.
-            Yang menjadi faktor penilaian adalah skor dan waktu penyelesaian. Oleh karena itu,
-            pastikan tidak ada gangguan selama mengerjakan. Bila ingin beristirahat, lakukan sebelum menekan tombol "Mulai".
-        .col-md-12
-          img.img-responsive(src="/assets/img/big-timer.png")
-        .col-md-12
-          p.
-            #[h1 Modul: #{topicName}]
-            <br>
-            Modul ke #{topicNo} dari #{topicQuantity}
-            <br>
-            Jumlah soal: #{questionQuantity}
-            <br>
-            Estimasi Waktu Pengerjaan: #{idealTime} detik.
-        .col-md-12
-          button.btn.btn-primary#btn-start-topic Mulai
-          button.btn.btn-secondary#btn-skip-topic Belum Belajar
-          button.btn#btn-abandon-exercise Batalkan
+  div.container.text-center
+    #close-container
+      a#btn-abandon-exercise
+        img(src='/assets/img/ic-close.png' srcset='/assets/img/ic-close@2x.png 2x, /assets/img/ic-close@3x.png 3x')
+    .row
+      .col-md-12
+        img(src='/assets/img/competency-module.png' srcset='/assets/img/competency-module@2x.png 2x, /assets/img/competency-module@3x.png 3x')
+    .row
+      .col-md-12
+        h1 #{topicName}
+    .row
+      .col-md-12
+        p Modul: #{topicNo} / #{topicQuantity}
+        p Waktu Pengerjaan: #{(idealTime / 60).toFixed()} menit
+    .row
+      .col-md-12
+        br
+        p
+          | Uji kompetensi terdiri dari beberapa modul dengan topik berbeda.
+          | Faktor penilaian berdasarkan #[strong skor] dan #[strong waktu].
+    .row
+      .col-md-12
+        br
+        button.rounded-button#btn-start-topic Mulai
+        br
+        br
+        a#btn-skip-topic Lewati
 
 append scripts
   script(src=`${bundle}`)

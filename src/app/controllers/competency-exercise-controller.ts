@@ -41,6 +41,9 @@ export default class CompetencyExerciseController extends BaseController {
       next()
     })
 
+    // POST competency-exercise code and see if it's registered
+    // This is used as a "stupid" protection to prevent untracked access
+    // to competency exercise
     this.routePost('/exercise-code', (req, res, next) => {
       const code = req.body.code
       CompetencyExerciseService.submitExerciseCode(code).then(resp => {
@@ -54,6 +57,7 @@ export default class CompetencyExerciseController extends BaseController {
       })
     })
 
+    // Update state from 'pendingExercise' -> 'exercising'
     this.routePost('/start-topic', (req, res, next) => {
       const competencyExerciseId = req.session.competencyExerciseId || 0
       if (competencyExerciseId) {
@@ -220,7 +224,6 @@ export default class CompetencyExerciseController extends BaseController {
           } else if (state === 'submitted') {
             CompetencyExerciseService.getSubmittedExerciseInformation(generatedExercise).then(resp => {
               if (resp.status && resp.data) {
-                console.dir(resp)
                 res.locals.topicResults = resp.data
                 // Show score here
                 res.locals.bundle = this.competencyExerciseLogiscticJS
