@@ -6079,6 +6079,9 @@ html {
   text-align: center;
   color: #ffffff; }
 
+.red-text {
+  color: red; }
+
 .black-text {
   font-family: OpenSans;
   text-transform: uppercase;
@@ -6110,6 +6113,9 @@ table.image-repeat {
 a {
   color: black; }
 
+.container .row {
+  margin-bottom: 10px; }
+
 #close-container {
   position: absolute;
   top: 25px;
@@ -6124,6 +6130,9 @@ a {
     #header #timer #elapsedTime {
       margin-left: 5px;
       font-size: 10px; }
+
+#heading-image {
+  width: 50%; }
 
 #exercise {
   margin-top: 50px; }
@@ -6154,3 +6163,7 @@ a {
     width: auto; }
   #questionSubmit .user-answer input::placeholder {
     color: #bebdbd; }
+
+#contact-information {
+  float: none;
+  margin: auto; }
