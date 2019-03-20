@@ -2,60 +2,58 @@ extends ../layout/index.pug
 include ../includes/utils.pug
 
 append head
+  link(rel="stylesheet" href="/assets/css/competency-exercise.css")
   link(rel="stylesheet" href="/assets/vendor/toastr/toastr.css")
-  style.
-    .btn {
-      margin: 1%;
-    }
-
-    #notes {
-      font-size: 120%;
-      background-color: #ffc800;
-      padding: 1%;
-    }
-    .input-group {
-      margin: auto;
-    }
-    .topic-result {
-      margin: 1%;
-      min-height: 350px;
-    }
-
-append initialization
-  - const activePage = 'modules'
 
 block contents
-  div.container
-    if user
-      p= 'Selamat Datang, ' + user.fullName || user.username
-    .row
+  .container.text-center
+    .col-md-6
+      .row
+        .col-md-12
+          img#heading-image(src='/assets/img/competency-report.png' srcset='/assets/img/competency-finished@2x.png 2x, /assets/img/competency-finished@3x.png 3x')
+      .row
+        .col-md-12
+          h1 Report
+      .row
+        .col-md-12
+          p Nilai merah mengindikasikan bahwa kemampuan anak masih perlu ditingkatkan. Kontak tutor Filosedu untuk bantuan pelajaran.
+    .col-md-6
       for topicResult, idx in topicResults
-        .col-md-4.jumbotron.text-center.topic-result
-          p
-            h2 #{idx + 1}. #{topicResult.topicName}
-            if (topicResult.skipped)
-              | Topik ini dilewati.
+        .row
+          if topicResult.skipped
+            h2
+              | #{idx + 1}. #{topicResult.topicName}
+              img(src="/assets/img/ic-warning.svg")
+            span.red-text Topik ini dilewati
+
+          else
+            - const scoreRedFlag = topicResult.score < 80
+            - const timeScoreRedFlag = topicResult.timeScore < 75
+            - const redFlag = scoreRedFlag || timeScoreRedFlag
+            h2
+              | #{idx + 1}. #{topicResult.topicName}
+              if (redFlag)
+                img(src="/assets/img/ic-warning.svg")
+            span
+              | Nilai: #{' '}
+              span(class=`${scoreRedFlag && 'red-text'}`) #{topicResult.score} / 100
+            br
+            if (topicResult.score >= 75)
+              span Ketangkasan: #{' '}
+              span(class=`${timeScoreRedFlag && 'red-text'}`) #{topicResult.timeScore} / 100
             else
-              h4 Nilai:
-              strong #{topicResult.score} / 100
-              br
-              span #[+renderScoreStars(topicResult.score, 20)]
-              br
-              br
-              h4 Ketangkasan:
-              if (topicResult.score >= 75)
-                strong #{topicResult.timeScore} / 100
-                br
-                span #[+renderScoreStars(topicResult.timeScore, 20)]
-                br
-                br
-                | Waktu selesai: #[strong #{topicResult.timeFinish}] detik
-                br
-                | Waktu ideal: <= #[strong #{topicResult.idealTime}] detik
-              else
-                | Hanya nilai diatas 75 yang mendapat penilaian ketangkasan
-    .row
-      .col-md-12
-        a.btn.btn-primary#btn-retake-exercise Ulangi
+              span Ketangkasan: -
+            br
+            span Waktu Kerja: #{topicResult.timeFinish} / #{topicResult.idealTime}
+      .row
+        br
+        p
+          span Hubungi kami:
+          br
+          strong #[a(href="https://wa.me/+62852-1123-6603") 0852-1123-6603]
+      .row
+       .col-md-12
+         button.rounded-button#btn-retake-exercise Ulangi
+
 append scripts
   script(src=`${bundle}`)

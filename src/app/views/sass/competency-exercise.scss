@@ -6,6 +6,12 @@ a {
   color: black;
 }
 
+.container {
+  .row {
+    margin-bottom: 10px;
+  }
+}
+
 #close-container {
   position: absolute;
   top: 25px;
@@ -24,6 +30,10 @@ a {
       font-size: 10px;
     }
   }
+}
+
+#heading-image {
+  width: 50%;
 }
 
 #exercise {
@@ -66,4 +76,9 @@ a {
       color: #bebdbd;
     }
   }
+}
+
+#contact-information {
+  float: none;
+  margin: auto;
 }

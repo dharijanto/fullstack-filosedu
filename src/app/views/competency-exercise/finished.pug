@@ -2,55 +2,29 @@ extends ../layout/index.pug
 include ../includes/utils.pug
 
 append head
+  link(rel="stylesheet" href="/assets/css/competency-exercise.css")
   link(rel="stylesheet" href="/assets/vendor/toastr/toastr.css")
-  style.
-    .btn {
-      margin: 1%;
-    }
-
-    #notes {
-      font-size: 120%;
-      background-color: #ffc800;
-      padding: 1%;
-    }
-    .img-responsive {
-      margin: 0 auto;
-    }
-    .input-group {
-      margin: auto;
-    }
-
-append initialization
-  - const activePage = 'modules'
 
 block contents
-  div.container
-    if user
-      p= 'Selamat Datang, ' + user.fullName || user.username
-    .row.jumbotron.text-center
-      .row
-        .col-md-12
-          img.img-responsive(src="/assets/img/congratulations.png")
-        .col-md-12
-          p.
-            #[h2 Uji Kompetensi Telah Selesai]
-            Setelah ini, anda akan mendapatkan nilai uji-kompetensi yang baru diselesaikan. Namun, hasil tersebut tidaklah
-            menggambarkan kemampuan putra/putri anda sepenuhnya.
-            Untuk mendapatkan analisa yang lebih mendalam, team Filosedu untuk menghubungi anda:
-      .row
-        .col-md-12
-          .input-group
-            //label(for='pwd') Nama Lengkap:
-            input#input-name.form-control(type='text', placeholder='Nama', aria-describedby='basic-addon1')
-          .input-group.text-center
-            //label(for='pwd') E-mail:
-            input#input-email.form-control(type='text', placeholder='Email', aria-describedby='basic-addon1')
-          .input-group.text-center
-            //label(for='pwd') Nomor Telepon:
-            input#input-phone.form-control(type='text', placeholder='Nomor Telepon', aria-describedby='basic-addon1')
-        .col-md-12
-          button.btn.btn-primary#btn-contact-us Masukan
-          // button.btn.btn-secondary#btn-dont-contact-us Jangan Hubungi Saya
+  .container.text-center
+    .row
+      .col-md-12
+        img#heading-image(src='/assets/img/competency-finished.png' srcset='/assets/img/competency-finished@2x.png 2x, /assets/img/competency-finished@3x.png 3x')
+    .row
+      .col-md-12
+        h1 Good Job!
+    .row
+      .col-md-12
+        p Dapatkan analisa kemampuanmu lebih detail dari team Filosedu dengan memasukan informasi kontakmu.
+    .row.text-center
+      .col-xs-10#contact-information
+        .form-group
+          input#input-name.form-control(type="text" placeholder="Nama")
+          input#input-email.form-control(type="text" placeholder="Email")
+          input#input-phone.form-control(type="text" placeholder="No. Telpon")
+    .row
+      .col-md-12
+        button.rounded-button#btn-contact-us Lanjutkan
 
 append scripts
   script(src=`${bundle}`)
