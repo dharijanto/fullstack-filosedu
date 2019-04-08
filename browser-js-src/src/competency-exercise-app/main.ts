@@ -28,6 +28,7 @@ function postAnswer () {
     if (resp.status) {
       $('input').prop('disabled', true)
       $('input').prop('read-only', true)
+      window.location.href = '/competency-exercise#start'
       window.location.reload()
       return { status: true }
     } else {
