@@ -1,4 +1,5 @@
 node_modules/
 app-config.js
-videos/
-images/
+/videos/
+/images/
+/dist/
