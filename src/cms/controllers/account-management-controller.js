@@ -49,18 +49,9 @@ class AccountManagementController extends BaseController {
     })
 
     this.routePost('/accountmanagement/user/edit', (req, res, next) => {
-      schoolService.readOne({modelName: 'School', searchClause: {name: req.body['school.name']}}).then(resp => {
-        if (resp.status) {
-          const data = Object.assign(req.body, {schoolId: resp.data.id})
-          return userService.updateCredential(data).then(resp => {
-            res.json(resp)
-          })
-        } else {
-          res.json(resp)
-        }
-      }).catch(err => {
-        next(err)
-      })
+      return userService.updateCredential(req.body).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
 
     this.routePost('/accountmanagement/user/delete', (req, res, next) => {

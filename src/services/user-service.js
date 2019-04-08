@@ -58,6 +58,7 @@ class UserService {
     const fullName = credential.fullName
     const schoolId = credential.schoolId
     const grade = credential.grade
+    const teacher = credential.teacher
 
     log.verbose(TAG, 'validateRegistrationCredential(): credential=' + JSON.stringify(credential))
     // If either password or confirm password is entered, they have to match in order
@@ -109,6 +110,11 @@ class UserService {
         data.grade = grade
       }
 
+      // If it's not defined, we dont wanna change it
+      if (teacher !== undefined) {
+        data.teacher = teacher
+      }
+
       const whereClause = isExistingUser ? {id: credential.id} : Sequelize.and({username}, {schoolId})
       return this._models.User.findOne({where: whereClause}).then(user => {
         if (isExistingUser && !user) {
@@ -157,22 +163,29 @@ class UserService {
   // have the same username and schoolId as an existing user. Should use SQL composite key
   updateCredential (credential) {
     const isPasswordOptional = !('password' in credential && (credential.password.length > 0))
-    return this.validateRegistrationCredential(credential, isPasswordOptional, true).then(resp => {
-      if (resp.status) {
-        return this._models.User.update(resp.data, {where: {id: credential.id}}).then(resp => {
-          return {status: true, data: resp}
-        }).catch(err => {
-          console.error(err)
-          if (err.name === 'SequelizeUniqueConstraintError') {
-            resolve({status: false, errMessage: err.message})
-          } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-            resolve({status: false, errMessage: err.message})
+    return this._models.User.findOne({where: {id: credential.id}}).then(user => {
+      if (!user) {
+        return { status: false, errMessage: `User with id=${credential.id} is not found!` }
+      } else {
+        credential.schoolId = user.schoolId
+        return this.validateRegistrationCredential(credential, isPasswordOptional, true).then(resp => {
+          if (resp.status) {
+            return this._models.User.update(resp.data, {where: {id: credential.id}}).then(resp => {
+              return {status: true, data: resp}
+            }).catch(err => {
+              console.error(err)
+              if (err.name === 'SequelizeUniqueConstraintError') {
+                resolve({status: false, errMessage: err.message})
+              } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+                resolve({status: false, errMessage: err.message})
+              } else {
+                throw err
+              }
+            })
           } else {
-            throw err
+            return resp
           }
         })
-      } else {
-        return resp
       }
     })
   }

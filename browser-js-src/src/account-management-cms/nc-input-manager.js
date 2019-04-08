@@ -71,7 +71,8 @@ const tableConfig = {
         {id: 'grade', desc: 'Grade', dataTable: true, input: 'select', selectData: getGrade},
         {id: 'updatedAt', desc: 'Last Modified', dataTable: true, input: 'date'},
         {id: 'password', desc: 'Password', dataTable: false, input: 'password'},
-        {id: 'passwordConfirm', desc: 'Password Confirm', dataTable: false, input: 'password'}
+        {id: 'passwordConfirm', desc: 'Password Confirm', dataTable: false, input: 'password'},
+        {id: 'teacher', desc: 'Teacher', dataTable: true, input: 'select', selectData: () => ['true', 'false']}
       ],
       conf: {
         orderBy: 'updatedAt',

@@ -320,9 +320,12 @@ ORDER BY score DESC LIMIT 4;`,
   // Get leaderboard data
   getExerciseRanking (exerciseId) {
     return this.getSequelize().query(
-`SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
-FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId INNER JOIN schools ON schools.id = users.schoolId
-WHERE submitted = TRUE AND exerciseId = ${exerciseId} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
+`SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName,
+        users.grade AS grade, schools.name AS schoolName
+FROM generatedExercises INNER JOIN users ON users.id = generatedExercises.userId AND users.teacher = FALSE
+INNER JOIN schools ON schools.id = users.schoolId
+WHERE submitted = TRUE AND exerciseId = ${exerciseId} AND score = 100 AND timeFinish IS NOT NULL
+GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
     { type: Sequelize.QueryTypes.SELECT }).then(resp => {
       return { status: true, data: resp }
     })
@@ -343,12 +346,14 @@ WHERE submitted = TRUE AND exerciseId = ${exerciseId} AND score = 100 AND timeFi
   // Get the number of rank in leaderboard
   getCurrentRanking (timeFinish, exerciseId) {
     return new Promise((resolve, reject) => {
-      let queryDB = `SELECT COUNT(*) AS total
-  FROM (SELECT COUNT(*) FROM generatedExercises
-  WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND
-        exerciseId = ${exerciseId} AND score = 100 AND timeFinish IS NOT NULL
-  GROUP BY userId
-  ORDER BY MIN(timeFinish)) AS totalrow;`
+      let queryDB = `SELECT COUNT(*) + 1 AS total
+  FROM (SELECT COUNT(*)
+        FROM (SELECT * FROM generatedExercises WHERE submitted = TRUE AND timeFinish < ${timeFinish} AND
+              exerciseId = ${exerciseId} AND score = 100 AND timeFinish IS NOT NULL) AS generatedExercisesView
+        INNER JOIN users ON users.id = generatedExercisesView.userId AND users.teacher = FALSE
+        GROUP BY userId
+        ORDER BY MIN(timeFinish)
+      ) AS totalrow;`
       return this.getSequelize().query(queryDB,
         { type: Sequelize.QueryTypes.SELECT }).then(resp => {
           resolve({ status: true, data: { count: resp[0].total } })

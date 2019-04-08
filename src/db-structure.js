@@ -70,7 +70,8 @@ function addTables (sequelize, models) {
     salt: {type: Sequelize.STRING},
     email: {type: Sequelize.STRING},
     fullName: {type: Sequelize.STRING},
-    grade: {type: Sequelize.STRING}
+    grade: {type: Sequelize.STRING},
+    teacher: {type: Sequelize.BOOLEAN, defaultValue: false}
   })
   models.User.belongsTo(models.School)
 
