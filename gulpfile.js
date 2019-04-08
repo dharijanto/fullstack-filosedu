@@ -18,7 +18,8 @@ var tsProject = ts.createProject('tsconfig.json')
 const sitesDepsFiles = [
   'src/app/views/**',
   'src/cms/views/**',
-  'src/app-config.js.template'
+  'src/app-config.js.template',
+  'package.json'
 ]
 const sitesFiles = project.config.include
   .concat(project.config.exclude.map(excludePath => '!' + excludePath))
