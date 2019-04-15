@@ -96,6 +96,10 @@ function generateExercise (generateBtnElement) {
           $(resultCode).append(`${marked(e.question)}`)
           $(resultCode).append(`<br>`)
           $(resultCode).append(`Answer: ${JSON.stringify(e.answer)}`)
+          if (!e.isCorrect) {
+            $(resultCode).append(`<br>`)
+            $(resultCode).append(`<span style="color: red"> Incorrect result from isAnswerFn: ${e.isCorrect}</span>`)
+          }
           $(resultCode).append($(`<hr>`))
         })
       } else {

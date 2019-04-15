@@ -139,14 +139,17 @@ class SubtopicController extends BaseController {
         })
     })
 
+    // TODO: Refactor this into a service
     this.routePost('/generateExercise', (req, res, next) => {
       let code = req.body.code
       try {
         let exerciseSolver = ExerciseGenerator.getExerciseSolver(code)
         let questions = exerciseSolver.generateQuestions('quantity')
         Promise.map(questions, question => {
+          // Check that isAnswer function doesn't have error
+          const isCorrect = exerciseSolver.isAnswer(question.knowns, question.unknowns)
           return exerciseSolver.formatQuestion(question.knowns).then(formattedQuestion => {
-            return { question: formattedQuestion, answer: question.unknowns }
+            return { question: formattedQuestion, answer: question.unknowns, isCorrect }
           })
         }).then(data => {
           res.json({ status: true, data })
