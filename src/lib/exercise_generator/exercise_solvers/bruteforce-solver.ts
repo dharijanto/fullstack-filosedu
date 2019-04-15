@@ -68,16 +68,16 @@ export default class BruteforceSolver extends ExerciseSolver {
         let random = getRandom()
         // Make sure what's generated is correct
         if (!('knowns' in random) || !('unknowns' in random)) {
-          throw new Error('Random generator function is not correct! Either knowns or unknowns are not generated')
+          throw new Error('Invalid random generator fn: either knowns or unknowns are not defined!')
         } else {
           knowns.forEach(known => {
             if (!(known in random.knowns)) {
-              throw new Error(`Random generator function is not correct!`)
+              throw new Error(`Invalid random generator fn: knowns.${known} is not defined!`)
             }
           })
           unknowns.forEach(unknown => {
             if (!(unknown in random.unknowns)) {
-              throw new Error(`Random generator function is not correct!`)
+              throw new Error(`Invalid random generator fn: unknowns.${unknown} is not defined!`)
             }
           })
         }

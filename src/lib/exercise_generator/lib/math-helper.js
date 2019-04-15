@@ -36,11 +36,24 @@ class Frac {
     return this.add(new Frac(-otherFrac.num, otherFrac.denom))
   }
 
-  isEqual (otherFrac) {
-    const gcd1 = gcd(this.num, this.denom)
-    const gcd2 = gcd(otherFrac.num, otherFrac.denom)
+  multiply (otherFrac) {
+    return new Frac(this.num * otherFrac.num, this.denom * otherFrac.denom)
+  }
 
-    return this.num / gcd1 === otherFrac.num / gcd2 && this.denom / gcd1 === otherFrac.denom / gcd2
+  divide (otherFrac) {
+    return new Frac(this.num * otherFrac.denom, this.denom * otherFrac.num)
+  }
+
+  simplify () {
+    const gcd1 = gcd(this.num, this.denom)
+    return new Frac(this.num / gcd1, this.denom / gcd1)
+  }
+
+  isEqual (otherFrac) {
+    const simplifiedSelf = this.simplify()
+    const simplifiedOther = otherFrac.simplify()
+
+    return simplifiedSelf.num === simplifiedOther.num && simplifiedSelf.denom === simplifiedOther.denom
   }
 
   static fromMixedFrac (val, num, denom) {
