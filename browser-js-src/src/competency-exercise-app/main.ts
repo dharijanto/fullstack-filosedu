@@ -1,4 +1,4 @@
-let $ = require('jquery')
+import * as $ from 'jquery'
 const ONE_SECOND_IN_MILLIS = 1000 // millisecond
 const TAG = 'Topic-Exercise-App'
 
@@ -14,7 +14,8 @@ function postAnswer () {
   const userAnswers = []
   const jqueryForms = $('form[name="question"]')
   for (let i = 0; i < jqueryForms.length; i++) {
-    const jqueryForm = $(jqueryForms[i])
+    // Since .serializeObject comes from a jquery plugin, we have to cast this to Any
+    const jqueryForm: any = $(jqueryForms[i])
     // [{name: "X", value: "1"}, {name: "y", value: "2"}]
     userAnswers.push(jqueryForm.serializeObject())
   }

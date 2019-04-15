@@ -1,12 +1,13 @@
-var path = require('path')
-var Promise = require('bluebird')
+import * as path from 'path'
+import * as Promise from 'bluebird'
 
-var log = require('npmlog')
-var PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
-var passportManager = require(path.join(__dirname, '../../lib/passport-manager'))
+import * as log from 'npmlog'
 
-var BaseController = require(path.join(__dirname, 'base-controller'))
-var SchoolService = require(path.join(__dirname, '../../services/school-service'))
+import PassportManager from '../../lib/passport-manager'
+
+let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
+let BaseController = require(path.join(__dirname, 'base-controller'))
+let SchoolService = require(path.join(__dirname, '../../services/school-service'))
 
 const TAG = 'CredentialController'
 
@@ -49,14 +50,14 @@ class CredentialController extends BaseController {
       })
     })
 
-    this.routePost('/register', passportManager.authAppRegistration({
+    this.routePost('/register', PassportManager.authAppRegistration({
       failureRedirect: '/register',
       failureFlash: true
     }), (req, res, next) => {
       res.redirect(req.session.returnTo || '/')
     })
 
-    this.routePost('/login', passportManager.authAppLogin({
+    this.routePost('/login', PassportManager.authAppLogin({
       failureRedirect: '/login',
       failureFlash: true
     }), (req, res, next) => {

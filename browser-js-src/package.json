@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jquery": "^3.3.29",
     "axios": "^0.17.1",
     "axios-fileupload": "0.0.1",
     "babel-preset-es2015": "^6.24.1",

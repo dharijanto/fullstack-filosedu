@@ -6,7 +6,6 @@ interface NCResponse<T> {
 }
 
 
-
 /*
 -------------------------------------------------------------------------------
 Sequelize Model. Should not add anything else other than what could come from:
@@ -20,6 +19,25 @@ interface BaseModel {
   id: number,
   createdAt: string,
   updatedAt: string,
+}
+
+interface School extends BaseModel {
+  identifier: string
+  name: string
+  address: string
+  phone: string
+  logo: string
+}
+
+interface User extends BaseModel {
+  schoolId: number
+  username: string
+  saltedPass: string
+  salt: string
+  email: string
+  fullName: string
+  grade: string
+  teacher: boolean
 }
 
 interface Topic extends BaseModel {

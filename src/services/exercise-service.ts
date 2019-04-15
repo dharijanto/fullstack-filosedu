@@ -206,7 +206,7 @@ class ExerciseService extends CRUDService {
   //
   // Return:
   // 0 - 4: How many of the submitted scores are > 80%
-  getExerciseStars (userId, id) {
+  getExerciseStars (userId, id): Promise<NCResponse<{ stars: number }>> {
     return this.getSequelize().query(`
 SELECT score FROM generatedExercises
 WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${id}
@@ -242,12 +242,12 @@ ORDER BY score DESC LIMIT 4;`,
   */
   getRenderedExerciseStars (userId, id): Promise<NCResponse<string>> {
     return this.getExerciseStars(userId, id).then(resp => {
-      if (resp.status) {
+      if (resp.status && resp.data) {
         const stars = resp.data.stars
         const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), { stars })
         return { status: true, data: html }
       } else {
-        return resp
+        return { status: false, errMessage: resp.errMessage }
       }
     })
   }
@@ -261,7 +261,11 @@ ORDER BY score DESC LIMIT 4;`,
         return this.getExerciseStars(userId, exercise.id)
       }).then(datas => {
         const stars = datas.reduce((acc, resp) => {
-          return acc + resp.data.stars
+          if (resp.status && resp.data) {
+            return acc + resp.data.stars
+          } else {
+            throw new Error('getExerciseStars failed: ' + resp.errMessage)
+          }
         }, 0) / (datas.length || 1)
         return { status: true, data: { stars } }
       })
@@ -272,7 +276,7 @@ ORDER BY score DESC LIMIT 4;`,
   //
   // Return:
   // 0 - 4: How many of the submitted scores are > 80%
-  getExerciseTimers (userId, exerciseId) {
+  getExerciseTimers (userId, exerciseId): Promise<NCResponse<{ timers: number}>> {
     return this.getSequelize().query(`
 SELECT score FROM generatedExercises
 WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${exerciseId}
@@ -292,12 +296,12 @@ ORDER BY score DESC LIMIT 4;`,
 
   getRenderedExerciseTimers (userId, id): Promise<NCResponse<string>> {
     return this.getExerciseTimers(userId, id).then(resp => {
-      if (resp.status) {
+      if (resp.status && resp.data) {
         const timers = resp.data.timers
         const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/timers.pug'), { timers })
         return { status: true, data: html }
       } else {
-        return (resp)
+        return { status: false, errMessage: resp.errMessage }
       }
     })
   }
@@ -310,7 +314,11 @@ ORDER BY score DESC LIMIT 4;`,
         return this.getExerciseTimers(userId, exercise.id)
       }).then(datas => {
         const timers = datas.reduce((acc, resp) => {
-          return acc + resp.data.timers
+          if (resp.status && resp.data) {
+            return acc + resp.data.timers
+          } else {
+            throw new Error('getExerciseTimers failed: ' + resp.errMessage)
+          }
         }, 0) / (datas.length || 1)
         return { status: true, data: { timers } }
       })

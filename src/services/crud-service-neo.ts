@@ -80,6 +80,7 @@ export default class CRUDService {
     })
   }
 
+  // TODO: For efficiency, we shouldn't do read[0], but instead should use findOne
   readOne <T extends BaseModel> ({ modelName, searchClause, order, include, trx }:
                                  { modelName: string, searchClause: WhereOptions<T>,
                                    order?: Array<Array<string>>,

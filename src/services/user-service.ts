@@ -1,11 +1,13 @@
-'use strict'
+import * as path from 'path'
 
-const Sequelize = require('sequelize')
-const Promise = Sequelize.Promise
-const log = require('npmlog')
-const path = require('path')
+import * as Promise from 'bluebird'
+import * as log from 'npmlog'
+import * as Sequelize from 'sequelize'
+
 const Crypto = require(path.join(__dirname, '../lib/utils/crypto'))
 const Formatter = require(path.join(__dirname, '../lib/formatter'))
+
+import CRUDService from './crud-service-neo'
 
 const TAG = 'UserService'
 /*
@@ -13,44 +15,30 @@ const TAG = 'UserService'
     This class assumes that the models passed has table User that is
     formated just like one under sites/root/db-structure.js
 */
-class UserService {
-  constructor (sequelize, models) {
-    this._sequelize = sequelize
-    this._models = models
-    if (this._models.User == null) {
-      log.error(TAG, "constructor(): models doesn't have UserAccount defined!")
-    }
-  }
+class UserService extends CRUDService {
 
-  login (credential) {
+  login (credential): Promise<NCResponse<User>> {
     const username = credential.username
     const pass = credential.password
     const schoolId = credential.schoolId
 
-    return this._models.User.findOne({where: {username, schoolId}}).then(user => {
-      if (!user) {
-        return {status: false, errMessage: 'Invalid username or password.', errCode: 1}
-      } else if (('active' in user) && !user.active) {
-        return {
-          status: false,
-          errMessage: 'Account is not activated yet. Check your email to activate.',
-          errCode: 2,
-          errData: {
-            userId: user.id
-          }
-        }
-      } else {
+    return super.readOne<User>({ modelName: 'User', searchClause: { username, schoolId } }).then(resp => {
+      if (resp.status && resp.data) {
+        const user = resp.data
         const saltedPass = Crypto.saltPass(pass, user.salt)
         if (saltedPass === user.saltedPass) {
-          return {status: true, user}
+          return { status: true, data: user }
         } else {
-          return {status: false, errMessage: 'Invalid username or password.', errCode: 1}
+          return { status: false, errMessage: 'Invalid username or password!', errCode: 1 }
         }
+      } else {
+        return { status: false, errMessage: 'Invalid username or password.', errCode: 1 }
       }
+
     })
   }
 
-  validateRegistrationCredential (credential, isPasswordOptional = false, isExistingUser = false) {
+  validateRegistrationCredential (credential, isPasswordOptional = false, isExistingUser = false): Promise<NCResponse<Partial<User>>> {
     const username = credential.username
     const password = credential.password
     const passwordConfirm = credential.passwordConfirm
@@ -64,8 +52,8 @@ class UserService {
     // If either password or confirm password is entered, they have to match in order
     // for anything to be updated
     return new Promise((resolve, reject) => {
-      const errMessages = []
-      const data = {}
+      const errMessages: string[] = []
+      const data: Partial<User> = {}
       if (!Formatter.validateUsername(username)) {
         errMessages.push('Username harus dimulai dengan huruf antara 5-16 karakter')
       } else {
@@ -115,44 +103,55 @@ class UserService {
         data.teacher = teacher
       }
 
-      const whereClause = isExistingUser ? {id: credential.id} : Sequelize.and({username}, {schoolId})
-      return this._models.User.findOne({where: whereClause}).then(user => {
-        if (isExistingUser && !user) {
-          errMessages.push('Username tidak ditemukan')
-        } else if (!isExistingUser && user){
-          errMessages.push('Username sudah terdaftar')
+      const searchClause = isExistingUser ? { id: credential.id } : { [Sequelize.Op.and]: { username, schoolId } }
+
+      super.readOne({ modelName: 'User', searchClause }).then(resp => {
+        if (resp.status && resp.data) {
+          if (!isExistingUser) {
+            errMessages.push('Username sudah terdaftar')
+          }
+        } else {
+          if (isExistingUser) {
+            errMessages.push('Username tidak ditemukan')
+          }
         }
         if (errMessages.length) {
-          resolve({status: false, errMessage: errMessages.join(', ')})
+          resolve({ status: false, errMessage: errMessages.join(', ') })
         } else {
-          resolve({status: true, data})
+          resolve({ status: true, data })
         }
+      }).catch(err => {
+        reject(err)
       })
     })
   }
 
-  register (credential, active = true) {
+  register (credential, active = true): Promise<NCResponse<Partial<User>>> {
     return this.validateRegistrationCredential(credential, false).then(resp => {
-      if (resp.status) {
-        return this._models.User.create(resp.data).then(user => {
-          return {status: true, user}
+      if (resp.status && resp.data) {
+        return super.create({ modelName: 'User', data: resp.data }).then(resp2 => {
+          if (resp2.status && resp.data) {
+            return { status: true, data: resp2.data }
+          } else {
+            return { status: false, errMessage: resp2.errMessage }
+          }
         })
       } else {
-        return resp
+        return { status: false, errMessage: resp.errMessage }
       }
     })
   }
 
-  getAll () {
-    return this._models.User.findAll({include: [{model: this._models.School}]}).then(users => {
-      return ({status: true, data: users})
-    }).catch(err => {
-      return (err)
-    })
+  getUsers (schoolId: number): Promise<NCResponse<User[]>> {
+    if (schoolId) {
+      return super.read<User>({ modelName: 'User', searchClause: { schoolId } })
+    } else {
+      return Promise.resolve({ status: false, errMessage: 'schoolId is required!' })
+    }
   }
 
   deleteById (id) {
-    return this._models.User.destroy({
+    return super.getModels('User').destroy({
       where: {
         id
       }
@@ -161,29 +160,28 @@ class UserService {
 
   // TODO: We shouldn't allow edit so that the user
   // have the same username and schoolId as an existing user. Should use SQL composite key
-  updateCredential (credential) {
+  updateCredential (credential): Promise<NCResponse<null>> {
     const isPasswordOptional = !('password' in credential && (credential.password.length > 0))
-    return this._models.User.findOne({where: {id: credential.id}}).then(user => {
+    return super.getModels('User').findOne({ where: { id: credential.id } }).then(user => {
       if (!user) {
         return { status: false, errMessage: `User with id=${credential.id} is not found!` }
       } else {
         credential.schoolId = user.schoolId
         return this.validateRegistrationCredential(credential, isPasswordOptional, true).then(resp => {
-          if (resp.status) {
-            return this._models.User.update(resp.data, {where: {id: credential.id}}).then(resp => {
-              return {status: true, data: resp}
+          if (resp.status && resp.data) {
+            return super.getModels('User').update(resp.data, { where: { id: credential.id } }).spread(count => {
+              return { status: true, data: null } as NCResponse<null>
             }).catch(err => {
-              console.error(err)
               if (err.name === 'SequelizeUniqueConstraintError') {
-                resolve({status: false, errMessage: err.message})
+                return { status: false, errMessage: err.message }
               } else if (err.name === 'SequelizeForeignKeyConstraintError') {
-                resolve({status: false, errMessage: err.message})
+                return { status: false, errMessage: err.message }
               } else {
                 throw err
               }
             })
           } else {
-            return resp
+            return { status: false, errMessage: resp.errMessage }
           }
         })
       }
@@ -191,4 +189,4 @@ class UserService {
   }
 }
 
-module.exports = UserService
+export default new UserService()
