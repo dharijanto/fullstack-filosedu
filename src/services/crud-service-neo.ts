@@ -72,11 +72,7 @@ export default class CRUDService {
     }
     log.verbose(TAG, `read(): modelName=${modelName} searchClause=${JSON.stringify(searchClause)}`)
     return this.getModels(modelName).findAll({ where: searchClause, order, include, limit, transaction: trx }).then(readData => {
-      if (readData.length > 0) {
-        return { status: true, data: readData.map(data => data.get({ plain: true })) }
-      } else {
-        return { status: false, errMessage: 'Data not found' }
-      }
+      return { status: true, data: readData.map(data => data.get({ plain: true })) }
     })
   }
 
