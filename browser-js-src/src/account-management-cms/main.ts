@@ -74,7 +74,7 @@ $(document).ready(function () {
       ui: [
         { id: 'add', desc: 'Add', postTo: () => `${window['rootPath']}account-management/user/add?schoolId=${selectedSchool ? selectedSchool.id : 0}` },
         { id: 'edit', desc: 'Edit', postTo: window['rootPath'] + 'account-management/user/edit' },
-        { id: 'delete', desc: 'Delete', postTo: window['rootPath'] + 'account-management/user/delete' }
+        { id: 'delete', desc: 'Delete', postTo: window['rootPath'] + 'account-management/user/delete', confirm: 'Delete user account?' }
       ]
     }
   })

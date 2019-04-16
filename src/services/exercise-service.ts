@@ -3,7 +3,7 @@ import ExerciseGenerator from '../lib/exercise_generator/exercise-generator'
 import CRUDService from './crud-service-neo'
 import BruteforceSolver, { GeneratedQuestionData } from '../lib/exercise_generator/exercise_solvers/bruteforce-solver'
 import ExerciseHelper from '../app/utils/exercise-helper'
-import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver';
+import { QuantityVariableName } from '../lib/exercise_generator/exercise_solvers/exercise-solver'
 
 let path = require('path')
 
@@ -51,7 +51,7 @@ class ExerciseService extends CRUDService {
           const generatedExercise = resp2.data
           return this.formatExercise(exercise, generatedExercise)
           // Unsubmitted GeneratedExercise can no longer be used or there's none
-        } else if ((resp2.status && resp2.data && resp2.data.exerciseHash !== exerciseHash) || !resp2.status) {
+        } else if ((resp2.status && resp2.data && resp2.data.exerciseHash !== exerciseHash) || (resp2.status && !resp2.data)) {
           // TODO: We wanna combine generateExercise and saveGeneratedExercise altogether
           return this.generateAndSaveExercise(exercise, userId).then(resp => {
             if (resp.status && resp.data) {
