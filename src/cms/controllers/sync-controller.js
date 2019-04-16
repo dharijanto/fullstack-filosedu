@@ -67,12 +67,8 @@ class SyncController extends BaseController {
       syncService.isServerReadyToSync().then(resp => {
         if (resp.status) {
           // Sync only data newer than last synced
-
-          // This is the quirks of Sequelize and NCloud-Server.
-          // When we read from the database, the date is expected to be UTC as it's going to be converted by Sequelize
-          // to defined timezone, which is GMT + 7
-          const startTime = moment.tz(resp.data.lastSync, "Asia/Jakarta").utc().format('YYYY-MM-DD HH:mm:ss')
-          const endTime = moment.utc().format('YYYY-MM-DD HH:mm:ss')
+          const startTime = resp.data.lastSync
+          const endTime = moment().format('YYYY-MM-DD HH:mm:ss')
           log.verbose(TAG, 'synchronization/start.POST: startTime=' + startTime)
           log.verbose(TAG, 'synchronization/start.POST: endTime=' + endTime)
           return syncService.findAllUser().then(resp => {

@@ -5,11 +5,8 @@ import CompetencyExerciseService from '../../services/competency-exercise-servic
 import ExerciseGenerator from '../../lib/exercise_generator/exercise-generator'
 import ExerciseHelper from '../utils/exercise-helper'
 import TopicExerciseService from '../../services/topic-exercise-service'
-import { Response } from 'aws-sdk';
 
 let path = require('path')
-
-let moment = require('moment-timezone')
 
 let log = require('npmlog')
 

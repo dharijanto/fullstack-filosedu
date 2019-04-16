@@ -10,7 +10,6 @@ const path = require('path')
 let express = require('express')
 let getSlug = require('speakingurl')
 let marked = require('marked')
-let moment = require('moment-timezone')
 
 let AppConfig = require(path.join(__dirname, '../app-config'))
 let BaseController = require(path.join(__dirname, 'controllers/base-controller'))
@@ -26,9 +25,6 @@ class Controller extends BaseController {
   constructor (initData) {
     super(initData)
     PassportManager.initialize()
-    // Since the SQL server is configured to store the date in UTC format, we
-    // do everything in UTC as well
-    moment.tz.setDefault('UTC')
 
     this.routeUse((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)

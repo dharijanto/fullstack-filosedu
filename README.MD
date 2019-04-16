@@ -1,4 +1,3 @@
-
 # Installation
 ## Nginx
 Things POSTed using HTTP protocol like sync data is pretty large. They can be > 1MB at times.
@@ -6,6 +5,17 @@ By default, Nginx returns 413 for file upload that is too big. To alleviate it, 
 ```
 client_max_body_size 50M;
 ```
+
+## Mysql
+* Make sure MySQL 5.7 is used
+* Make sure timezone is set appropriately (GMT +7)
+  By default, MySQL uses local timezone, hence make sure computer time is set appropriately
+
+## Redis
+* NCloudServer relies on redis, default installation should do it
+
+## NCKeyServer
+* NCloudServer relies on NCKeyServer in order to work
 
 # Synchronization
 ## Requirement
@@ -43,7 +53,7 @@ client_max_body_size 50M;
     which can take up to 5 minutes depending on how big the data is.
 * Server creates new entry in syncHistories table, whose status is Syncing
   * Server uses synchronizations table to create mapping between client id and server id
-    * synchronizations.schoolIdentifier: 
+    * synchronizations.schoolIdentifier:
     * synchronizations.
     * Column:
       * localId -> source id on local server
@@ -86,16 +96,23 @@ client_max_body_size 50M;
   * Cloud server
 * Enable sequelize verbose logging, through app-config so that we can see database logs.
 
-### Test Cases
+### Tests
+#### Functional
+##### Synchronization
+###### Make sure we're not messing timezone up
+Sequelize has certain weird quirks about doing timezone conversion, hence we need to ensure nothing breaks when we
+modify ncloud and/or filos code...
+  - Insert data
+  - Read  data from previous step, check if its createdAt is as expected
+  - Read previously inserted data by using createdAt time range, check if it is retrieved
 
-#### Synchronization
-##### Things to Note on Synchronization Testing
+###### Things to Note on Synchronization Testing
 1. Timezone conversion -> Since we're using sequelize that does time conversion and cloud and local can have different settings, make
    sure things are tested and working properly.
 2. First test locally, by having 2 filos applications on the same computer, 1 acts as local-server and the other 1 acts as cloud-server
 3. Then test syncing with real cloud server.
 
-##### Local-to-Cloud
+###### Local-to-Cloud
 1. First-time sync
   a. Delete generatedExercises, generatedTopicExercises, and analytics rows on the cloud where schoolId = local.schoolId
   b. Sync to cloud
@@ -113,7 +130,7 @@ client_max_body_size 50M;
   c. Sync
   d. Check that row count is the same as (a)
 
-##### Cloud-to-Local
+###### Cloud-to-Local
 1. First-time restore
   a. Do mysqldump of cloud, restore it in local server
   b. Check if restored data is accessible in local server
@@ -143,3 +160,8 @@ client_max_body_size 50M;
   ```
 2. Create two instances of filos app, using ln -s to share the code. But separate the database of the two
    (i.e. create two sites with different names). Have one to sync to the other
+
+#### Continuous Integration
+* All pages are accessible
+    Since we're already a pretty big application, we need to make sure that all of the pages are accessed fine.
+    * Exercise: There are three paths: new, restoring, updating
