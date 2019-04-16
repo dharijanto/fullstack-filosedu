@@ -50,10 +50,12 @@ block contents
             | !{starsHTML}
           p.bestTimer
             | !{timersHTML}
-        div.rankingScore
-          | !{ranking}
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+        br
+        br
+        div.rankingScore
+          | !{ranking}
 
 append scripts
   script().

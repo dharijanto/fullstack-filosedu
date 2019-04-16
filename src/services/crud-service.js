@@ -5,6 +5,7 @@ var log = require('npmlog')
 
 const TAG = 'CRUDService'
 
+// TODO: This should be deprecated in exchange of crud-service-neo which is typescripted
 class CRUDService {
   constructor (sequelize, models) {
     this._sequelize = sequelize

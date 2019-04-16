@@ -235,11 +235,7 @@ class SyncService extends CRUDService {
 
   getSyncHistories (schoolIdentifier) {
     return this.read({modelName: 'SyncHistory', searchClause: {schoolIdentifier}, order: [['updatedAt', 'desc']]}).then(resp => {
-      if (resp.status) {
-        return resp
-      } else {
-        return {status: true, data: []}
-      }
+      return resp
     })
   }
 

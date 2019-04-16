@@ -59,7 +59,7 @@ class TopicExerciseService extends CRUDService {
             return this.formatExercise(resp.data)
           // If there's expired generated exercise or no generated exercise to be restored
           } else if ((resp.status && resp.data && resp.data.topicExerciseHash !== topicExerciseHash) ||
-                    !resp.status) {
+                    (resp.status && !resp.data)) {
             return this.generateAndSaveExercise(topicId, userId).then(resp5 => {
               if (resp5.status && resp5.data) {
                 return this.formatExercise(resp5.data)

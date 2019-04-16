@@ -49,13 +49,15 @@ block contents
             | !{starsHTML}
           p.bestTimer
             | !{timersHTML}
-        div.rankingScore
-          | !{ranking}
         span
           a.btn.btn-primary#prevButton(style=`${prevLink ? '' : 'display: none'}` href=`${prevLink || ''}`) <
           button.btn.btn-primary.btn_submit_answer() Masukan Jawaban
           a.btn.btn-primary.btn_retry_question.hidden(href="") Latihan Lagi
           a.btn.btn-primary#nextButton(style=`${nextLink ? '' : 'display: none;'}` href=`${nextLink || ''}`) >
+        br
+        br
+        div.rankingScore
+          | !{ranking}
 
 append scripts
   script().

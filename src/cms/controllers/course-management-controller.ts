@@ -44,7 +44,7 @@ class CourseManagementController extends BaseController {
         log.verbose(this.getTag(), `/get/${req.params.model}.get(): resp=${JSON.stringify(resp)}`)
         // Read returns false if there's no data matching the searchClause, but in this situation
         // having no data is fine
-        res.json({ status: true, data: resp.data || [] })
+        res.json({ status: true, data: resp.data })
       }).catch(err => next(err))
     })
 

@@ -42,9 +42,9 @@ class SubtopicController extends BaseController {
           res.locals.subtopic = sResp.data
           res.locals.exercises = eResp.data || []
           res.locals.subtopicData = res.locals.subtopic.data ? JSON.parse(res.locals.subtopic.data) : {}
-          return CourseService.read({ modelName: 'Topic', searchClause: { id: res.locals.subtopic.topicId } }).then(tResp => {
+          return CourseService.readOne({ modelName: 'Topic', searchClause: { id: res.locals.subtopic.topicId } }).then(tResp => {
             if (tResp.status && tResp.data) {
-              res.locals.topic = tResp.data[0]
+              res.locals.topic = tResp.data
               res.render('subtopic')
             } else {
               next() // 404 not found
