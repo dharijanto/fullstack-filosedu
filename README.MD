@@ -97,6 +97,12 @@ client_max_body_size 50M;
 * Enable sequelize verbose logging, through app-config so that we can see database logs.
 
 ### Tests
+#### Unit
+##### Synchronization
+-Insert data of certain date, call sync function to get data that would have been send
+ to the cloud. Ensure that the data that is or isn't supposed to be sent are proper.
+ For this, we need to emulate cloud server behavior (i.e. getSyncHistories())
+
 #### Functional
 ##### Synchronization
 ###### Make sure we're not messing timezone up

@@ -14,14 +14,17 @@ block contents
     each topic, index in topics
       .panel-group
         .panel.panel-default
-          .panel-heading
+          .panel-heading(style="height: 80px")
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-              span.pull-right(style="margin-right: 2%")
-                + renderCheckmark(parseInt(topic.starBadge), 20)
-                + renderTimerProgress(parseInt(topic.timeBadge), 20, 1)
-              button.btn.btn-info.pull-right.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
-          .panel-collapse.collapse.in(id=`collapse_${index}`)
+            // div(style="font-size: 80%; color: grey; margin-top: 2%")
+              | Progress: 50 / 100%
+            div(style="margin-top: 3%; color: grey; ")
+              button.btn.btn-info.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
+              span(style="margin-left: 2%")
+                + renderTopicExerciseCheckmark(parseInt(topic.checkmarkBadge), 30)
+                + renderTopicExerciseStars(parseInt(topic.starBadge), 20)
+          .panel-collapse.collapse(id=`collapse_${index}`)
             ul.list-group
               each subtopic, index in topic.subtopics
                 li.list-group-item

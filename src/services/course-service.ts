@@ -39,7 +39,7 @@ class CourseService extends CRUDService {
 SELECT
   topics.id AS \`topics.id\`, topics.topicNo AS \`topics.topicNo\`, topics.topic AS \`topics.topic\`,
   IFNULL(starBadge.\`count\`, 0) AS \`topics.starBadge\`,
-  IFNULL(timeBadge.\`count\`, 0) AS \`topics.timeBadge\`,
+  IFNULL(checkmarkBadge.\`count\`, 0) AS \`topics.checkmarkBadge\`,
   subtopicsView.id AS \`topics.subtopics.id\`, subtopicsView.subtopicNo AS \`topics.subtopics.subtopicNo\`,
   subtopicsView.subtopic AS \`topics.subtopics.subtopic\`,
   IFNULL(subtopicsView.starBadge, 0) AS \`topics.subtopics.starBadge\`,
@@ -55,9 +55,9 @@ LEFT OUTER JOIN (
 LEFT OUTER JOIN (
   SELECT COUNT(*) AS count, topicId
   FROM generatedTopicExercises
-  WHERE submitted = 1 AND userId = ${userId} AND timeFinish < idealTime AND score = 100
+  WHERE submitted = 1 AND userId = ${userId} AND timeFinish < idealTime AND score >= 90
   GROUP BY topicId
-) AS timeBadge ON timeBadge.topicId = topics.id
+) AS checkmarkBadge ON checkmarkBadge.topicId = topics.id
 INNER JOIN (
   SELECT
     subtopics.id AS id, subtopics.topicId AS topicId, subtopics.subtopic AS subtopic, subtopics.subtopicNo AS subtopicNo,

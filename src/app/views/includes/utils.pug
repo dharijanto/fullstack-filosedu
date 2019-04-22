@@ -37,14 +37,22 @@ mixin renderTimerProgress (numTimers, size, maxTimers = 4)
   while emptyTimers-- > 0
     img(src="/assets/img/timer_empty.png" width=size || 30)
 
-mixin renderCheckmark (isChecked, size)
-  if (isChecked)
-    img(src="/assets/img/checked.png" width=size || 30)
-  else
-    img(src="/assets/img/unchecked.png" width=size || 30)
-
 mixin renderVideoWatchStatus (isWatched, size)
   if (isWatched)
     img(src="/assets/img/video_watched.png" width=size || 30)
   else
     img(src="/assets/img/video_unwatched.png" width=size || 30)
+
+mixin renderTopicExerciseCheckmark (isChecked, size)
+  if (isChecked)
+    img(src="/assets/img/checked.png" width=size || 30)
+  else
+    img(src="/assets/img/unchecked.png" width=size || 30)
+
+mixin renderTopicExerciseStars(numStars, size)
+  if numStars > 0
+    img(src="/assets/img/star.png" width=size || 25)
+  else
+    img(src="/assets/img/star_grey.png" width=size || 25)
+  if (numStars - 1 > 0)
+    span(style="font-size: 65%") +#{numStars -1}
