@@ -17,11 +17,11 @@ block contents
           .panel-heading(style="height: 80px")
             h1.panel-title
               a(data-toggle="collapse", href=`#collapse_${index}`) #{topic.topic}
-            // div(style="font-size: 80%; color: grey; margin-top: 2%")
+            // div(style="font-size: 80%; color: grey; margin-top: 1em")
               | Progress: 50 / 100%
-            div(style="margin-top: 3%; color: grey; ")
-              button.btn.btn-info.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='margin-right: 1%; margin-left: 1%') Review
-              span(style="margin-left: 2%")
+            div(style="margin-top: 0.5em; color: grey; ")
+              button.btn.btn-info.btn-xs(onclick=`location.href="/topics/${topic.id}/${getSlug(topic.topic)}/review"` style='') Review
+              span(style="margin-left: 1em")
                 + renderTopicExerciseCheckmark(parseInt(topic.checkmarkBadge), 30)
                 + renderTopicExerciseStars(parseInt(topic.starBadge), 20)
           .panel-collapse.collapse(id=`collapse_${index}`)
