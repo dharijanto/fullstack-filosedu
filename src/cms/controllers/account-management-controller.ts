@@ -4,9 +4,9 @@ const log = require('npmlog')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
-const SchoolService = require(path.join(__dirname, '../../services/school-service'))
 
 import UserService from '../../services/user-service'
+import SchoolService from '../../services/school-service'
 
 const TAG = 'AccountManagementController'
 
@@ -14,7 +14,6 @@ const TAG = 'AccountManagementController'
 class AccountManagementController extends BaseController {
   constructor (initData) {
     super(initData)
-    const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)

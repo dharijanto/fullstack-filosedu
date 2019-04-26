@@ -171,3 +171,7 @@ modify ncloud and/or filos code...
 * All pages are accessible
     Since we're already a pretty big application, we need to make sure that all of the pages are accessed fine.
     * Exercise: There are three paths: new, restoring, updating
+
+# TODO
+1. Move backup script from .sh to .ts and let it be called using GET request through cronjob using CURL
+   This way we don't have to place username and password twice, but we can centralize everything on AppConfig

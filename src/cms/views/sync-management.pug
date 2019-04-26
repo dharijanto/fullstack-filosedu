@@ -1,7 +1,5 @@
 extends /layout.pug
 
-include includes/sidebar.pug
-
 append links
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/data-table/css/datatables.min.css'))
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/vendor/data-table/css/dataTables.responsive.css'))
@@ -11,7 +9,8 @@ append links
   link(rel="stylesheet" type="text/css" href=rootifyPath('assets/css/toastr.min.css'))
 
 block content
-  #syncManagement
+  #local-to-cloud-sync
+  #cloud-to-local-sync
 
 append scripts
   script.

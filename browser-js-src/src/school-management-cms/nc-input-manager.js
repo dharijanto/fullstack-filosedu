@@ -78,7 +78,7 @@ const tableConfig = {
       ui: [
         {id: 'add', desc: 'Add', postTo: postTo.school.add},
         {id: 'edit', desc: 'Edit', postTo: postTo.school.edit},
-        {id: 'delete', desc: 'Delete', postTo: postTo.school.delete}
+        {id: 'delete', desc: 'Delete', postTo: postTo.school.delete, confirm: 'Are you sure?'}
       ]
     }
   }

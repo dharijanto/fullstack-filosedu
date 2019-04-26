@@ -20,6 +20,20 @@ class MainController extends BaseController {
 
     this.addInterceptor((req, res, next) => {
       log.verbose(this.getTag(), 'req.path=' + req.path)
+      if (AppConfig.CLOUD_SERVER) {
+        res.locals.__sidebar = [
+          {title: 'Course Management', url: this.rootifyPath(''), faicon: ''},
+          {title: 'Account Management', url: this.rootifyPath('account-management'), faicon: ''},
+          {title: 'School Management', url: this.rootifyPath('schoolmanagement'), faicon: ''},
+          {title: 'Student Monitor', faicon: '', url: this.rootifyPath('student-monitor')}
+        ]
+      } else {
+        res.locals.__sidebar = [
+          {title: 'Account Management', url: this.rootifyPath('account-management'), faicon: ''},
+          {title: 'Student Monitor', faicon: '', url: this.rootifyPath('student-monitor')},
+          {title: 'Sync Management', url: this.rootifyPath('synchronization'), faicon: ''}
+        ]
+      }
       next()
     })
 

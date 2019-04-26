@@ -39,7 +39,7 @@ class CourseController extends BaseController {
           // console.log(JSON.stringify(resp.data, null, 2))
           res.render('topics')
         } else {
-          next(resp.errMessage)
+          next(new Error('Failed to getTopicDetails(): ' + resp.errMessage))
         }
       }).catch(err => {
         next(err)

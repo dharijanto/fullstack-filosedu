@@ -1,13 +1,13 @@
-var path = require('path')
+import * as path from 'path'
 
-var _ = require('lodash')
-var log = require('npmlog')
-var Promise = require('bluebird')
-var Sequelize = require('sequelize')
+import * as Promise from 'bluebird'
+import * as log from 'npmlog'
 
-var BaseController = require(path.join(__dirname, 'base-controller'))
-
-var SyncService = require(path.join(__dirname, '../../services/sync-server-service'))
+let _ = require('lodash')
+let Sequelize = require('sequelize')
+let BaseController = require(path.join(__dirname, 'base-controller'))
+let SyncService = require(path.join(__dirname, '../../services/sync-server-service'))
+import BackupService from '../../services/backup-service'
 
 const TAG = 'SyncController'
 
@@ -18,6 +18,14 @@ class SyncController extends BaseController {
 
     this.addInterceptor((req, res, next) => {
       next()
+    })
+
+    // TODO: This should be encrypted
+    this.routeGet('/backup/dump', (req, res, next) => {
+      BackupService.getSQLDumpForLocalServer(req.query.schoolIdentifier).then(data => {
+        res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' })
+        res.end(data)
+      }).catch(next)
     })
 
     this.routeGet('/synchronization/histories', (req, res, next) => {
@@ -105,18 +113,18 @@ class SyncController extends BaseController {
 
     */
     this.routePost('/synchronization/start', (req, res, next) => {
-      var syncData = req.body.data
+      let syncData = req.body.data
       log.verbose(TAG, `synchronization.POST(): ${JSON.stringify(syncData)}`)
-      return this.getDb().sequelize.transaction({isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE}, trx => {
+      return this.getDb().sequelize.transaction({ isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE }, trx => {
         const schoolIdentifier = syncData.school.identifier
-        return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => { 
+        return syncService.findSchoolIdByIdentifier(schoolIdentifier).then(resp => {
           if (resp.status) {
             const schoolId = resp.data.id
             return syncService.isReadyToSync(schoolIdentifier, trx).then(resp => {
               if (resp.status) {
                 return syncService.createSyncHistory(schoolIdentifier, syncData.syncTime).then(resp => {
                   const syncHistoryId = resp.data.id
-                  res.json({status: true})
+                  res.json({ status: true })
                   // TODO: Pas read, mau di kasi trx juga
                   return syncService.syncData(schoolId, syncData, trx).then(() => {
                     return syncService.updateSyncHistory(syncHistoryId, true)

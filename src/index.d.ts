@@ -118,6 +118,11 @@ interface CompetencyExerciseCode extends BaseModel {
   hits: number
 }
 
+interface LocalMetaData extends BaseModel {
+  key: string
+  value: string
+}
+
 // END OF RAW Sequelize Model
 
 interface FormattedExercise {

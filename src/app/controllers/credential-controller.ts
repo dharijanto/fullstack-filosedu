@@ -4,17 +4,16 @@ import * as Promise from 'bluebird'
 import * as log from 'npmlog'
 
 import PassportManager from '../../lib/passport-manager'
+import SchoolService from '../../services/school-service'
 
 let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let BaseController = require(path.join(__dirname, 'base-controller'))
-let SchoolService = require(path.join(__dirname, '../../services/school-service'))
 
 const TAG = 'CredentialController'
 
 class CredentialController extends BaseController {
   constructor (initData) {
     super(initData)
-    const schoolService = new SchoolService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -23,7 +22,7 @@ class CredentialController extends BaseController {
     })
 
     this.routeGet('/login', (req, res, next) => {
-      schoolService.getAll().then(resp => {
+      SchoolService.getAll().then(resp => {
         if (resp.status) {
           res.locals.schools = resp.data
         } else {
@@ -37,7 +36,7 @@ class CredentialController extends BaseController {
     })
 
     this.routeGet('/register', (req, res, next) => {
-      schoolService.getAll().then(resp => {
+      SchoolService.getAll().then(resp => {
         if (resp.status) {
           res.locals.schools = resp.data
         } else {
