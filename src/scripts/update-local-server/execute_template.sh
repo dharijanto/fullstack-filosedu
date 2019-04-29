@@ -1,13 +1,43 @@
 # 1. Create a copy of this file, name it execute.sh
 # 2. Update path and credential information
 
-NCLOUD_SERVER_PATH='/home/aharijanto/tmp/ncloud-dist/'
-FILOS_SERVER_PATH="/home/aharijanto/Programming/nodejs/ncloud-server/dropbox/dynamichost/app_filosedu"
+# The following variables are set through the calling NodeJS process
+# Since we also want to test this script independent of the program,
+# we add default values for when the script is executed directly.
+if [ -z "$NCLOUD_SERVER_PATH" ]
+then
+  NCLOUD_SERVER_PATH='/home/aharijanto/tmp/ncloud-dist/'
+fi
 
-CLOUD_HOST="http://app-filosedu.nusantara-local.com"
-SQL_USER="root"
-SQL_PASS=""
-SQL_DB="app_filosedu"
+if [ -z "$FILOS_SERVER_PATH" ]
+then
+    FILOS_SERVER_PATH="/home/aharijanto/Programming/nodejs/ncloud-server/dropbox/dynamichost/app_filosedu"
+fi
+
+if [ -z "$CLOUD_HOST" ]
+then
+  CLOUD_HOST="https://app.filosedu.com"
+fi
+
+if [ -z "$SQL_USER" ]
+then
+  SQL_USER="root"
+fi
+
+if [ -z "$SQL_PASS" ]
+then
+  SQL_PASS=""
+fi
+
+if [ -z "$SQL_DB" ]
+then
+  SQL_DB="app_filosedu"
+fi
+
+if [ -z "$SQL_DB" ]
+then
+  SCHOOL_IDENTIFIER="filosedu_bandung_elmuloka"
+fi
 
 function check () {
   if [ "$1" -ne 0 ]
@@ -16,20 +46,6 @@ function check () {
     exit 1
   fi
 }
-
-# Update ncloud-server
-echo "[INFO]: Updating ncloud server"
-cd $NCLOUD_SERVER_PATH
-git pull origin master
-check $? "Failed to update ncloud-server"
-
-
-# Update filos-server
-echo "[INFO]: Updating Filos Server"
-cd $FILOS_SERVER_PATH
-git pull origin master
-check $? "update filos-server!"
-
 # Backup current Database
 echo "[INFO]: Backing up current database...." &&
 mysqldump -u$SQL_USER $SQL_PASS $SQL_DB > /tmp/filosedu_backup.sql
@@ -37,7 +53,7 @@ check $? "Failed to backup database!"
 
 # Get remote database
 echo "[INFO]: Downloading remote database..." &&
-wget -q -O - $CLOUD_HOST/backup/dump | gzip -d > /tmp/filosedu.sql
+wget -q -O - $CLOUD_HOST/backup/dump?schoolIdentifier=$SCHOOL_IDENTIFIER | gzip -d > /tmp/filosedu.sql
 check $? "Failed download remote database!"
 
 # Drop current database
@@ -59,10 +75,25 @@ check $? "Failed to clean up!"
 echo "[INFO]: Updating content..." &&
 SCRIPT_PATH=$FILOS_SERVER_PATH/scripts/video-and-images-sync.js
 ls $SCRIPT_PATH &> /dev/null
+# Use pre-defined path if SCRIPT_PATH isn't set
 if [ "$?" -eq 0 ]
   then node $SCRIPT_PATH
   else node $FILOS_SERVER_PATH/dist/scripts/video-and-images-sync.js
 fi
 check $? "Failed to update content"
+
+# Update ncloud-server
+echo "[INFO]: Updating ncloud server"
+cd $NCLOUD_SERVER_PATH
+git pull origin master && npm prune && npm install
+check $? "Failed to update ncloud-server"
+
+
+# Update filos-server
+echo "[INFO]: Updating Filos Server"
+cd $FILOS_SERVER_PATH
+git pull origin master && npm prune && npm install
+check $? "update filos-server!"
+
 
 echo "[INFO]: Completed!"

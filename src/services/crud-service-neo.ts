@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird'
-import { Sequelize, Models, Model, Transaction, Instance, IncludeOptions, WhereOptions } from 'sequelize'
+import { Sequelize, Models, Model, Transaction, Instance, IncludeOptions, WhereOptions, TransactionLockLevel } from 'sequelize'
 import SequelizeService from './sequelize-service'
 
 let _ = require('lodash')
@@ -62,29 +62,32 @@ export default class CRUDService {
   //
   // If there's no data:
   // {status: false, errCode: ..., errMessage: ..., errData}
-  read<T extends BaseModel> ({ modelName, searchClause, order = [], include, limit, trx }:
+  read<T extends BaseModel> ({ modelName, searchClause, order = [], include, limit, trx, lock }:
                              { modelName: string, searchClause: WhereOptions<T>,
                                order?: Array<Array<string>>,
                                include?: Array<Model<any, any> | IncludeOptions>
-                               limit?: number, trx?: Transaction }): Promise<NCResponse<T[]>> {
+                               limit?: number,
+                               trx?: Transaction,
+                               lock?: TransactionLockLevel | { level: TransactionLockLevel, of: Model<any, any> } }): Promise<NCResponse<T[]>> {
     if (!searchClause) {
       throw new Error('searchClause has to be specified!')
     }
     log.verbose(TAG, `read(): modelName=${modelName} searchClause=${JSON.stringify(searchClause)}`)
-    return this.getModels(modelName).findAll({ where: searchClause, order, include, limit, transaction: trx }).then(readData => {
+    return this.getModels(modelName).findAll({ where: searchClause, order, include, limit, transaction: trx, lock }).then(readData => {
       return { status: true, data: readData.map(data => data.get({ plain: true })) }
     })
   }
 
   // TODO: For efficiency, we shouldn't do read[0], but instead should use findOne
-  readOne <T extends BaseModel> ({ modelName, searchClause, order, include, trx }:
+  readOne <T extends BaseModel> ({ modelName, searchClause, order, include, trx, lock }:
                                  { modelName: string, searchClause: WhereOptions<T>,
                                    order?: Array<Array<string>>,
                                    include?: Array<Model<any, any> | IncludeOptions>,
-                                   trx?: Transaction
+                                   trx?: Transaction,
+                                   lock?: TransactionLockLevel | { level: TransactionLockLevel, of: Model<any, any> }
                                  }): Promise<NCResponse<T>> {
     const opts = { modelName, searchClause, order }
-    return this.read({ modelName, searchClause, order, include, trx }).then(resp => {
+    return this.read({ modelName, searchClause, order, include, limit: 1, trx, lock }).then(resp => {
       if (resp.status && resp.data) {
         return { status: true, data: resp.data[0] }
       } else {

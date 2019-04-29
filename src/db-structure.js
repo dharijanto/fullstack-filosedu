@@ -196,7 +196,7 @@ function addTables (sequelize, models) {
   models.LocalMetaData = sequelize.define('localMetaData', {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     key: {type: Sequelize.STRING, unique: true},
-    value: {type: Sequelize.STRING}
+    value: {type: Sequelize.TEXT}
   })
 
   return models

@@ -22,10 +22,10 @@ class BackupService {
         if (resp.status && resp.data) {
           return new Promise((resolve, reject) => {
             // Exclude analytics and synchronizations tables since they're only used by cloud server
-            exec(`mysqldump --ignore-table=${AppConfig.MYSQL_CONF.DBNAME}.analytics ` +
+            exec(`mysqldump --ignore-table=${AppConfig.MYSQL_CONF.DB}.analytics ` +
               `--ignore-table=${AppConfig.MYSQL_CONF.DB}.synchronizations ` +
-              `-u${AppConfig.MYSQL_CONF.USERNAME} ${AppConfig.MYSQL_CONF.PASSWORD ? '-p' + AppConfig.MYSQL_CONF.PASSWORD : '' }` +
-              `${AppConfig.MYSQL_CONF.DB}`, { maxBuffer: 1024 * 5000 },
+              `-u${AppConfig.MYSQL_CONF.USERNAME} ${AppConfig.MYSQL_CONF.PASSWORD ? '-p' + AppConfig.MYSQL_CONF.PASSWORD : '' } ` +
+              `${AppConfig.MYSQL_CONF.DB}`, { maxBuffer: 1024 * 25000 },
                 (err, stdout, stderr) => {
                   if (err) {
                     reject(err)

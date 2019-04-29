@@ -18,6 +18,7 @@ var tsProject = ts.createProject('tsconfig.json')
 const sitesDepsFiles = [
   'src/app/views/**',
   'src/cms/views/**',
+  'src/scripts/**/*.sh',
   'src/app-config.js.template',
   'package.json'
 ]

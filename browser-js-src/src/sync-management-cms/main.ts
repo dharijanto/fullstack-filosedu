@@ -1,12 +1,14 @@
 import * as $ from 'jquery'
+const axios = require('../libs/axios-wrapper')
 const Config = require('../config')
 const rootPath = require('cmsRootPath')
+const toastr = require('toastr')
 
 import 'nc-input-library'
 
 const syncNCInput = $('#local-to-cloud-sync').NCInputLibrary({
   design: {
-    title: 'Local-to-Cloud Sync Histories'
+    title: 'Local-to-Cloud Sync'
   },
   table: {
     ui: [
@@ -18,7 +20,7 @@ const syncNCInput = $('#local-to-cloud-sync').NCInputLibrary({
     ],
     conf: {
       order: [['updatedAt', 'desc']],
-      getURL: rootPath + 'synchronization/histories'
+      getURL: rootPath + 'synchronization/local-to-cloud/histories'
     }
   },
   buttons: {
@@ -26,7 +28,7 @@ const syncNCInput = $('#local-to-cloud-sync').NCInputLibrary({
       networkTimeout: Config.NETWORK_TIMEOUT
     },
     ui: [
-      { id: 'sync', desc: 'Sync', postTo: rootPath + '/synchronization/start' }
+      { id: 'sync', desc: 'Sync', postTo: rootPath + '/synchronization/local-to-cloud/start' }
     ]
   }
 })
@@ -41,3 +43,41 @@ syncNCInput.reloadTable()
 setInterval(() => {
   syncNCInput.reloadTable()
 }, 10000)
+
+let cloudToLocalLogTimer
+$('#btn-cloud-to-local-sync').on('click', () => {
+  const resp = confirm('Have you synced the local data to the cloud? Unsynced data will be gone otherwise!')
+  if (resp) {
+    axios.get(rootPath + '/synchronization/cloud-to-local/start').then(rawResp => {
+      const resp = rawResp.data
+      if (typeof resp === 'object' && 'status' in resp) {
+        console.dir('resp=' + resp)
+        if (resp.status) {
+          toastr.success('Success!')
+          if (cloudToLocalLogTimer) {
+            clearInterval(cloudToLocalLogTimer)
+          }
+          cloudToLocalLogTimer = setInterval(() => {
+            axios.get(rootPath + '/synchronization/cloud-to-local/log').then(rawResp => {
+              const resp = rawResp.data
+              if (resp.status && resp.data) {
+                $('#console').val($('#console').val() + resp.data)
+              } else {
+                console.error(resp.errMessage)
+              }
+            })
+          }, 2000)
+        } else {
+          toastr.error('Failed to sync: ' + resp.errMessage)
+        }
+      } else {
+        toastr.error('Failed to sync: unexpected response!')
+        console.error('Unexpected response: ' + JSON.stringify(resp))
+      }
+    }).catch(err => {
+      console.error(err)
+      toastr.error('Failed to sync: ' + err.message)
+    })
+  }
+})
+

@@ -5,8 +5,8 @@ var ip = require('ip')
 const MYSQL_CONF = {
   USERNAME: 'root',
   PASSWORD: '',
-  HOST: 'localhost,
-  PORT: 3306
+  HOST: 'localhost',
+  PORT: 3306,
   DB: 'app_filosedu'
 }
 
@@ -37,7 +37,7 @@ const LOCAL_SCHOOL_INFORMATION = {
 }
 
 const CLOUD_INFORMATION = {
-  HOST: 'https://www.filosedu.com'
+  HOST: 'https://app.filosedu.com'
 }
 
 module.exports = {

@@ -1,20 +1,22 @@
-const path = require('path')
+import * as path from 'path'
+
+import * as Promise from 'bluebird'
+import RestoreService from '../../services/restore-service'
 
 const log = require('npmlog')
-const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 
 const AppConfig = require(path.join(__dirname, '../../app-config'))
-var SyncService = require(path.join(__dirname, '../../services/sync-client-service'))
+const SyncService = require(path.join(__dirname, '../../services/sync-client-service'))
 
 const TAG = 'SyncController'
 
-/* 
+/*
 TODO:
 1. Since sequelize date conversion sucks, we should really use raw query to retrieve
-2. 
+2.
  */
 class SyncController extends BaseController {
   constructor (initData) {
@@ -34,7 +36,7 @@ class SyncController extends BaseController {
       }
     })
 
-    this.routeGet('/synchronization/histories' , (req, res, next) => {
+    this.routeGet('/synchronization/local-to-cloud/histories' , (req, res, next) => {
       syncService.getSyncHistories().then(resp => {
         res.json(resp)
       }).catch(next)
@@ -62,7 +64,7 @@ class SyncController extends BaseController {
         }
       ]
     */
-    this.routePost('/synchronization/start', (req, res, next) => {
+    this.routePost('/synchronization/local-to-cloud/start', (req, res, next) => {
       log.verbose(TAG, `syncController:GET(): HOMEPAGE`)
       syncService.isServerReadyToSync().then(resp => {
         if (resp.status) {
@@ -74,13 +76,13 @@ class SyncController extends BaseController {
           return syncService.findAllUser().then(resp => {
             if (resp.status) {
               const users = resp.data
-              return Promise.map(users, user => {
+              return Promise.map(users, (user: any) => {
                 return Promise.join(
                   syncService.findAnalytics(user.id, startTime, endTime),
                   syncService.findSubmittedGeneratedExercises(user.id, startTime, endTime),
                   syncService.findSubmittedGeneratedTopicExercises(user.id, startTime, endTime),
                   syncService.findWatchedVideos(user.id, startTime, endTime)
-                ).spread((respAnalytics, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises, respWatchedVideos) => {
+                ).spread((respAnalytics: any, respSubmittedGeneratedExercises, respSubmittedGeneratedTopicExercises, respWatchedVideos) => {
                   return {
                     user,
                     analytics: respAnalytics.status ? respAnalytics.data : [],
@@ -97,12 +99,32 @@ class SyncController extends BaseController {
               })
             } else {
               res.json(resp)
+              return
             }
           })
         } else {
           res.json(resp)
         }
       }).catch(err => {
+        next(err)
+      })
+    })
+
+    this.routeGet('/synchronization/cloud-to-local/start' , (req, res, next) => {
+      RestoreService.restoreCloudData().then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        log.error(TAG, err)
+        res.json({ status: false, errMessage: 'Unexpected error: ' + err.message })
+      })
+    })
+
+    this.routeGet('/synchronization/cloud-to-local/log' , (req, res, next) => {
+      RestoreService.readLog().then(resp => {
+        res.json(resp)
+      }).catch(err => {
+        log.error(TAG, err)
+        // res.json({ status: false, errMessage: 'Unexpected error: ' + err.message })
         next(err)
       })
     })
