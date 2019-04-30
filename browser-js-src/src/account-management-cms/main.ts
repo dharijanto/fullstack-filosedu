@@ -31,7 +31,7 @@ $(document).ready(function () {
       ],
       conf: {
         order: [['updatedAt', 'desc']],
-        getURL: window['rootPath'] + 'school/management/get',
+        getURL: window['rootPath'] + 'account-management/school/get',
         onRowClicked: (data: School) => {
           selectedSchool = data
           ncAccount.reloadTable()

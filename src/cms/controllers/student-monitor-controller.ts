@@ -1,11 +1,11 @@
-const path = require('path')
+import * as path from 'path'
 
-const log = require('npmlog')
+import * as log from 'npmlog'
+import SchoolService from '../../services/school-service'
 
 const AppConfig = require(path.join(__dirname, '../../app-config'))
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
-const ImageService = require(path.join(__dirname, '../../services/image-service'))
 const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 const StudentMonitorService = require(path.join(__dirname, '../../services/student-monitor-service'))
 
@@ -14,7 +14,6 @@ class StudentMonitorController extends BaseController {
   constructor (initData) {
     super(initData)
     const studentMonitorService = new StudentMonitorService(this.getDb().sequelize, this.getDb().models)
-    const imageService = new ImageService(this.getDb().sequelize, this.getDb().models)
 
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
@@ -25,6 +24,12 @@ class StudentMonitorController extends BaseController {
       res.render('student-monitor')
     })
 
+    this.routeGet('/student-monitor/schools', (req, res, next) => {
+      SchoolService.getAll().then(resp => {
+        res.json(resp)
+      })
+    })
+
     this.routeGet('/student-monitor/last-hour-summary', (req, res, next) => {
       const schoolId = req.query.schoolId
       const showAllStudents = req.query.showAllStudents === 'true'
@@ -33,7 +38,7 @@ class StudentMonitorController extends BaseController {
           res.json(resp)
         }).catch(next)
       } else {
-        res.json({status: false, errMessage: 'schoolId is required!'})
+        res.json({ status: false, errMessage: 'schoolId is required!' })
       }
     })
 

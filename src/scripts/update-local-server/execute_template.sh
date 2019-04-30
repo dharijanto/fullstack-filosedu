@@ -27,6 +27,8 @@ fi
 if [ -z "$SQL_PASS" ]
 then
   SQL_PASS=""
+else
+  SQL_PASS="-p$SQL_PASS"
 fi
 
 if [ -z "$SQL_DB" ]
@@ -58,12 +60,12 @@ check $? "Failed download remote database!"
 
 # Drop current database
 echo "[INFO]: Deleting database..." &&
-mysql -u$SQL_USER $SQL_PASSWORD -e "drop database $SQL_DB; create database $SQL_DB"
+mysql -u$SQL_USER $SQL_PASS -e "drop database $SQL_DB; create database $SQL_DB"
 check $? "Failed to delete database"
 
 # Restore remote database
 echo "[INFO]: Restoring remote database..." &&
-mysql -u$SQL_USER $SQL_PASSWORD $SQL_DB < /tmp/filosedu.sql
+mysql -u$SQL_USER $SQL_PASS $SQL_DB < /tmp/filosedu.sql
 check $? "Failed to restore remote database!"
 
 # Cleaning up tmp files

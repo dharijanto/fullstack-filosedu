@@ -24,7 +24,7 @@ $(document).ready(function () {
       conf: {
         orderBy: [['id', 'asc']],
         orderType: 'DESC',
-        getURL: `${rootPath}/school/management/get`,
+        getURL: `${rootPath}/student-monitor/schools`,
         onRowClicked: (data) => {
           schoolId = data.id
           ncSummary.reloadTable()

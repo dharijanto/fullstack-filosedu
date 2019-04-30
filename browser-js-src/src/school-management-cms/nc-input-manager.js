@@ -58,6 +58,7 @@ const tableConfig = {
       ui: [
         {id: 'id', desc: 'ID', dataTable: true, input: 'text', disabled: true},
         {id: 'identifier', desc: 'Identifier', dataTable: true, input: 'text', disabled: false},
+        {id: 'expirationDate', desc: 'Expiration Date', dataTable: true, type: 'date', input: 'date'},
         {id: 'name', desc: 'School Name', dataTable: true, input: 'text'},
         {id: 'logo', desc: 'Logo', dataTable: true, input: 'text'},
         {id: 'address', desc: 'Address', dataTable: true, input: 'text'},

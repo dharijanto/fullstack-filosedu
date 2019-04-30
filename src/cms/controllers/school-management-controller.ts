@@ -32,7 +32,7 @@ class SchoolManagementController extends BaseController {
     })
 
     this.routePost('/school/management/add', (req, res, next) => {
-      SchoolService.create({ modelName: 'School', data: req.body }).then(resp => {
+      SchoolService.addSchool(req.body).then(resp => {
         res.json(resp)
       }).catch(err => {
         next(err)
@@ -40,7 +40,7 @@ class SchoolManagementController extends BaseController {
     })
 
     this.routePost('/school/management/edit', (req, res, next) => {
-      SchoolService.update({ modelName: 'School', data: req.body }).then(resp => {
+      SchoolService.editSchool(req.body).then(resp => {
         res.json(resp)
       }).catch(err => {
         next(err)

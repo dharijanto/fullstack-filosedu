@@ -4,6 +4,7 @@ import SequelizeService from '../services/sequelize-service'
 
 import CompetencyExerciseController from './controllers/competency-exercise-controller'
 import PassportManager from '../lib/passport-manager'
+import SchoolService from '../services/school-service'
 
 const path = require('path')
 
@@ -50,14 +51,26 @@ class Controller extends BaseController {
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
 
-    this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
-    this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
-    this.routeUse(this.credentialController.getRouter())
-    this.routeUse(this.courseController.getRouter())
-    this.routeUse(this.exerciseController.getRouter())
-    this.routeUse(this.subtopicController.getRouter())
-    this.routeUse(this.syncController.getRouter())
-    this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
+    SchoolService.validateSchool().then(resp => {
+      if (resp.status) {
+        this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
+        this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
+        this.routeUse(this.credentialController.getRouter())
+        this.routeUse(this.courseController.getRouter())
+        this.routeUse(this.exerciseController.getRouter())
+        this.routeUse(this.subtopicController.getRouter())
+        this.routeUse(this.syncController.getRouter())
+        this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
+      } else {
+        this.routeUse('*', (req, res, next) => {
+          res.status(500).send('Server validation error / has expired. Please contact Filosedu (www.filosedu.com) for support!')
+        })
+      }
+    }).catch(err => {
+      this.routeUse('*', (req, res, next) => {
+        next(err)
+      })
+    })
   }
 
   initialize () {

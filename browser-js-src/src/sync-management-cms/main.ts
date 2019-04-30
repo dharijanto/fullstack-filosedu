@@ -48,6 +48,8 @@ let cloudToLocalLogTimer
 $('#btn-cloud-to-local-sync').on('click', () => {
   const resp = confirm('Have you synced the local data to the cloud? Unsynced data will be gone otherwise!')
   if (resp) {
+    // Clear out sync log
+    $('#console').val('')
     axios.get(rootPath + '/synchronization/cloud-to-local/start').then(rawResp => {
       const resp = rawResp.data
       if (typeof resp === 'object' && 'status' in resp) {
@@ -57,6 +59,7 @@ $('#btn-cloud-to-local-sync').on('click', () => {
           if (cloudToLocalLogTimer) {
             clearInterval(cloudToLocalLogTimer)
           }
+          // Pull sync logs every 2 seconds
           cloudToLocalLogTimer = setInterval(() => {
             axios.get(rootPath + '/synchronization/cloud-to-local/log').then(rawResp => {
               const resp = rawResp.data

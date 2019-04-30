@@ -60,7 +60,8 @@ function addTables (sequelize, models) {
     name: {type: Sequelize.TEXT},
     address: {type: Sequelize.TEXT},
     phone: {type: Sequelize.STRING},
-    logo: {type: Sequelize.TEXT}
+    logo: {type: Sequelize.TEXT},
+    expirationDate: {type: Sequelize.STRING}
   })
 
   models.User = sequelize.define('users', {

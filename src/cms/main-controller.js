@@ -38,14 +38,23 @@ class MainController extends BaseController {
     })
 
     AWS.config.update({region: AppConfig.AWS_REGION})
+
     this.routeUse('/videos', express.static(AppConfig.VIDEO_PATH))
     this.routeUse('/images', express.static(AppConfig.IMAGE_PATH))
+
     this.routeHashlessUse((new AccountManagementController(initData)).getRouter())
-    this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
-    this.routeHashlessUse((new SchoolManagementController(initData).getRouter()))
     this.routeHashlessUse((new StudentMonitorController(initData).getRouter()))
-    this.routeHashlessUse((new SubtopicController(initData)).getRouter())
-    this.routeHashlessUse((new SyncController(initData)).getRouter())
+
+    if (AppConfig.CLOUD_SERVER) {
+      this.routeHashlessUse((new CourseManagementController(initData)).getRouter())
+      this.routeHashlessUse((new SchoolManagementController(initData).getRouter()))
+      this.routeHashlessUse((new SubtopicController(initData)).getRouter())
+    } else {
+      this.routeGet('/', (req, res, next) => {
+        res.redirect(super.rootifyPath('account-management/'))
+      })
+      this.routeHashlessUse((new SyncController(initData)).getRouter())
+    }
   }
 
   // View path is under [templateName]/app/view

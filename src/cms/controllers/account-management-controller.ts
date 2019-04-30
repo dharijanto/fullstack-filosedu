@@ -24,6 +24,12 @@ class AccountManagementController extends BaseController {
       res.render('account-management')
     })
 
+    this.routeGet('/account-management/school/get', (req, res, next) => {
+      SchoolService.getAll().then(resp => {
+        res.json(resp)
+      })
+    })
+
     this.routeGet('/account-management/user/get', (req, res, next) => {
       const schoolId = req.query.schoolId
       UserService.getUsers(schoolId).then(resp => {

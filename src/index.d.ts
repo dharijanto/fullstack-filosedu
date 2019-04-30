@@ -27,6 +27,7 @@ interface School extends BaseModel {
   address: string
   phone: string
   logo: string
+  expirationDate: string
 }
 
 interface User extends BaseModel {
