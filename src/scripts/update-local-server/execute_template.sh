@@ -97,5 +97,8 @@ cd $FILOS_SERVER_PATH
 git pull origin master && npm prune && npm install
 check $? "update filos-server!"
 
+# Restart server
+pm2 restart ncloud
+
 
 echo "[INFO]: Completed!"

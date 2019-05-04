@@ -60,12 +60,13 @@ body
           if (!loggedIn)
             li(class=`${activePage === 'login' ? 'active' : ''}`)
               a(href="/login") Login
-            if !cloudServer
-              li(class=`${activePage === 'register' ? 'active' : ''}`)
-                a(href="/register") Register
+            // if !cloudServer && false
+            //   li(class=`${activePage === 'register' ? 'active' : ''}`)
+            //     a(href="/register") Register
           else
             li.dropdown
-              a.dropdown-toggle(data-toggle='dropdown')
+              // Note: href="#" is required in order for the toggle to work on iOS
+              a.dropdown-toggle(data-toggle='dropdown' href="#")
                 i.fa.fa-fw.fa-user
                 i(style="padding-left: 1em")=  user.fullName || user.username
               ul.dropdown-menu.dropdown-user

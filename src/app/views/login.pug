@@ -27,10 +27,10 @@ block contents
           if error.length > 0
             .alert.alert-danger(role='alert')= error
           button(type="submit" class="btn btn-primary") SUBMIT
-    if !cloudServer
-      .row
-        .col-md-12
-          | Belum memiliki account? Klik #[a(href='/register') disini] untuk register.
+    // if !cloudServer
+    //   .row
+    //     .col-md-12
+    //       | Belum memiliki account? Klik #[a(href='/register') disini] untuk register.
 
 append scripts
   script(type="text/javascript" src="/assets/vendor/select2/select2.min.js")

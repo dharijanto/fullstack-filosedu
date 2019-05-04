@@ -31,11 +31,12 @@ const imageService = new ImageService(sequelize, models)
 
 const CONCURRENT_DOWNLOAD = 3
 
-var download = function (url, dest) {
+var download = function (url, filename, dest) {
   return new Promise((resolve, reject) => {
-    console.log('Downloading: url=' + url)
     return fs.access(dest, fs.F_CONSTANT_OK, (err) => {
+      // If there's an error, it means the file doesn't exist
       if (err) {
+        console.log('Downloading: ' + filename)
         var file = fs.createWriteStream(dest)
         https.get(url, function (response) {
           response.pipe(file)
@@ -52,7 +53,7 @@ var download = function (url, dest) {
           reject(err)
         })
       } else {
-        console.log('download(): file=' + dest + ' is already existed. Skipped...')
+        // console.log('download(): file=' + dest + ' is already existed. Skipped...')
         resolve()
       }
     })
@@ -63,10 +64,11 @@ function fetchVideoFromS3 () {
   return videoService.getAllVideos().then(resp => {
     if (resp.status) {
       const videos = resp.data
-      console.log(`There are ${videos.length} number of videos to download...`)
+      console.log(`There are ${videos.length} number of videos.`)
       return Promise.map(videos, video => {
         return download(
           JSON.parse(video.sourceLink).HD,
+          video.filename,
           AppConfig.VIDEO_PATH + '/' + video.filename)
       }, {concurrency: CONCURRENT_DOWNLOAD})
     } else {
@@ -81,10 +83,11 @@ function fetchImageFromS3 () {
   return imageService.getAllImages().then(resp => {
     if (resp.status) {
       const images = resp.data
-      console.log(`There are ${images.length} images to download...`)
+      console.log(`There are ${images.length} images.`)
       return Promise.map(images, image => {
         return download(
           image.sourceLink,
+          image.filename,
           AppConfig.IMAGE_PATH + '/' + image.filename)
       }, {concurrency: CONCURRENT_DOWNLOAD})
     } else {
