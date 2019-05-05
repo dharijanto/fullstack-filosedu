@@ -24,19 +24,12 @@ const TAG = 'ExerciseController'
 
 export default class StudentDashboardController extends BaseController {
   private frontendJs: string
-  private schoolId: number
   initialize () {
     return Promise.join(
-      PathFormatter.hashAsset('app', '/assets/js/student-dashboard-app-bundle.js'),
-      SchoolService.getByIdentifier(AppConfig.LOCAL_SCHOOL_INFORMATION.identifier)
-    ).spread((result: string, resp: NCResponse<School>) => {
+      PathFormatter.hashAsset('app', '/assets/js/student-dashboard-app-bundle.js')
+    ).spread((result: string) => {
       console.log('blacksoil result =' + result)
       this.frontendJs = result
-      if (resp.status && resp.data) {
-        this.schoolId = resp.data.id
-      } else {
-        throw new Error('Failed to get school: ' + resp.errMessage)
-      }
       return
     })
   }
@@ -51,7 +44,7 @@ export default class StudentDashboardController extends BaseController {
 
     this.routeGet('/badge-page', (req, res, next) => {
       const userId = req.query.userId
-      userService.getUser(userId, this.schoolId).then(resp => {
+      userService.getUser(userId, req.user.schoolId).then(resp => {
         if (resp.status && resp.data) {
           res.locals.user = resp.data
           CourseService.getTopicDetails(userId).then(resp => {
@@ -73,8 +66,8 @@ export default class StudentDashboardController extends BaseController {
 
     this.routeGet('/monitor/last-hour-subtopic-summary', (req, res, next) => {
       const showAllStudents = req.query.showAllStudents === 'true'
-      if (this.schoolId) {
-        StudentMonitorService.getLastHourSubtopicStats(this.schoolId, showAllStudents).then(resp => {
+      if (req.user.schoolId) {
+        StudentMonitorService.getLastHourSubtopicStats(req.user.schoolId, showAllStudents).then(resp => {
           res.json(resp)
         }).catch(next)
       } else {
