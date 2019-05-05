@@ -1,17 +1,18 @@
-const path = require('path')
+import * as path from 'path'
 
-var Sequelize = require('sequelize')
-const Promise = require('bluebird')
+import * as Promise from 'bluebird'
+import * as Sequelize from 'sequelize'
+
 const moment = require('moment-timezone')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
-const CRUDService = require(path.join(__dirname, 'crud-service'))
+import CRUDService from './crud-service-neo'
 
 const TAG = 'StudentMonitorService'
 
 class StudentMonitorService extends CRUDService {
-  getStats (schoolId, generatedExercisesWhereClause, showAllStudents) {
-const query = `
+  getSubtopicStats (schoolId, generatedExercisesWhereClause, showAllStudents) {
+    const query = `
 SELECT
   users.id AS userId, users.fullName AS name, users.username as username,
   IFNULL(summarizedGeneratedExercises.submissions, '-') as submissions,
@@ -25,6 +26,7 @@ FROM
     INNER JOIN schools ON users.schoolId = schools.id
     WHERE schools.id = "${schoolId}"
   ) AS users
+# Summarize generated exercises
 LEFT OUTER JOIN
   (SELECT
       userId,
@@ -35,10 +37,16 @@ LEFT OUTER JOIN
     WHERE idealTime > 0 AND submitted = TRUE AND timeFinish < 3600 ${generatedExercisesWhereClause}
     GROUP BY userId
   ) AS summarizedGeneratedExercises ON summarizedGeneratedExercises.userId = users.id
-# lastGeneratedExercises
+# Information about highest exercise a student had done
 LEFT OUTER JOIN
-  (SELECT generatedExercises.userId as userId, MAX(generatedExercises.id) as id
+  (SELECT generatedExercises.userId AS userId, MAX(id) AS id
     FROM generatedExercises
+    INNER JOIN
+      (SELECT userId, MAX(updatedAt) AS updatedAt
+       FROM generatedExercises
+       WHERE submitted = true
+       GROUP BY userId
+      ) lastUpdated ON lastUpdated.userId = generatedExercises.userId and lastUpdated.updatedAt = generatedExercises.updatedAt
     WHERE submitted = true
     GROUP BY generatedExercises.userId
   ) AS lastGeneratedExercises ON lastGeneratedExercises.userId = users.id
@@ -53,19 +61,18 @@ ${showAllStudents ? '' : 'WHERE submissions > 0'}
 ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
 ;
 `
-    return this._sequelize.query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-      return {status: true, data: resp}
+    return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+      return { status: true, data: resp }
     })
   }
 
   // showAllStudents: if true, students without submissions will also be displayed
-  getLastHourStats (schoolId, showAllStudents) {
-    console.log('showAllStudents=' + showAllStudents)
-    const past = moment.utc().subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
-    return this.getStats(schoolId, `AND updatedAt >= "${past}"`, showAllStudents)
+  getLastHourSubtopicStats (schoolId, showAllStudents) {
+    const past1Hour = moment().subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
+    return this.getSubtopicStats(schoolId, `AND updatedAt >= "${past1Hour}"`, showAllStudents)
   }
 
-  getLastNSubmissions(userId, N = 10) {
+  getLastNSubtopicSubmissions (userId, N = 10) {
     const query = `
 SELECT users.id AS userId, users.fullName AS fullName,
   ROUND(lastGeneratedExercises.timeFinish / lastGeneratedExercises.idealTime * 100.0, 2) AS timeliness,
@@ -83,11 +90,35 @@ FROM
   INNER JOIN topics ON subtopics.topicId = topics.id
 `
 
-    return this._sequelize.query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-        return {status: true, data: resp}
-      })
+    return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+      return { status: true, data: resp }
+    })
+  }
+
+  getLastNTopicSubmissions (userId, N = 10) {
+    const query = `
+SELECT users.id AS userId, users.fullName AS fullName,
+  ROUND(lastGeneratedTopicExercises.timeFinish / lastGeneratedTopicExercises.idealTime * 100.0, 2) AS timeliness,
+  lastGeneratedTopicExercises.idealTime as idealTime,
+  lastGeneratedTopicExercises.timeFinish as timeFinish,
+  lastGeneratedTopicExercises.score AS score,
+  lastGeneratedTopicExercises.updatedAt AS updatedAt,
+  topics.topic AS topic
+FROM
+  (
+    SELECT * FROM generatedTopicExercises
+    WHERE userId = ${userId} AND submitted = TRUE
+    ORDER BY updatedAt DESC LIMIT ${N}
+  ) AS lastGeneratedTopicExercises
+  INNER JOIN users ON lastGeneratedTopicExercises.userId = users.id
+  INNER JOIN topics ON topics.id = lastGeneratedTopicExercises.topicId
+`
+
+    return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+      return { status: true, data: resp }
+    })
   }
 
 }
 
-module.exports = StudentMonitorService
+export default new StudentMonitorService()

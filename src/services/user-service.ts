@@ -150,6 +150,10 @@ class UserService extends CRUDService {
     }
   }
 
+  getUser (userId: number, schoolId?: number): Promise<NCResponse<User>> {
+    return super.readOne<User>({ modelName: 'User', searchClause: { id: userId, schoolId } })
+  }
+
   deleteById (id) {
     return super.getModels('User').destroy({
       where: {

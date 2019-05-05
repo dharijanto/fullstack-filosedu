@@ -2,19 +2,17 @@ import * as path from 'path'
 
 import * as log from 'npmlog'
 import SchoolService from '../../services/school-service'
+import StudentMonitorService from '../../services/student-monitor-service'
 
 const AppConfig = require(path.join(__dirname, '../../app-config'))
 
 const BaseController = require(path.join(__dirname, 'base-controller'))
 const PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
-const StudentMonitorService = require(path.join(__dirname, '../../services/student-monitor-service'))
 
 const TAG = 'StudentMonitorController'
 class StudentMonitorController extends BaseController {
   constructor (initData) {
     super(initData)
-    const studentMonitorService = new StudentMonitorService(this.getDb().sequelize, this.getDb().models)
-
     this.addInterceptor((req, res, next) => {
       log.verbose(TAG, 'req.path=' + req.path)
       next()
@@ -30,11 +28,11 @@ class StudentMonitorController extends BaseController {
       })
     })
 
-    this.routeGet('/student-monitor/last-hour-summary', (req, res, next) => {
+    this.routeGet('/student-monitor/last-hour-subtopic-summary', (req, res, next) => {
       const schoolId = req.query.schoolId
       const showAllStudents = req.query.showAllStudents === 'true'
       if (schoolId) {
-        studentMonitorService.getLastHourStats(schoolId, showAllStudents).then(resp => {
+        StudentMonitorService.getLastHourSubtopicStats(schoolId, showAllStudents).then(resp => {
           res.json(resp)
         }).catch(next)
       } else {
@@ -42,9 +40,16 @@ class StudentMonitorController extends BaseController {
       }
     })
 
-    this.routeGet('/student-monitor/last-submissions', (req, res, next) => {
+    this.routeGet('/student-monitor/last-subtopic-submissions', (req, res, next) => {
       const userId = req.query.userId
-      studentMonitorService.getLastNSubmissions(userId, 30).then(resp => {
+      StudentMonitorService.getLastNSubtopicSubmissions(userId, 30).then(resp => {
+        res.json(resp)
+      }).catch(next)
+    })
+
+    this.routeGet('/student-monitor/last-topic-submissions', (req, res, next) => {
+      const userId = req.query.userId
+      StudentMonitorService.getLastNTopicSubmissions(userId, 30).then(resp => {
         res.json(resp)
       }).catch(next)
     })

@@ -37,8 +37,6 @@ append head
       gtag('js', new Date());
       gtag('config', 'UA-121849277-1');
 
-
-
 body
   nav.navbar.navbar-default
     .container-fluid
@@ -56,6 +54,10 @@ body
         ul.nav.navbar-nav
           li(class=`${activePage === 'modules' ? 'active' : ''}`)
             a(href="/") Topik
+          if (user && user.teacher === true)
+            li
+              a(href="/student-dashboard") Student Dashboard
+
         ul.nav.navbar-nav.navbar-right
           if (!loggedIn)
             li(class=`${activePage === 'login' ? 'active' : ''}`)

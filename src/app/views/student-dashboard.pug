@@ -1,0 +1,26 @@
+extends layout/index.pug
+
+append head
+  link(rel="stylesheet" type="text/css" href='/assets/vendor/data-table/css/datatables.min.css')
+  link(rel="stylesheet" type="text/css" href='/assets/vendor/data-table/css/dataTables.responsive.css')
+  link(rel="stylesheet" type="text/css" href='/assets/vendor/nc-input-library/style.css')
+  link(rel="stylesheet" type="text/css" href='assets/css/nprogress.css')
+  link(rel="stylesheet" type="text/css" href='assets/css/toastr.min.css')
+
+
+block initialization
+  - const activePage = 'login'
+
+append head
+  link(rel="stylesheet" href="/assets/vendor/select2/select2.min.css")
+
+block contents
+  .container
+    .row
+      .col-md-12
+        #subtopic-summary
+        #last-subtopic-submissions
+        #last-topic-submissions
+
+append scripts
+  script(src=`${bundle}`)

@@ -3,6 +3,7 @@ import * as log from 'npmlog'
 import SequelizeService from '../services/sequelize-service'
 
 import CompetencyExerciseController from './controllers/competency-exercise-controller'
+import StudentDashboardController from './controllers/student-dashboard-controller'
 import PassportManager from '../lib/passport-manager'
 import SchoolService from '../services/school-service'
 
@@ -50,6 +51,7 @@ class Controller extends BaseController {
     this.courseController = new CourseController(initData)
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
+    this.studentDashboardController = new StudentDashboardController(initData)
 
     SchoolService.validateSchool().then(resp => {
       if (resp.status) {
@@ -60,6 +62,7 @@ class Controller extends BaseController {
         this.routeUse(this.exerciseController.getRouter())
         this.routeUse(this.subtopicController.getRouter())
         this.routeUse(this.syncController.getRouter())
+        this.routeUse('/student-dashboard', this.studentDashboardController.getRouter())
         this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
       } else {
         this.routeUse('*', (req, res, next) => {
@@ -80,7 +83,8 @@ class Controller extends BaseController {
       this.subtopicController.initialize(),
       this.exerciseController.initialize(),
       this.competencyExerciseController.initialize(),
-      this.syncController.initialize()
+      this.syncController.initialize(),
+      this.studentDashboardController.initialize()
     )
   }
 }
