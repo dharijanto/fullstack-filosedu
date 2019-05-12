@@ -65,10 +65,17 @@ class Frac {
   }
 }
 
+class Decimal {
+  static isEqual (a, b) {
+    return Math.abs(a - b) <= Number.EPSILON
+  }
+}
+
 
 module.exports = {
   getRandomInt,
   getRandomIntInclusive,
   gcd,
-  Frac
+  Frac,
+  Decimal
 }

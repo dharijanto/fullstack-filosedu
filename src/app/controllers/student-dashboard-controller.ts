@@ -77,14 +77,14 @@ export default class StudentDashboardController extends BaseController {
 
     this.routeGet('/monitor/last-subtopic-submissions', (req, res, next) => {
       const userId = req.query.userId
-      StudentMonitorService.getLastNSubtopicSubmissions(userId, 30).then(resp => {
+      StudentMonitorService.getLastNSubtopicSubmissions(userId, 150).then(resp => {
         res.json(resp)
       }).catch(next)
     })
 
     this.routeGet('/monitor/last-topic-submissions', (req, res, next) => {
       const userId = req.query.userId
-      StudentMonitorService.getLastNTopicSubmissions(userId, 30).then(resp => {
+      StudentMonitorService.getLastNTopicSubmissions(userId, 150).then(resp => {
         res.json(resp)
       }).catch(next)
     })

@@ -80,7 +80,7 @@ $(document).ready(function () {
 
   const ncLastTopicSubmissions = $('#last-topic-submissions').NCInputLibrary({
     design: {
-      title: 'Submissions (Subtopic)'
+      title: 'Submissions (Topic)'
     },
     table: {
       ui: [
