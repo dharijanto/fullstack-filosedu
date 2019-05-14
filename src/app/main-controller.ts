@@ -19,6 +19,8 @@ let CourseController = require(path.join(__dirname, 'controllers/course-controll
 let CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 let ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
 let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
+let PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
+
 let SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
 
 const TAG = 'FiloseduAppController'
@@ -62,7 +64,7 @@ class Controller extends BaseController {
         this.routeUse(this.exerciseController.getRouter())
         this.routeUse(this.subtopicController.getRouter())
         this.routeUse(this.syncController.getRouter())
-        this.routeUse('/student-dashboard', this.studentDashboardController.getRouter())
+        this.routeUse('/student-dashboard', PassportHelper.ensureLoggedIn(), this.studentDashboardController.getRouter())
         this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
       } else {
         this.routeUse('*', (req, res, next) => {

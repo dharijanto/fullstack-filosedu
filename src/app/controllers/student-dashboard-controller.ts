@@ -28,7 +28,6 @@ export default class StudentDashboardController extends BaseController {
     return Promise.join(
       PathFormatter.hashAsset('app', '/assets/js/student-dashboard-app-bundle.js')
     ).spread((result: string) => {
-      console.log('blacksoil result =' + result)
       this.frontendJs = result
       return
     })
@@ -36,6 +35,14 @@ export default class StudentDashboardController extends BaseController {
 
   constructor (initData) {
     super(initData)
+
+    super.addInterceptor((req, res, next) => {
+      if (req.user && req.user.teacher) {
+        next()
+      } else {
+        next(new Error(`User ${req.user.username} with no teacher privilege tried to access student dashboard!`))
+      }
+    })
 
     this.routeGet('/', (req, res, next) => {
       res.locals.bundle = this.frontendJs
