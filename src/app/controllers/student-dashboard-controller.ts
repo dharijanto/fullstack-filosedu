@@ -73,13 +73,10 @@ export default class StudentDashboardController extends BaseController {
 
     this.routeGet('/monitor/last-hour-subtopic-summary', (req, res, next) => {
       const showAllStudents = req.query.showAllStudents === 'true'
-      if (req.user.schoolId) {
-        StudentMonitorService.getLastHourSubtopicStats(req.user.schoolId, showAllStudents).then(resp => {
-          res.json(resp)
-        }).catch(next)
-      } else {
-        res.json({ status: false, errMessage: 'schoolId is required!' })
-      }
+      const schoolId = req.user.schoolId
+      StudentMonitorService.getLastHourSubtopicStats(schoolId, showAllStudents).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
 
     this.routeGet('/monitor/last-subtopic-submissions', (req, res, next) => {
@@ -92,6 +89,15 @@ export default class StudentDashboardController extends BaseController {
     this.routeGet('/monitor/last-topic-submissions', (req, res, next) => {
       const userId = req.query.userId
       StudentMonitorService.getLastNTopicSubmissions(userId, 150).then(resp => {
+        res.json(resp)
+      }).catch(next)
+    })
+
+    this.routeGet('/monitor/num-submissions-within', (req, res, next) => {
+      const sinceDate = req.query.sinceDate
+      const untilDate = req.query.untilDate
+      const schoolId = req.user.schoolId
+      StudentMonitorService.getNumSubmissionsSince(sinceDate, untilDate, schoolId).then(resp => {
         res.json(resp)
       }).catch(next)
     })

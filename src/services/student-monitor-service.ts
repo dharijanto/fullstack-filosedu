@@ -11,8 +11,11 @@ import CRUDService from './crud-service-neo'
 const TAG = 'StudentMonitorService'
 
 class StudentMonitorService extends CRUDService {
-  getSubtopicStats (schoolId, generatedExercisesWhereClause, showAllStudents) {
-    const query = `
+  getSubtopicStats (schoolId, generatedExercisesWhereClause, showAllStudents): Promise<NCResponse<any>> {
+    if (!schoolId) {
+      return Promise.resolve({ status: false, errMessage: 'schoolId is required!' })
+    } else {
+      const query = `
 SELECT
   users.id AS userId, users.fullName AS name, users.username as username,
   IFNULL(summarizedGeneratedExercises.submissions, '-') as submissions,
@@ -61,9 +64,10 @@ ${showAllStudents ? '' : 'WHERE submissions > 0'}
 ORDER BY summarizedGeneratedExercises.avgTimeliness DESC
 ;
 `
-    return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
-      return { status: true, data: resp }
-    })
+      return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        return { status: true, data: resp }
+      })
+    }
   }
 
   // showAllStudents: if true, students without submissions will also be displayed
@@ -117,6 +121,23 @@ FROM
     return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
       return { status: true, data: resp }
     })
+  }
+
+  getNumSubmissionsSince (sinceDate, untilDate, schoolId): Promise<NCResponse<any>> {
+    if (!sinceDate || !untilDate || !schoolId) {
+      return Promise.resolve({ status: false, errMessage: 'sinceDate and schoolId are required!' })
+    } else {
+      const query = `
+        SELECT users.fullName AS fullName, userId AS userId, count(*) AS numSubmissions, MAX(generatedExercises.updatedAt) AS lastUpdate
+        FROM generatedExercises
+        INNER JOIN users ON users.id = userId AND users.schoolId = ${schoolId}
+        WHERE generatedExercises.updatedAt > "${sinceDate} 00:00:00" AND generatedExercises.updatedAt <= "${untilDate} 00:00:00"
+        GROUP BY userId;`
+
+      return super.getSequelize().query(query, { type: Sequelize.QueryTypes.SELECT }).then(resp => {
+        return { status: true, data: resp }
+      })
+    }
   }
 
 }

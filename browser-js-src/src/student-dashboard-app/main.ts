@@ -108,6 +108,48 @@ $(document).ready(function () {
     }
   })
 
+  const ncNumSubmissionsSince = $('#num-submissions-since').NCInputLibrary({
+    design: {
+      title: '# Subtopic Submissions'
+    },
+    table: {
+      ui: [
+        { id: 'userId', desc: 'userId', dataTable: false, input: 'hidden' },
+        { id: 'fullName', desc: 'Name', dataTable: true, input: 'hidden' },
+        { id: 'sinceDate', desc: 'Since Date', dataTable: false, input: 'date', type: 'date', data: { dateFormat: 'YYYY-MM-DD' } },
+        { id: 'untilDate', desc: 'Until Date', dataTable: false, input: 'date', type: 'date', data: { dateFormat: 'YYYY-MM-DD' } },
+        { id: 'numSubmissions', desc: '# Submissions', dataTable: true, input: 'hidden' },
+        { id: 'lastUpdate', desc: 'Last Update', dataTable: true, input: 'hidden', type: 'date', data: { dateFormat: 'YYYY-MM-DD HH:mm:ss' } }
+      ],
+      conf: {
+        order: [['lastUpdate', 'desc']],
+        getURL: () => `/student-dashboard/monitor/num-submissions-within?sinceDate=${sinceDate}&untilDate=${untilDate}`,
+        onRowClicked: (data) => {
+          return
+        },
+        numColumn: 3
+      }
+    },
+    buttons: {
+      conf: {
+        networkTimeout: Config.NETWORK_TIMEOUT
+      },
+      ui: []
+    }
+  })
+
+  // const dateInput = $(`<input type="text"> </input>`)
+  const setButton = $(`<button id="btn-set-date" class="btn btn-primary"> Set Date </button>`)
+  let sinceDate = ''
+  let untilDate = ''
+  setButton.on('click', () => {
+    // console.log($(`input[name="sinceDate"]`).val())
+    sinceDate = '' + $(`input[name="sinceDate"]`).val()
+    untilDate = '' + $(`input[name="untilDate"]`).val()
+    ncNumSubmissionsSince.reloadTable()
+  })
+  ncNumSubmissionsSince.setFirstCustomView(setButton)
+
   ncSubtopicSummary.reloadTable()
   const summaryTableCustomView = $<HTMLInputElement>(
 `<div class="row">
