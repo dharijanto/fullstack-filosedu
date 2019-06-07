@@ -42,7 +42,7 @@ class RestoreService extends CRUDService {
     }).then(() => {
       const SCRIPT_PATH = path.join(__dirname, '../scripts/update-local-server/execute_template.sh')
       // Open the script to see out what env variables need to be set
-      const env = {
+      const variables = {
         NCLOUD_SERVER_PATH: AppConfig.LOCAL_SCHOOL_INFORMATION.NCLOUD_SERVER_PATH,
         FILOS_SERVER_PATH: AppConfig.LOCAL_SCHOOL_INFORMATION.FILOS_SERVER_PATH,
         CLOUD_HOST: AppConfig.CLOUD_INFORMATION.HOST,
@@ -51,7 +51,7 @@ class RestoreService extends CRUDService {
         SQL_DB: AppConfig.MYSQL_CONF.DB,
         SCHOOL_IDENTIFIER: AppConfig.LOCAL_SCHOOL_INFORMATION.identifier
       }
-      const bashScript = spawn(`bash`, [ SCRIPT_PATH ], { env, detached: true })
+      const bashScript = spawn(`bash`, [ SCRIPT_PATH ], { env: { ...process.env, ...variables }, detached: true })
       bashScript.stdout.on('data', data => {
         log.info(TAG, data.toString())
         this.addLog(data.toString())
