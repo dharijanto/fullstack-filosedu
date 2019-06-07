@@ -5,6 +5,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const Sequelize = require('sequelize')
 const Promise = require('bluebird')
+const log = require('npmlog')
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
 const CRUDService = require(path.join(__dirname, 'crud-service'))
@@ -253,6 +254,7 @@ class SyncService extends CRUDService {
       throw new Error('schoolIdentifier or serverHash is not defined!')
     } else {
       return Promise.each(data.users, (data, index) => {
+        log.info(TAG, 'syncDate(): _processUser(): user=' + JSON.stringify(data['user']))
         return this._processUser(data['user'], schoolIdentifier, serverHash, schoolId, trx).then(userId => {
           // This is where we trying to remove data that contain object user.
           // Remember that we process data sorted by user first
@@ -269,7 +271,7 @@ class SyncService extends CRUDService {
                     if (resp3.status) {
                       return
                     } else {
-                      throw new Error(`Failed to update ${tableName} table: ${resp3.errMessage}`)
+                      throw new Error(`Failed to update ${tableName} table for userId=${userId} data=${JSON.stringify(data)}: ${resp3.errMessage}`)
                     }
                   })
                 } else {
@@ -285,11 +287,11 @@ class SyncService extends CRUDService {
                           if (resp4.status) {
                             return
                           } else {
-                            throw new Error(`Failed to insert sync table: ${resp4.errMessage}`)
+                            throw new Error(`Failed to insert sync table: ${resp4.errMessage} for userId=${userId} data=${JSON.stringify(data)}`)
                           }
                         })
                     } else {
-                      throw new Error(`Failed to insert ${tableName} table: ${resp3.errMessage}`)
+                      throw new Error(`Failed to insert to ${tableName} table for userId=${userId} data=${JSON.stringify(data)}: ${resp3.errMessage}`)
                     }
                   })
                 }
