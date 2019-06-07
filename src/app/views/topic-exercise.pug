@@ -46,10 +46,12 @@ block contents
         div.scoreSection
           p.hidden(id='currentScore')
           p.hidden(id='submissionError')
-          p.bestScore
-            | !{starsHTML}
-          p.bestTimer
-            | !{timersHTML}
+          p
+            span.stars
+              | !{starsHTML}
+            span.checkmark
+              | !{checkmarkHTML}
+          p#comments
         a.btn.btn-primary.btn_submit_answer(href="javascript:void(0);") Submit
         a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
         br

@@ -2,9 +2,9 @@ mixin renderScoreStars(score, size)
   // Multiple of 25 gets 1 star
   +renderExerciseStars(score / 25, size)
 
-mixin renderExerciseStars(numStars, size)
-  - var stars = numStars > 4 ? 4 : numStars
-  - var emptyStars = 4 - stars
+mixin renderExerciseStars(numStars, size, maxStars = 4)
+  - var stars = numStars > maxStars ? maxStars : numStars
+  - var emptyStars = maxStars - stars
   while stars-- > 0
     img(src="/assets/img/star.png" width=size || 30)
   while emptyStars-- > 0

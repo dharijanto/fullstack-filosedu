@@ -335,18 +335,15 @@ ORDER BY subtopic.subtopicNo ASC, exercises.id ASC;`, { type: Sequelize.QueryTyp
   }
 
   getStarBadges (userId, topicId) {
+    // TODO: The logic below and one in CourseService.getTopicDetails should be
+    // centralized so that they're consistent when there's a change
+    // They should be made a SQL vide
     return this.getSequelize().query(`
 SELECT score FROM generatedTopicExercises
-WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId}
-ORDER BY score DESC LIMIT 4;`,
+WHERE submitted = 1 AND score >= 80 AND topicId = ${topicId} AND userId = ${userId}
+ORDER BY score DESC LIMIT 1;`,
     { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-      const stars = datas.reduce((acc, data) => {
-        if (parseInt(data.score, 10) >= 80) {
-          return acc + 1
-        } else {
-          return acc
-        }
-      }, 0)
+      const stars = datas.length
       return { status: true, data: { stars } }
     })
   }
@@ -355,54 +352,34 @@ ORDER BY score DESC LIMIT 4;`,
     return this.getStarBadges(userId, topicId).then(resp => {
       if (resp.status) {
         const stars = resp.data.stars
-        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), { stars })
-        return { status: true, data: { html, stars } }
+        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/stars.pug'), { stars, maxStars: 1 })
+        return { status: true, data: html }
       } else {
         return resp
       }
     })
   }
 
-  private getCheckmarkBadge (userId, topicId, render = false) {
-    return this.getSequelize().query(`
-SELECT score FROM generatedTopicExercises
-WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId} AND score > 80
-ORDER BY score DESC LIMIT 1;`,
-    { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-      const isChecked = datas.length > 0
-      if (render) {
-        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/ceckmark.pug'), { isChecked })
-        return { status: true, data: html }
-      } else {
-        return { status: true, data: { isChecked } }
-      }
-    })
-  }
-
-  getTimerBadges (userId, topicId) {
+  getCheckmark (userId, topicId) {
+    // TODO: The logic below and one in CourseService.getTopicDetails should be
+    // centralized so that they're consistent when there's a change
+    // They should be made a SQL vide
     return this.getSequelize().query(`
 SELECT score FROM generatedTopicExercises
 WHERE submitted = 1 AND topicId = ${topicId} AND userId = ${userId}
-AND timeFinish < idealTime AND score = 100
+AND timeFinish < idealTime AND score >= 90
 ORDER BY score DESC LIMIT 1;`,
     { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-      const timers = datas.reduce((acc, data) => {
-        if (parseInt(data.score, 10) >= 80) {
-          return acc + 1
-        } else {
-          return acc
-        }
-      }, 0)
-
-      return { status: true, data: { timers } }
+      const isChecked = datas.length
+      return { status: true, data: { isChecked } }
     })
   }
 
-  getRenderedTimerBadges (userId, topicId) {
-    return this.getTimerBadges(userId, topicId).then(resp => {
+  getRenderedCheckmark (userId, topicId) {
+    return this.getCheckmark(userId, topicId).then(resp => {
       if (resp.status) {
-        const timers = resp.data.timers
-        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/timers.pug'), { timers })
+        const isChecked = resp.data.isChecked
+        const html = pug.renderFile(path.join(__dirname, '../app/views/non-pages/checkmark.pug'), { isChecked })
         return { status: true, data: html }
       } else {
         return (resp)

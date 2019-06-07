@@ -50,9 +50,15 @@ class CourseController extends BaseController {
     this.routeGet('/topics/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       let topicId = req.params.topicId
       let userId = req.user.id
-      TopicExerciseService.getFormattedExercise(topicId, userId).then(resp => {
-        if (resp.status && resp.data) {
-          console.dir('Elapsed time=' + resp.data.elapsedTime)
+
+      Promise.join<NCResponse<any>>(
+        TopicExerciseService.getFormattedExercise(topicId, userId),
+        TopicExerciseService.getRenderedStarBadges(userId, topicId),
+        TopicExerciseService.getRenderedCheckmark(userId, topicId)
+      ).spread((resp, resp2, resp3) => {
+        if (resp.status && resp.data && resp2.status && resp2.data && resp3.status && resp3.data) {
+          res.locals.starsHTML = resp2.data
+          res.locals.checkmarkHTML = resp3.data
           res.locals.idealTime = resp.data.idealTime
           res.locals.elapsedTime = resp.data.elapsedTime
           res.locals.topicName = resp.data.topicName
@@ -108,28 +114,36 @@ class CourseController extends BaseController {
               ).then(resp3 => {
                 if (resp3.status) {
                   Promise.join(
-                    TopicExerciseService.getStarBadges(userId, topicId),
+                    TopicExerciseService.getRenderedStarBadges(userId, topicId),
                     TopicExerciseService.getCurrentRanking(timeFinish, topicId),
                     TopicExerciseService.getTotalRanking(topicId),
                     TopicExerciseService.getRenderedLeaderboard(topicId),
-                    TopicExerciseService.getTimerBadges(userId, topicId)
+                    TopicExerciseService.getRenderedCheckmark(userId, topicId)
                   ).spread((
                     resp11: NCResponse<any>, resp12: NCResponse<any>,
                     resp13: NCResponse<any>, resp14: NCResponse<any>,
                     resp15: NCResponse<any>
                   ) => {
-                    res.json({
-                      status: true,
-                      data: {
-                        grade,
-                        starsHTML: resp11.data,
-                        timersHTML: resp15.data,
-                        ranking: resp14.data,
-                        timeFinish,
-                        currentRanking: resp12.data.count,
-                        totalRanking: resp13.data.count
-                      }
-                    })
+
+                    if (resp11.status && resp11.data && resp12.status &&
+                        resp12.data && resp13.status && resp13.data &&
+                        resp14.status && resp14.data && resp15.status&& resp15.data) {
+                      res.json({
+                        status: true,
+                        data: {
+                          grade,
+                          starsHTML: resp11.data,
+                          checkmarkHTML: resp15.data,
+                          ranking: resp14.data,
+                          timeFinish,
+                          currentRanking: resp12.data.count,
+                          totalRanking: resp13.data.count
+                        }
+                      })
+                    } else {
+                      res.json({ status: false, errMessage: resp11.errMessage || resp12.errMessage
+                        || resp13.errMessage || resp14.errMessage || resp15.errMessage })
+                    }
                   })
                 } else {
                   return res.json({

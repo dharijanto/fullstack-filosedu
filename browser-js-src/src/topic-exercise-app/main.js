@@ -67,7 +67,7 @@ function postAnswer () {
 
         const grade = resp.data.grade
         const starsHTML = resp.data.starsHTML
-        const timersHTML = resp.data.timersHTML
+        const checkmarkHTML = resp.data.checkmarkHTML
         const ranking = resp.data.ranking
         const timeFinish = resp.data.timeFinish
         const currentRanking = resp.data.currentRanking
@@ -75,17 +75,14 @@ function postAnswer () {
 
         $('#currentScore').removeClass('hidden')
         $('#currentScore').text(`Nilai yang diperoleh: ${grade.score}`)
-        $('.bestScore').html(starsHTML)
-        $('.bestTimer').html(timersHTML)
+        $('.stars').html(starsHTML)
+        $('.checkmark').html(checkmarkHTML)
         $('.rankingScore').html(ranking)
 
         if (parseInt(grade.score) === 100) {
           $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Waktu ini ada di urutan ${currentRanking} dari ${totalRanking}</p>`)
         } else {
           $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Hanya nilai 100 yang masuk penilaian. </p>`)
-        }
-        if (parseInt(grade.score) < 80) {
-          $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
         }
 
         grade.correctAnswers.forEach((correctAnswer, index) => {
