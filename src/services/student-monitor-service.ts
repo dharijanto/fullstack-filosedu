@@ -17,14 +17,14 @@ class StudentMonitorService extends CRUDService {
     } else {
       const query = `
 SELECT
-  users.id AS userId, users.fullName AS name, users.username as username,
+  users.id AS userId, users.fullName AS name, users.username as username, users.grade as grade,
   IFNULL(summarizedGeneratedExercises.submissions, '-') as submissions,
   IFNULL(summarizedGeneratedExercises.avgScore, '-') as avgScore,
   IFNULL(summarizedGeneratedExercises.avgTimeliness, '-') as avgTimeliness,
   lastSubtopic.subtopic as lastSubtopic,
   lastSubtopic.topic as lastTopic
 FROM
-  (SELECT users.id as id, users.username as username, users.fullName as fullName
+  (SELECT users.id as id, users.username as username, users.fullName as fullName, users.grade as grade
     FROM users
     INNER JOIN schools ON users.schoolId = schools.id
     WHERE schools.id = "${schoolId}"

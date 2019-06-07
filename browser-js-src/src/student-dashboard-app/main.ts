@@ -15,6 +15,7 @@ $(document).ready(function () {
     table: {
       ui: [
         { id: 'name', desc: 'Name', dataTable: true, input: 'hidden', disabled: false },
+        { id: 'grade', desc: 'Grade', dataTable: true, input: 'hidden', disabled: false },
         { id: 'submissions', desc: '# Submissions', dataTable: true, input: 'hidden' },
         { id: 'avgTimeliness', desc: 'Avg Timeliness', dataTable: true, input: 'hidden' },
         { id: 'avgScore', desc: 'Avg Score', dataTable: true, input: 'hidden' },
