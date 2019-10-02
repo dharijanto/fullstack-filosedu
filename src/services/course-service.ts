@@ -35,71 +35,7 @@ class CourseService extends CRUDService {
   // TODO: Perhaps we should push some of the query into separate views?
   getTopicDetails (userId = -1): Promise<NCResponse<TopicDetails>> {
     return super.rawReadQuery(
-`
-SELECT
-  topics.id AS \`topics.id\`, topics.topicNo AS \`topics.topicNo\`, topics.topic AS \`topics.topic\`,
-  IFNULL(starBadge.\`count\`, 0) AS \`topics.starBadge\`,
-  IFNULL(checkmarkBadge.\`count\`, 0) AS \`topics.checkmarkBadge\`,
-  subtopicsView.id AS \`topics.subtopics.id\`, subtopicsView.subtopicNo AS \`topics.subtopics.subtopicNo\`,
-  subtopicsView.subtopic AS \`topics.subtopics.subtopic\`,
-  IFNULL(subtopicsView.starBadge, 0) AS \`topics.subtopics.starBadge\`,
-  IFNULL(subtopicsView.timeBadge, 0) AS \`topics.subtopics.timeBadge\`,
-  IFNULL(subtopicsView.watchBadge, 0) AS \`topics.subtopics.watchBadge\`
-FROM topics
-LEFT OUTER JOIN (
-  SELECT COUNT(*) AS count, topicId
-  FROM generatedTopicExercises
-  WHERE userId = ${userId} AND submitted = 1 AND score >= 80
-  GROUP BY topicId
-) AS starBadge ON starBadge.topicId = topics.id
-LEFT OUTER JOIN (
-  SELECT COUNT(*) AS count, topicId
-  FROM generatedTopicExercises
-  WHERE submitted = 1 AND userId = ${userId} AND timeFinish < idealTime AND score >= 90
-  GROUP BY topicId
-) AS checkmarkBadge ON checkmarkBadge.topicId = topics.id
-INNER JOIN (
-  SELECT
-    subtopics.id AS id, subtopics.topicId AS topicId, subtopics.subtopic AS subtopic, subtopics.subtopicNo AS subtopicNo,
-    (starBadge.\`count\` / exercisesView.count) AS starBadge,
-    (timeBadge.\`count\` / exercisesView.count) AS timeBadge,
-    watchBadge.\`count\` AS watchBadge
-  FROM subtopics
-  LEFT OUTER JOIN (
-    SELECT
-      exercises.subtopicId AS subtopicId,
-      COUNT(*) AS count,
-      COUNT(distinct exercises.id) AS test
-    FROM generatedExercises
-    INNER JOIN exercises ON exercises.id = generatedExercises.exerciseId
-        AND generatedExercises.submitted = 1 AND generatedExercises.score >= 80
-        AND generatedExercises.userId = ${userId}
-    GROUP BY exercises.subtopicId, generatedExercises.userId
-  ) AS starBadge ON starBadge.subtopicId = subtopics.id
-  LEFT OUTER JOIN (
-    SELECT
-      exercises.subtopicId AS subtopicId,
-      COUNT(*) AS count
-    FROM generatedExercises
-    INNER JOIN exercises ON exercises.id = generatedExercises.exerciseId
-        AND generatedExercises.submitted = 1 AND generatedExercises.score = 100 AND timeFinish < idealTime
-        AND generatedExercises.userId = ${userId}
-    GROUP BY exercises.subtopicId, generatedExercises.userId
-  ) AS timeBadge ON timeBadge.subtopicId = subtopics.id
-  LEFT OUTER JOIN (
-    SELECT videos.subtopicId AS subtopicId, 1 AS count
-    FROM videos
-    INNER JOIN watchedVideos on watchedVideos.videoId = videos.id AND watchedVideos.userId = ${userId}
-    LIMIT 1
-  ) AS watchBadge ON watchBadge.subtopicId = subtopics.id
-  LEFT OUTER JOIN (
-    SELECT subtopicId, COUNT(id) AS count
-    FROM exercises
-    GROUP BY subtopicId
-  ) AS exercisesView ON exercisesView.subtopicId = subtopics.id
-) AS subtopicsView ON subtopicsView.topicId = topics.id
-ORDER BY topicNo, subtopicNo ASC
-`
+`SELECT * FROM topicsView WHERE userId = ${userId}`
     ).then(resp => {
       if (resp.status) {
         return { status: true, data: Formatter.objectify(resp.data)[0] }
