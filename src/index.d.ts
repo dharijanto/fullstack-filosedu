@@ -5,7 +5,6 @@ interface NCResponse<T> {
   errCode?: number
 }
 
-
 /*
 -------------------------------------------------------------------------------
 Sequelize Model. Should not add anything else other than what could come from:

@@ -34,8 +34,8 @@ class SubtopicController extends BaseController {
     this.routeGet('/subtopic/:id', (req, res, next) => {
       log.verbose(TAG, 'subtopic/[id]/GET')
       const subtopicId = req.params.id
-      Promise.join<NCResponse<any>>(
-        CourseService.readOne<Subtopic>({ modelName: 'Subtopic', searchClause: { id: subtopicId } }),
+      Promise.join<any>(
+        CourseService.read({ modelName: 'Subtopic', searchClause: { id: subtopicId } }),
         CourseService.getExercises(subtopicId)
       ).spread((sResp: NCResponse<Subtopic>, eResp: NCResponse<Exercise[]>) => {
         if (sResp.status && sResp.data) {

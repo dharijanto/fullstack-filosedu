@@ -121,24 +121,17 @@ class ExerciseService extends CRUDService {
     const knowns = JSON.parse(generatedExercise.knowns)
     const unknowns = JSON.parse(generatedExercise.unknowns)
 
-    return Promise.join<any>(
-      Promise.map(knowns, known => {
-        return solver.formatQuestion(known)
-      }),
-      Promise.map(unknowns, unknown => {
-        return Object.keys(unknown)
-      })
-    ).spread((renderedQuestions: string[], unknowns: string[][]) => {
-      return {
-        status: true,
-        data: {
-          exerciseId: exercise.id,
-          idealTime: generatedExercise.idealTime,
-          elapsedTime: Utils.getElapsedTime(generatedExercise.createdAt),
-          formattedExercise: {
-            renderedQuestions,
-            unknowns
-          }
+    const renderedQuestions = knowns.map(known => solver.formatQuestion(known))
+    const unknownKeys = unknowns.map(unknown => Object.keys(unknown))
+    return Promise.resolve({
+      status: true,
+      data: {
+        exerciseId: exercise.id,
+        idealTime: generatedExercise.idealTime,
+        elapsedTime: Utils.getElapsedTime(generatedExercise.createdAt),
+        formattedExercise: {
+          renderedQuestions,
+          unknowns: unknownKeys
         }
       }
     })
@@ -259,14 +252,14 @@ ORDER BY score DESC LIMIT 4;`,
     }).then(resp => {
       return Promise.map(resp.data || [], (exercise: Exercise) => {
         return this.getExerciseStars(userId, exercise.id)
-      }).then(datas => {
-        const stars = datas.reduce((acc, resp) => {
+      }).then(responses => {
+        const stars = responses.reduce((acc, resp) => {
           if (resp.status && resp.data) {
             return acc + resp.data.stars
           } else {
-            throw new Error('getExerciseStars failed: ' + resp.errMessage)
+            throw new Error('Failed to get exercise stars: ' + resp.errMessage)
           }
-        }, 0) / (datas.length || 1)
+        }, 0) / (responses.length || 1)
         return { status: true, data: { stars } }
       })
     })
@@ -282,8 +275,8 @@ SELECT score FROM generatedExercises
 WHERE submitted = 1 AND userId = ${userId} AND exerciseId = ${exerciseId}
 AND timeFinish < idealTime AND score = 100
 ORDER BY score DESC LIMIT 4;`,
-    { type: Sequelize.QueryTypes.SELECT }).then(datas => {
-      const timers = datas.reduce((acc, data) => {
+    { type: Sequelize.QueryTypes.SELECT }).then(results => {
+      const timers = results.reduce((acc, data) => {
         if (parseInt(data.score, 10) >= 100) {
           return acc + 1
         } else {
@@ -312,14 +305,14 @@ ORDER BY score DESC LIMIT 4;`,
     }).then(resp => {
       return Promise.map(resp.data || [], (exercise: Exercise) => {
         return this.getExerciseTimers(userId, exercise.id)
-      }).then(datas => {
-        const timers = datas.reduce((acc, resp) => {
+      }).then(responses => {
+        const timers = responses.reduce((acc, resp) => {
           if (resp.status && resp.data) {
             return acc + resp.data.timers
           } else {
-            throw new Error('getExerciseTimers failed: ' + resp.errMessage)
+            throw new Error('Failed to retrieve exercise timers: ' + resp.errMessage)
           }
-        }, 0) / (datas.length || 1)
+        }, 0) / (responses.length || 1)
         return { status: true, data: { timers } }
       })
     })

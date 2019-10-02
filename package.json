@@ -36,6 +36,6 @@
     "@types/mocha": "^5.2.5",
     "gulp-sass": "^4.0.2",
     "supertest": "^3.0.0",
-    "typescript": "^3.4.3"
+    "typescript": "^3.6.3"
   }
 }
