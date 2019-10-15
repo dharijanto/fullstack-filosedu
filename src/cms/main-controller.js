@@ -12,6 +12,7 @@ const SchoolManagementController = require(path.join(__dirname, 'controllers/sch
 const StudentMonitorController = require(path.join(__dirname, 'controllers/student-monitor-controller'))
 const SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 const SyncController = require(path.join(__dirname, 'controllers/sync-controller'))
+import SQLViewService from '../services/sql-view-service'
 
 class MainController extends BaseController {
   constructor (initData) {
@@ -25,13 +26,15 @@ class MainController extends BaseController {
           {title: 'Course Management', url: this.rootifyPath(''), faicon: ''},
           {title: 'Account Management', url: this.rootifyPath('account-management'), faicon: ''},
           {title: 'School Management', url: this.rootifyPath('schoolmanagement'), faicon: ''},
-          {title: 'Student Monitor', faicon: '', url: this.rootifyPath('student-monitor')}
+          {title: 'Student Monitor', faicon: '', url: this.rootifyPath('student-monitor')},
+          {title: 'Populate View', faicon: '', url: this.rootifyPath('populate-view')}
         ]
       } else {
         res.locals.__sidebar = [
           {title: 'Account Management', url: this.rootifyPath('account-management'), faicon: ''},
           {title: 'Student Monitor', faicon: '', url: this.rootifyPath('student-monitor')},
-          {title: 'Sync Management', url: this.rootifyPath('synchronization'), faicon: ''}
+          {title: 'Sync Management', url: this.rootifyPath('synchronization'), faicon: ''},
+          {title: 'Populate View', faicon: '', url: this.rootifyPath('populate-view')}
         ]
       }
       next()
@@ -44,6 +47,11 @@ class MainController extends BaseController {
 
     this.routeHashlessUse((new AccountManagementController(initData)).getRouter())
     this.routeHashlessUse((new StudentMonitorController(initData).getRouter()))
+    this.routeGet('/populate-view', (req, res, next) => {
+      SQLViewService.populateViews().then(resp => {
+        res.json(resp)
+      })
+    })
 
     if (AppConfig.CLOUD_SERVER) {
       this.routeHashlessUse((new CourseManagementController(initData)).getRouter())

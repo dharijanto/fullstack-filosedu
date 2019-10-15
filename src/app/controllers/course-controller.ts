@@ -33,7 +33,7 @@ class CourseController extends BaseController {
 
     // Landing page
     this.routeGet('/', (req, res, next) => {
-      CourseService.getTopicDetails(req.user ? req.user.id : null).then(resp => {
+      /* CourseService.getTopicDetails(req.user ? req.user.id : null).then(resp => {
         if (resp.status && resp.data) {
           res.locals.topics = resp.data.topics
           // console.log(JSON.stringify(resp.data, null, 2))
@@ -43,7 +43,9 @@ class CourseController extends BaseController {
         }
       }).catch(err => {
         next(err)
-      })
+      }) */
+
+      res.render('topic')
     })
 
     // Topic Exercise
