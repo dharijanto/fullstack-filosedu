@@ -16,7 +16,6 @@ let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 let PathFormatter = require(path.join(__dirname, '../../lib/path-formatter'))
 
 let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
-let Utils = require(path.join(__dirname, '../utils/utils'))
 
 const TAG = 'ExerciseController'
 
