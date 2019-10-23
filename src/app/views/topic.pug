@@ -7,9 +7,52 @@ append head
 
 block pageContent
   .container
-    //.row.mobile-only
-      h1 Hello World!
     .row
+      for topic in topics
+        .col-md-6.col-lg-6
+          .card-blok
+            .card-blok-inner
+              .justify-between
+                h1= topic.topicName
+                .badge-checkmark
+                  span
+                    if topic.checkmarkBadges > 0
+                      img(src='assets/img/ic-checked@3x.png' alt='')
+                    else
+                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                  ul
+                    li
+                      if topic.starBadges > 0
+                        img(src='assets/img/star@3x.png' alt='')
+                        | + #{topic.starBadges - 1}
+                      else
+                        img(src='assets/img/star-dist@3x.png' alt='')
+                    li
+                      if topic.checkmarkBadges > 0
+                        img(src='assets/img/timer@3x.png' alt='')
+                        | + #{topic.checkmarkBadges - 1}
+                      else
+                        img(src='assets/img/timer-dist@3x.png' alt='')
+              p.value-topik 12 Topik
+              .progress-bintang
+                span.rating
+                  - let starsCount = parseInt(topic.subtopicsStarBadges)
+                  - let emptyStarsCount = 4 - starsCount
+                  while starsCount-- > 0
+                    img(src='/assets/img/star@3x.png' alt='bintang')
+                  while emptyStarsCount-- > 0
+                    img(src='/assets/img/star-dist@3x.png' alt='bintang')
+                span.timing
+                  - let timersCount = parseInt(topic.subtopicsTimeBadges)
+                  - let emptyTimersCount = 4 - timersCount
+                  while timersCount-- > 0
+                    img(src='/assets/img/timer@3x.png' alt='bintang')
+                  while emptyTimersCount-- >0
+                    img(src='/assets/img/timer-dist@3x.png' alt='bintang')
+            a.card-block-footer(href='#')
+              | Ulangi Review
+              i.fa.fa-undo
+    //.row
       .col-md-6.col-lg-6
         .card-blok
           .card-blok-inner

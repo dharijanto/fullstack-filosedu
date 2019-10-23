@@ -23,6 +23,7 @@ class SQLViewService extends CRUDService {
           subtopics.id AS subtopicId,
           subtopics.subtopic AS subtopicName,
           subtopics.subtopicNo AS subtopicNo,
+          # Need to cap to 4, so that when displayed on topic page, all subtopics have the same weight
           IFNULL(LEAST(4, (timeBadges.count / exercisesCount.count)), 0) AS timeBadges,
           IFNULL(LEAST(4, (starBadges.count / exercisesCount.count)), 0) AS starBadges
        FROM subtopics
@@ -74,27 +75,34 @@ class SQLViewService extends CRUDService {
               topics.topic AS topicName,
               topics.topicNo AS topicNo,
               COUNT(*) AS subtopicCount,
-              IFNULL(checkmarkBadges.count, 0) AS checkmarkBadges,
-              IFNULL(starBadges.count, 0) AS starBadges,
-              AVG(subtopicsView.starBadges) AS subtopicStarBadges,
-              AVG(subtopicsView.timeBadges) AS subtopicTimeBadges
+              IFNULL(SUM(checkmarkBadges.count), 0) AS checkmarkBadges,
+              IFNULL(SUM(starBadges.count), 0) AS starBadges,
+              AVG(subtopicsView.starBadges) AS subtopicsStarBadges,
+              AVG(subtopicsView.timeBadges) AS subtopicsTimeBadges
         FROM topics
         CROSS JOIN users
-        LEFT OUTER JOIN subtopicsView ON subtopicsView.topicId = topics.id AND subtopicsView.userId = users.id
+        # Subtopics information
+        LEFT OUTER JOIN (
+          SELECT topicId, userId,
+                 AVG(starBadges) AS starBadges,
+                 AVG(timeBadges) AS timeBadges
+          FROM subtopicsView
+          GROUP BY topicId, userId
+        ) AS subtopicsView ON subtopicsView.topicId = topics.id AND subtopicsView.userId = users.id
         # Topic exercise checkmark
         LEFT OUTER JOIN (
           SELECT COUNT(*) AS count, topicId, userId
           FROM generatedTopicExercises
           WHERE submitted = 1 AND timeFinish < idealTime AND score >= 90
-          GROUP BY topicId
+          GROUP BY topicId, userId
         ) AS checkmarkBadges ON checkmarkBadges.topicId = topics.id AND checkmarkBadges.userId = users.id
         # Topic exercise star badge
         LEFT OUTER JOIN (
           SELECT COUNT(*) AS count, topicId, userId
           FROM generatedTopicExercises
           WHERE submitted = 1 AND score >= 80
-          GROUP BY topicId
-        ) AS starBadges ON starBadges.topicId = topics.id
+          GROUP BY topicId, userId
+        ) AS starBadges ON starBadges.topicId = topics.id AND starBadges.userId = users.id
         GROUP BY topics.id, users.id
         ORDER BY topicNo ASC
       )
