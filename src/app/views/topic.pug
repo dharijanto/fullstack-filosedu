@@ -1,214 +1,170 @@
-extends layout/base.pug
+extends layout/base-with-subbar.pug
 
 append head
-  title Filosedu - Belajar itu Menyenangkan.
   meta(name='viewport' content='width=device-width, initial-scale=1.0')
-  link(rel='stylesheet' href='/assets/vendor/select2/select2.min.css')
   link(rel='stylesheet' href='/assets/css/topic.css')
   link(rel='stylesheet' href='/assets/css/base.css')
-  link(href='https://fonts.googleapis.com/css?family=Amatic+SC&display=swap' rel='stylesheet')
-  link(href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap' rel='stylesheet')
-  link(rel='stylesheet' href='/assets/vendor/fontawesome-5.0.8/css/fa-svg-with-js.css')
 
-block contents
-  #wrapper
-    // Required by sidebar
-    .overlay
-      nav.navbar.navbar-default
-        .container-fluid
-          nav#sidebar-wrapper.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
-            ul.nav.sidebar-nav
-              li.sidebar-brand
-                a(href='https://www.filosedu.com') Filosedu
-              li
-                a(href='/login') Login
-              li
-                a(href='/') Area Belajar
-              li
-                a(href='/competency-exercise') Uji Kompetensi
-    #page-content-wrapper.section-fix
-      button.hamburger.is-closed(type='button' data-toggle='offcanvas')
-        span.hamb-top
-        span.hamb-middle
-        span.hamb-bottom
-      nav.subbar
-        .row-bar
-          .col-lg-4
-            h1.logo-edu
-              a(href='#') Filosedu
-          .col-lg-4
-            //.inn-bar-link
-              a(href='#') Uji Kompetensi
-              a.active(href='#') Arena Belajar
-          .col-lg-4
-            .inn-bar-account
-              a(href='#')
-                | Hello, 
-                span John Doe
-        //.row-minibar
-          a.cuma-mobile(href='#')
-            i.fa.fa-chevron-left(aria-hidden='true')
-          .col-lg-12
-            h1 Matematika
-      .container
-        //.row.mobile-only
-          h1 Hello World!
-        .row
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Penjumlahan
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer@3x.png' alt='')
-                p.value-topik 12 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer@3x.png' alt='bintang')
-                    img(src='/assets/img/timer@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#')
-                | Ulangi Review 
-                i.fa.fa-undo
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Perkalian
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer-dis@3x.png' alt='')
-                p.value-topik 20 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#') Review
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Penjumlahan
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star-dis@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer-dis@3x.png' alt='')
-                p.value-topik 15 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#') Review
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Penjumlahan
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star-dis@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer-dis@3x.png' alt='')
-                p.value-topik 12 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#') Review
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Bilangan Bulat
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star-dis@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer-dis@3x.png' alt='')
-                p.value-topik 15 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#') Review
-          .col-md-6.col-lg-6
-            .card-blok
-              .card-blok-inner
-                .justify-between
-                  h1 Pecahan
-                  .badge-checkmark
-                    label
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                    ul
-                      li
-                        img(src='assets/img/star-dis@3x.png' alt='')
-                      li
-                        img(src='assets/img/timer-dis@3x.png' alt='')
-                p.value-topik 12 Topik
-                .progress-bintang
-                  span.rating
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                  span.timing
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                    img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-              a.card-block-footer(href='#') Review
+block pageContent
+  .container
+    //.row.mobile-only
+      h1 Hello World!
+    .row
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Penjumlahan
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer@3x.png' alt='')
+            p.value-topik 12 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer@3x.png' alt='bintang')
+                img(src='/assets/img/timer@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#')
+            | Ulangi Review
+            i.fa.fa-undo
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Perkalian
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer-dis@3x.png' alt='')
+            p.value-topik 20 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#') Review
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Penjumlahan
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star-dis@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer-dis@3x.png' alt='')
+            p.value-topik 15 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#') Review
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Penjumlahan
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star-dis@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer-dis@3x.png' alt='')
+            p.value-topik 12 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#') Review
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Bilangan Bulat
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star-dis@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer-dis@3x.png' alt='')
+            p.value-topik 15 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#') Review
+      .col-md-6.col-lg-6
+        .card-blok
+          .card-blok-inner
+            .justify-between
+              h1 Pecahan
+              .badge-checkmark
+                label
+                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
+                ul
+                  li
+                    img(src='assets/img/star-dis@3x.png' alt='')
+                  li
+                    img(src='assets/img/timer-dis@3x.png' alt='')
+            p.value-topik 12 Topik
+            .progress-bintang
+              span.rating
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+                img(src='/assets/img/star-dis@3x.png' alt='bintang')
+              span.timing
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
+          a.card-block-footer(href='#') Review
