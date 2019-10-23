@@ -45,7 +45,15 @@ class CourseController extends BaseController {
         next(err)
       }) */
 
-      res.render('topic')
+      CourseService.getTopicDetails(req.user && req.user.id).then(resp => {
+        if (resp.status && resp.data) {
+          res.locals.data = resp.data
+          console.log(JSON.stringify(resp.data, null, 2))
+          res.render('topic')
+        } else {
+          next(new Error('Failed to getTopicDetails(): ' + resp.errMessage))
+        }
+      })
     })
 
     // Topic Exercise

@@ -22,6 +22,7 @@ class SQLViewService extends CRUDService {
           subtopics.topicId AS topicId,
           subtopics.id AS subtopicId,
           subtopics.subtopic AS subtopicName,
+          subtopics.subtopicNo AS subtopicNo,
           IFNULL(LEAST(4, (timeBadges.count / exercisesCount.count)), 0) AS timeBadges,
           IFNULL(LEAST(4, (starBadges.count / exercisesCount.count)), 0) AS starBadges
        FROM subtopics
@@ -61,6 +62,7 @@ class SQLViewService extends CRUDService {
         CROSS JOIN users
         GROUP BY exercises.subtopicId, users.id
        ) AS exercisesCount ON exercisesCount.subtopicId = subtopics.id AND exercisesCount.userId = users.id
+       ORDER BY subtopicNo ASC
       )
     `)
   }
@@ -70,6 +72,7 @@ class SQLViewService extends CRUDService {
       CREATE VIEW topicsView AS
       (SELECT users.id AS userId, topics.id AS id,
               topics.topic AS topicName,
+              topics.topicNo AS topicNo,
               COUNT(*) AS subtopicCount,
               IFNULL(checkmarkBadges.count, 0) AS checkmarkBadges,
               IFNULL(starBadges.count, 0) AS starBadges,
@@ -93,6 +96,7 @@ class SQLViewService extends CRUDService {
           GROUP BY topicId
         ) AS starBadges ON starBadges.topicId = topics.id
         GROUP BY topics.id, users.id
+        ORDER BY topicNo ASC
       )
     `)
   }
@@ -121,7 +125,8 @@ class SQLViewService extends CRUDService {
   populateViews () {
     // The views are populated sequentially in the following order
     const promises: Array<() => Promise<any>> = [
-      this.createSubtopicsView
+      this.createSubtopicsView,
+      this.createTopicsView
     ]
     return this.destroyViews().then(result => {
       return promises.reduce((acc, promise) => {

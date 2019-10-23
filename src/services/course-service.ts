@@ -38,7 +38,7 @@ class CourseService extends CRUDService {
 `SELECT * FROM topicsView WHERE userId = ${userId}`
     ).then(resp => {
       if (resp.status) {
-        return { status: true, data: Formatter.objectify(resp.data)[0] }
+        return { status: true, data: Formatter.objectify(resp.data) }
       } else {
         return { status: false, errMessage: resp.errMessage }
       }
