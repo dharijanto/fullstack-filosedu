@@ -165,6 +165,12 @@ function addTables (sequelize, models) {
     localId: {type: Sequelize.INTEGER},
     cloudId: {type: Sequelize.INTEGER},
     tableName: {type: Sequelize.STRING}
+  },
+  {
+    // TODO: Check that this really helps. It should!
+    indexes: [
+      { fields: ['localId', 'schoolIdentifier', 'serverHash', 'tableName'], unique: true }
+    ]
   })
 
   models.SyncHistory = sequelize.define('syncHistories', {

@@ -34,7 +34,18 @@ client_max_body_size 50M;
   * generatedTopicExercises
   * Although other tables, such as topic, subtopic, and exercises are modifiable from CMS
     they're not going to be synced to cloud. They're modifable just for convinience
-
+## Table Indexing
+* After a server is synchronized (cloud-to-local), we are allowed to delete all the entries on 
+  synchronizations table where serverHash equals to what it was before sync. This should help
+  retaining small table size.
+* When doing a local-to-cloud sync, the process is so slow. It can take up to 15 minutes at the
+  moment of writing (288k entries of synchronizations table). Composite key should be able to help
+  here because it seems that the bottle neck is when searching for mapping between local server id
+  to cloud server id. Try this:
+  ```
+  CREATE INDEX searchingCloudId ON synchronizations(localId, schoolIdentifier, serverHash, tableName);
+  ```
+  If it works, the next step is to incorporate it into Sequelize so that it's automated
 
 ## Implementation
 ### Sync from local to cloud
