@@ -139,6 +139,7 @@ class ExerciseService extends CRUDService {
 
   // Created GeneratedExercise ready to be saved
   generateExercise (exercise: Exercise, quantityVariableName: QuantityVariableName): Promise<NCResponse<Partial<GeneratedExercise>>> {
+    log.verbose(TAG, `generateExercise(): exercise.id=${exercise.id}`)
     try {
       let exerciseSolver = ExerciseGenerator.getExerciseSolver(exercise.data) as BruteforceSolver
       // Generate X number of questions, which depends whether it's topic or subTopic

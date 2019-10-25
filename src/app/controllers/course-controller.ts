@@ -33,31 +33,23 @@ class CourseController extends BaseController {
 
     // Landing page
     this.routeGet('/', (req, res, next) => {
-      /* CourseService.getTopicDetails(req.user ? req.user.id : null).then(resp => {
-        if (resp.status && resp.data) {
-          res.locals.topics = resp.data.topics
-          // console.log(JSON.stringify(resp.data, null, 2))
-          res.render('topics')
-        } else {
-          next(new Error('Failed to getTopicDetails(): ' + resp.errMessage))
-        }
-      }).catch(err => {
-        next(err)
-      }) */
-
       CourseService.getTopicDetails(req.user && req.user.id).then(resp => {
         if (resp.status && resp.data) {
           res.locals.topics = resp.data
           console.log(JSON.stringify(resp.data, null, 2))
-          res.render('topic')
+          res.render('topics')
         } else {
           next(new Error('Failed to getTopicDetails(): ' + resp.errMessage))
         }
       })
     })
 
+    this.routeGet('/:topicId/penjumlahan', (req, res, next) => {
+
+    })
+
     // Topic Exercise
-    this.routeGet('/topics/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       let topicId = req.params.topicId
       let userId = req.user.id
 

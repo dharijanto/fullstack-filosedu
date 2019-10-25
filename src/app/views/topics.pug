@@ -49,7 +49,7 @@ block pageContent
                     img(src='/assets/img/timer@3x.png' alt='bintang')
                   while emptyTimersCount-- >0
                     img(src='/assets/img/timer-dist@3x.png' alt='bintang')
-            a.card-block-footer(href='#')
+            a.card-block-footer(href=`/${topic.id}/${getSlug(topic.topicName)}/review`)
               | Ulangi Review
               i.fa.fa-undo
     //.row
