@@ -169,7 +169,7 @@ function addTables (sequelize, models) {
   {
     // TODO: Check that this really helps. It should!
     indexes: [
-      { fields: ['localId', 'schoolIdentifier', 'serverHash', 'tableName'], unique: true }
+      { name: 'syncMappingIndex', fields: ['localId', 'schoolIdentifier', 'serverHash', 'tableName'], unique: true }
     ]
   })
 
