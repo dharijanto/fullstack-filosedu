@@ -139,7 +139,7 @@ function updateProgressBar () {
     const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
     $('.progress-bar').css('width', currentPercent + '%')
   }
-  $('#elapsedTime').html(`Elapsed: <strong> ${parseInt(elapsedTime)} detik</strong>`)
+  $('#elapsedTime').html(`${parseInt(elapsedTime)}`)
 }
 
 // when page first load, first call only

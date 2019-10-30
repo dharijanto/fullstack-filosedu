@@ -8,6 +8,36 @@
 @import 'layout/main';
 @import 'layout/sidebar';
 
+$font-logo: 'Amatic SC', cursive;
+$font-body: 'Open Sans', sans-serif;
+
+body {
+  background: linear-gradient(to top, #0089ba, #008f7a);
+}
+
+@media (min-width: 1024px) {
+  .mobile-only {
+      display: none;
+  }
+}
+
+
+
+.logo-edu {
+  font-size: 24px;
+  font-weight: normal;
+  font-style: normal;
+  font-family: $font-logo;
+  font-stretch: normal;
+  letter-spacing: 2.4px;
+  color: #ffffff;
+  margin: 0;
+  a {
+      color: #fff;
+      text-decoration: none;
+  }
+}
+
 .white-text {
   font-family: OpenSans;
   text-transform: uppercase;

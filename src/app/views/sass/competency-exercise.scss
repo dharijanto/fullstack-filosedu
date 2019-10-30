@@ -1,6 +1,10 @@
 @import 'base';
+@import 'layout/subbar';
 @import 'layout/exercise';
 
+.row-minibar {
+  height: 75px;
+}
 
 a {
   color: black;

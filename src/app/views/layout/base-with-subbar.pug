@@ -1,6 +1,7 @@
 extends base
 
 append head
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
   link(href='https://fonts.googleapis.com/css?family=Amatic+SC&display=swap' rel='stylesheet')
   link(href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap' rel='stylesheet')
 
@@ -31,17 +32,20 @@ block contents
             h1.logo-edu
               a(href='#') Filosedu
           .col-lg-4
-            //.inn-bar-link
-              a(href='#') Uji Kompetensi
-              a.active(href='#') Arena Belajar
+            .inn-bar-link
+              // block subbarMenu
+              // a(href='#') Uji Kompetensi
+              // a.active(href='#') Arena Belajar
           .col-lg-4
             .inn-bar-account
               a(href='#')
                 | Hello,
                 span John Doe
-        //.row-minibar
-          a.cuma-mobile(href='#')
-            i.fa.fa-chevron-left(aria-hidden='true')
-          .col-lg-12
-            h1 Matematika
+        .row-minibar
+          a.mobile-only(href='#')
+            block minibarLeftMenu
+            // i.fa.fa-chevron-left(aria-hidden='true')
+          .col-lg-12#minibar-mid-menu
+            // h1 Matematika
+            block minibarMidMenu
       block pageContent

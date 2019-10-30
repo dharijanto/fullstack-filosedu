@@ -1,126 +1,6 @@
 @import 'base';
+@import 'layout/subbar';
 
-$font-logo: 'Amatic SC', cursive;
-$font-body: 'Open Sans', sans-serif;
-
-body {
-    background: linear-gradient(to top, #0089ba, #008f7a);
-}
-
-@media (min-width: 1024px) {
-    .mobile-only {
-        display: none;
-    }
-}
-.logo-edu {
-    font-size: 24px;
-    font-weight: normal;
-    font-style: normal;
-    font-family: $font-logo;
-    font-stretch: normal;
-    letter-spacing: 2.4px;
-    color: #ffffff;
-    margin: 0;
-}
-.logo-edu {
-    a {
-        color: #fff;
-        text-decoration: none;
-    }
-}
-@media (min-width: 992px) {
-    .row-bar {
-        padding: 0 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 75px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.13);
-    }
-}
-@media (max-width: 992px) {
-    .row-bar {
-        display: none;
-    }
-    .row-minibar {
-        justify-content: center !important;
-    }
-    .section-fix {
-        margin-top: 1em !important;
-    }
-    .card-blok {
-        margin: 20px 15px !important;
-    }
-}
-.row-bar {
-    a {
-        font-weight: 300;
-        text-decoration: none !important;
-    }
-    a:hover {
-        color: #fff;
-        opacity: .8;
-    }
-}
-.inn-bar-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.inn-bar-link {
-    a {
-        color: #fff;
-        opacity: .5;
-        text-decoration: none;
-        font-size: 14px;
-        display: inline-block;
-        padding: 5px 10px;
-        font-family: $font-body;
-        text-transform: uppercase;
-    }
-}
-.inn-bar-link {
-    a.active {
-        opacity: 1;
-    }
-}
-.inn-bar-account {
-    text-align: right;
-}
-.inn-bar-account {
-    a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 14px;
-        font-family: $font-body;
-    }
-}
-.row-minibar {
-    padding: 0 25px;
-    height: 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #fff;
-}
-.row-minibar {
-    h1 {
-        margin: 0;
-        font-size: 14px;
-        text-transform: uppercase;
-    }
-}
-.subbar {
-    -webkit-box-shadow: 0px 4px 14px -3px rgba(0,0,0,0.2);
-    -moz-box-shadow: 0px 4px 14px -3px rgba(0,0,0,0.2);
-    box-shadow: 0px 4px 14px -3px rgba(0,0,0,0.2);
-    position: fixed;
-    z-index: 10;
-    width: 100%;
-    padding-left: 50px;
-    background: linear-gradient(to top, #00a089, #008f7a);
-    top: 0;
-}
 .transparent {
     background: transparent !important;
     box-shadow: none !important;
@@ -173,10 +53,18 @@ body {
 .card-block-footer:hover {
     background: #f5f5f5;
 }
+
 .section-fix {
-    margin-top: 5em;
+    margin-top: 8em;
     padding-top: 5em;
 }
+
+@media (max-width: 992px) {
+    .section-fix {
+        margin-top: 1em !important;
+    }
+}
+
 .card-blok-inner {
     h1 {
         font-size: 18px;
