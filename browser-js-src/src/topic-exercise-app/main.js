@@ -5,7 +5,7 @@ const TAG = 'Topic-Exercise-App'
 var axios = require('../libs/axios-wrapper')
 var log = require('../libs/logger')
 var Utils = require('../libs/utils')
-
+const Formatter = require('../libs/formatter')
 var pathName = window.location.pathname
 // to split and get topic id from url pathname
 var topicId = pathName.split('/')[2]
@@ -29,11 +29,15 @@ $('#leaderboard-button').on('click', function (e) {
   })
 })
 
-$('.btn_submit_answer').on('click', function (e) {
+$('#btn-submit-answer').on('click', function (e) {
   postAnswer()
 })
 
-$('#resetQuestion').on('click', function (e) {
+$('#btn-retry').on('click', function (e) {
+  location.reload()
+})
+
+$('#btn-reset').on('click', function (e) {
   postAnswer().then(resp => {
     if (resp.status) {
       setTimeout(
@@ -60,6 +64,7 @@ function postAnswer () {
     axios.post(window.location.href, {
       userAnswers
     }).then(rawResp => {
+      $('#btn-submit-answer').addClass('hidden')
       var resp = rawResp.data
       if (resp.status) {
         $('input').prop('disabled', true)
@@ -105,8 +110,7 @@ function postAnswer () {
           $('.resultAnswer_' + index).append(answerMessage)
         })
 
-        $('.btn_submit_answer').addClass('hidden')
-        $('.btn_retry_question').removeClass('hidden')
+        $('#btn-retry').removeClass('hidden')
         resolve({status: true})
       } else {
         $('#submissionError').removeClass('hidden')
@@ -115,6 +119,7 @@ function postAnswer () {
         resolve({status: false})
       }
     }).catch(err => {
+      $('#btn-submit-answer').removeClass('hidden')
       $('#submissionError').removeClass('hidden')
       $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
       console.error(err)
@@ -132,14 +137,16 @@ setInterval(() => {
   updateProgressBar()
 }, 1000)
 
+$('.exercise-timer').find('#targetTime').text(Formatter.secsToTimerFormat(window['idealTime']))
+
 function updateProgressBar () {
   // Get current value of progress bar
   if (window['idealTime']) {
-    console.log(`idealTime=${window['idealTime']} elapsedTime=${window['elapsedTime']}`)
+    // console.log(`idealTime=${window['idealTime']} elapsedTime=${window['elapsedTime']}`)
     const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
     $('.progress-bar').css('width', currentPercent + '%')
   }
-  $('#elapsedTime').html(`${parseInt(elapsedTime)}`)
+  $('#elapsedTime').html(Formatter.secsToTimerFormat(elapsedTime))
 }
 
 // when page first load, first call only

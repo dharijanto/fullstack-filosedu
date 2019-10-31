@@ -23,10 +23,13 @@ table.image-repeat {
   display: inline-block;
   width: 100%;
   margin: 0;
-  text-align: center;
+
   img {
       width: 15px;
       margin-right: 5px;
       display: inline-block;
+  }
+  #btn-reset {
+    color: black;
   }
 }

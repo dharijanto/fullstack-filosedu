@@ -13,6 +13,7 @@ class Formatter {
   // Convert seconds to "timer" format
   // 120 -> 2:00
   static secsToTimerFormat (seconds) {
+    seconds = parseInt(seconds)
     const secs = (seconds % 60).toFixed()
     const mins = (seconds / 60).toFixed()
 

@@ -17,18 +17,20 @@ block minibarMidMenu
   //h1 Review #{topicName}
   h1
     span.desktop-only
-      | Matematika
+      | #{"Matematika "}
       i.bread.fa.fa-chevron-right
-      |  Penjumlahan
+      |  #{"Penjumlahan "}
       i.bread.fa.fa-chevron-right
     span  Review Penjumlahan
     span.mobile-only#sub-heading
       // Target Waktu: 30 Menit
       .exercise-timer
         img(src='/assets/img/chronometer@3x.png' alt='')
-        span#elapsedTime 30:00
-        span /
-        span#targetTime  #{idealTime}
+        span#elapsedTime
+        span #{" / "}
+        span#targetTime
+        span
+          button#btn-reset Ulang
 
 block pageContent
   .container.text-center
@@ -61,9 +63,13 @@ block pageContent
           p.hidden(id='currentScore')
           p.hidden(id='submissionError')
         // a.btn.btn-primary.btn-submit-answer(href="javascript:void(0);") Submit
-        button.rounded-button.btn-submit-answer
+        button.rounded-button#btn-submit-answer
           | Submit #{" "}
           img(src="/assets/img/arrow-pointing-to-right.png" srcset="/assets/img/arrow-pointing-to-right@2x.png 2x, /assets/img/arrow-pointing-to-right@3x.png 3x" class="arrow-pointing-to-right")
+        // a.hidden.btn.rounded-button#btn-retry(href="")
+        button.hidden.rounded-button#btn-retry
+          | Ulangi
+        // a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
 
 append scripts
   script().

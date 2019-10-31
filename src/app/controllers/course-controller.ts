@@ -32,7 +32,7 @@ class CourseController extends BaseController {
     })
 
     // Landing page
-    this.routeGet('/', (req, res, next) => {
+    this.routeGet('/', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       CourseService.getTopicDetails(req.user && req.user.id).then(resp => {
         if (resp.status && resp.data) {
           res.locals.topics = resp.data
@@ -46,6 +46,22 @@ class CourseController extends BaseController {
 
     this.routeGet('/:topicId/penjumlahan', (req, res, next) => {
 
+    })
+
+    // TopicExercise leaderboard
+    this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
+      let topicId = req.params.topicId
+      if (topicId === undefined) {
+        res.json({ status: false, errMessage: `topicId is needed` })
+      } else if (!req.isAuthenticated) {
+        res.json({ status: false, errMessage: `Unauthorized` })
+      } else {
+        TopicExerciseService.getRenderedLeaderboard(topicId).then(resp => {
+          res.json(resp)
+        }).catch(err => {
+          next(err)
+        })
+      }
     })
 
     // Topic Exercise
@@ -75,26 +91,10 @@ class CourseController extends BaseController {
       })
     })
 
-    // TopicExercise leaderboard
-    this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
-      let topicId = req.params.topicId
-      if (topicId === undefined) {
-        res.json({ status: false, errMessage: `topicId is needed` })
-      } else if (!req.isAuthenticated) {
-        res.json({ status: false, errMessage: `Unauthorized` })
-      } else {
-        TopicExerciseService.getRenderedLeaderboard(topicId).then(resp => {
-          res.json(resp)
-        }).catch(err => {
-          next(err)
-        })
-      }
-    })
-
     // TopicExercise submission
     // TODO: Perhaps we should call getGeneratedTopicExercise and gradeExercise inside of finishExercise to make
     //       the code cleaner?
-    this.routePost('/topics/:topicId/:topicSlug/review', (req, res, next) => {
+    this.routePost('/:topicId/:topicSlug/review', (req, res, next) => {
       // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
       let userAnswers = req.body.userAnswers
       let topicId = req.params.topicId
