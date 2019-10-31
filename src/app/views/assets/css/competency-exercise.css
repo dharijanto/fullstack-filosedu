@@ -6082,7 +6082,7 @@ html {
   z-index: 1; }
 
 body {
-  background: linear-gradient(to top, #0089ba, #008f7a); }
+  background: linear-gradient(to top, #008f7a 0%, #0089ba 20%, #008f7a 100%); }
 
 @media (min-width: 1024px) {
   .mobile-only {
@@ -6192,7 +6192,7 @@ body {
     opacity: 0.6;
     text-transform: capitalize;
     display: block; }
-  .row-minibar a {
+  .row-minibar a.link-back {
     color: #fff;
     text-decoration: none;
     position: absolute;
@@ -6235,12 +6235,13 @@ table.image-repeat {
 .exercise-timer {
   display: inline-block;
   width: 100%;
-  margin: 0;
-  text-align: center; }
+  margin: 0; }
   .exercise-timer img {
     width: 15px;
     margin-right: 5px;
     display: inline-block; }
+  .exercise-timer #btn-reset {
+    color: black; }
 
 .row-minibar {
   height: 75px; }
