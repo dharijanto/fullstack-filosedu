@@ -154,9 +154,9 @@ block pageContent
                     .user-answer
                       span.variable #{unknown} =
                       input.answerInput(name=`${unknown}` placeholder='{ketik disini}')
+                      div(class=`resultAnswer_${exerciseIndex}`)
                       .virtual-keyboard
                       // include includes/numpad
-                div(class=`resultAnswer_${exerciseIndex}`)
                 - exerciseIndex++
       div.text-center(style="margin-bottom:5%;")
         div.scoreSection

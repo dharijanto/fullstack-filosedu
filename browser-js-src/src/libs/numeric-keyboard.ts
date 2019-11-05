@@ -1,5 +1,8 @@
 import * as $ from 'jquery'
 
+const BUTTON_COLOR = '#0089ba'
+const BUTTON_HOVER_COLOR = '#008f7a'
+
 $.fn['NumericKeyboard'] = function ({ targetInput }) {
   const rootElement = $(this)
   let currentElement = $(`<div class="keyboard" />`).appendTo(rootElement)
@@ -41,19 +44,19 @@ $.fn['NumericKeyboard'] = function ({ targetInput }) {
         {
           display: 'block',
           padding: '16px 10px',
-          'background-color': '#424242',
+          'background-color': BUTTON_COLOR,
           color: '#fff',
           'text-align': 'center',
           'border-radius': '6px'
         }).hover(function () {
           $(this).css(
             {
-              'background-color': '#616161'
+              'background-color': BUTTON_HOVER_COLOR
             })
         }).mouseout(function () {
           $(this).css(
             {
-              'background-color': '#424242'
+              'background-color': BUTTON_COLOR
             }
           )
         }).appendTo(td)
