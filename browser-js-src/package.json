@@ -33,6 +33,7 @@
     "copy-to-clipboard": "^3.0.8",
     "datatables.net": "^1.10.16",
     "es6-promise": "^4.2.4",
+    "jquery-serializeobject": "^1.0.0",
     "jquery-simple-upload": "^1.0.0",
     "lodash": "^4.17.4",
     "marked": "^0.3.6",
