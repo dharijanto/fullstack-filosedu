@@ -16,7 +16,7 @@ block pageContent
               .justify-between
                 a(href=`${topic.id}/${getSlug(topic.topicName)}`)
                   h1= topic.topicName
-                .badge-checkmark
+                .topic-badge-checkmark
                   span
                     if topic.checkmarkBadges > 0
                       img(src='assets/img/ic-checked@3x.png' alt='')
@@ -35,8 +35,8 @@ block pageContent
                         | + #{topic.checkmarkBadges - 1}
                       else
                         img(src='assets/img/timer-dist@3x.png' alt='')
-              p.value-topik #{topic.subtopicCount} Sub-Topik
-              .progress-bintang
+              p.description #{topic.subtopicCount} Sub-Topik
+              .badges
                 span.rating
                   - let starsCount = parseInt(topic.subtopicsStarBadges)
                   - let emptyStarsCount = 4 - starsCount
@@ -54,162 +54,3 @@ block pageContent
             a.card-block-footer(href=`/${topic.id}/${getSlug(topic.topicName)}/review`)
               | Ulangi Review
               i.fa.fa-undo
-    //.row
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Penjumlahan
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer@3x.png' alt='')
-            p.value-topik 12 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer@3x.png' alt='bintang')
-                img(src='/assets/img/timer@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#')
-            | Ulangi Review
-            i.fa.fa-undo
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Perkalian
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer-dis@3x.png' alt='')
-            p.value-topik 20 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#') Review
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Penjumlahan
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star-dis@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer-dis@3x.png' alt='')
-            p.value-topik 15 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#') Review
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Penjumlahan
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star-dis@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer-dis@3x.png' alt='')
-            p.value-topik 12 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#') Review
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Bilangan Bulat
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star-dis@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer-dis@3x.png' alt='')
-            p.value-topik 15 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#') Review
-      .col-md-6.col-lg-6
-        .card-blok
-          .card-blok-inner
-            .justify-between
-              h1 Pecahan
-              .badge-checkmark
-                label
-                  img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                ul
-                  li
-                    img(src='assets/img/star-dis@3x.png' alt='')
-                  li
-                    img(src='assets/img/timer-dis@3x.png' alt='')
-            p.value-topik 12 Topik
-            .progress-bintang
-              span.rating
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-                img(src='/assets/img/star-dis@3x.png' alt='bintang')
-              span.timing
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-                img(src='/assets/img/timer-dis@3x.png' alt='bintang')
-          a.card-block-footer(href='#') Review

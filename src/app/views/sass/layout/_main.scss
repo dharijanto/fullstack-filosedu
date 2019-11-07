@@ -58,3 +58,9 @@ html { height: 100%;}
     position: absolute;
     margin-right: -$sidebar-width;
 }
+
+.justify-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
