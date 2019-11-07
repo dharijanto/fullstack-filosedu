@@ -27,22 +27,6 @@
   }
 }
 
-.row-bar {
-  height: 75px;
-  padding: 0 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
-  a {
-      font-weight: 300;
-      text-decoration: none !important;
-  }
-  a:hover {
-      color: #fff;
-      opacity: .8;
-  }
-}
 // #00a089
 .subbar {
   -webkit-box-shadow: 0px 4px 14px -3px rgba(0,0,0,0.2);
@@ -54,39 +38,55 @@
   padding-left: 50px;
   background: linear-gradient(to top, $bg-color-third, $bg-color-first);
   top: 0;
-}
-
-.row-minibar {
-  padding: 0 25px;
-  height: 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff;
-
-  #minibar-mid-menu {
-    h1 {
-        margin: 0;
-        font-size: 14px;
-        text-transform: uppercase;
+  .row-bar {
+    height: 75px;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+    a {
+        font-weight: 300;
+        text-decoration: none !important;
     }
-
-    #sub-heading {
-      font-size: 13px;
-      margin-top: 5px;
-      opacity: 0.6;
-      text-transform: capitalize;
-      display: block;
+    a:hover {
+        color: #fff;
+        opacity: .8;
     }
   }
-
-  a.link-back {
+  .row-minibar {
+    padding: 0 25px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     color: #fff;
-    text-decoration: none;
-    position: absolute;
-    left: 25px;
+  
+    #minibar-mid-menu {
+      h1 {
+          margin: 0;
+          font-size: 14px;
+          text-transform: uppercase;
+      }
+  
+      #sub-heading {
+        font-size: 13px;
+        margin-top: 5px;
+        opacity: 0.6;
+        text-transform: capitalize;
+        display: block;
+      }
+    }
+  
+    a.link-back {
+      color: #fff;
+      text-decoration: none;
+      position: absolute;
+      left: 25px;
+    }
   }
 }
+
 
 .container { 
   margin-top: 100px;
@@ -99,14 +99,17 @@
   .container {
     margin-top: 50px;
   }
-  .row-bar {
-    display: none;
-  }
-  .inn-bar-account {
-    display: none;
-  }
-  .row-minibar {
-      justify-content: center !important;
+  .subbar {
+    padding-left: 0px;
+    .row-bar {
+      display: none;
+      .inn-bar-account {
+        display: none;
+      }
+    }
+    .row-minibar {
+        justify-content: center !important;
+    }
   }
   .card-blok {
       margin: 20px 15px !important;

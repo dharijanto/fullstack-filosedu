@@ -6082,7 +6082,7 @@ html {
   z-index: 1; }
 
 body {
-  background: linear-gradient(to top, #008f7a 0%, #0089ba 20%, #008f7a 100%); }
+  background: linear-gradient(to top, #008f7a 10%, #0089ba 50%, #008f7a 100%); }
 
 @media (min-width: 1024px) {
   .mobile-only {
@@ -6150,20 +6150,6 @@ body {
     font-size: 14px;
     font-family: "Open Sans", sans-serif; }
 
-.row-bar {
-  height: 75px;
-  padding: 0 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.13); }
-  .row-bar a {
-    font-weight: 300;
-    text-decoration: none !important; }
-  .row-bar a:hover {
-    color: #fff;
-    opacity: .8; }
-
 .subbar {
   -webkit-box-shadow: 0px 4px 14px -3px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0px 4px 14px -3px rgba(0, 0, 0, 0.2);
@@ -6174,29 +6160,41 @@ body {
   padding-left: 50px;
   background: linear-gradient(to top, #00a089, #008f7a);
   top: 0; }
-
-.row-minibar {
-  padding: 0 25px;
-  height: 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff; }
-  .row-minibar #minibar-mid-menu h1 {
-    margin: 0;
-    font-size: 14px;
-    text-transform: uppercase; }
-  .row-minibar #minibar-mid-menu #sub-heading {
-    font-size: 13px;
-    margin-top: 5px;
-    opacity: 0.6;
-    text-transform: capitalize;
-    display: block; }
-  .row-minibar a.link-back {
-    color: #fff;
-    text-decoration: none;
-    position: absolute;
-    left: 25px; }
+  .subbar .row-bar {
+    height: 75px;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13); }
+    .subbar .row-bar a {
+      font-weight: 300;
+      text-decoration: none !important; }
+    .subbar .row-bar a:hover {
+      color: #fff;
+      opacity: .8; }
+  .subbar .row-minibar {
+    padding: 0 25px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff; }
+    .subbar .row-minibar #minibar-mid-menu h1 {
+      margin: 0;
+      font-size: 14px;
+      text-transform: uppercase; }
+    .subbar .row-minibar #minibar-mid-menu #sub-heading {
+      font-size: 13px;
+      margin-top: 5px;
+      opacity: 0.6;
+      text-transform: capitalize;
+      display: block; }
+    .subbar .row-minibar a.link-back {
+      color: #fff;
+      text-decoration: none;
+      position: absolute;
+      left: 25px; }
 
 .container {
   margin-top: 100px; }
@@ -6206,12 +6204,14 @@ body {
     display: none !important; }
   .container {
     margin-top: 50px; }
-  .row-bar {
-    display: none; }
-  .inn-bar-account {
-    display: none; }
-  .row-minibar {
-    justify-content: center !important; }
+  .subbar {
+    padding-left: 0px; }
+    .subbar .row-bar {
+      display: none; }
+      .subbar .row-bar .inn-bar-account {
+        display: none; }
+    .subbar .row-minibar {
+      justify-content: center !important; }
   .card-blok {
     margin: 20px 15px !important; } }
 
