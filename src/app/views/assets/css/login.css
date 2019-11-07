@@ -2,6 +2,26 @@
 /* Bootstrap Overides */
 /* Navbar */
 /* Custom */
+/* amatic-sc-regular - latin */
+@font-face {
+  font-family: 'Amatic SC';
+  font-style: normal;
+  font-weight: 400;
+  src: url("/assets/fonts/amatic-sc-v13-latin-regular.eot");
+  /* IE9 Compat Modes */
+  src: local("Amatic SC Regular"), local("AmaticSC-Regular"), url("/assets/fonts/amatic-sc-v13-latin-regular.eot?#iefix") format("embedded-opentype"), url("/assets/fonts/amatic-sc-v13-latin-regular.woff2") format("woff2"), url("/assets/fonts/amatic-sc-v13-latin-regular.woff") format("woff"), url("/assets/fonts/amatic-sc-v13-latin-regular.ttf") format("truetype"), url("/assets/fonts/amatic-sc-v13-latin-regular.svg#AmaticSC") format("svg");
+  /* Legacy iOS */ }
+
+/* open-sans-regular - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url("/assets/fonts/open-sans-v17-latin-regular.eot");
+  /* IE9 Compat Modes */
+  src: local("Open Sans Regular"), local("OpenSans-Regular"), url("/assets/fonts/open-sans-v17-latin-regular.eot?#iefix") format("embedded-opentype"), url("/assets/fonts/open-sans-v17-latin-regular.woff2") format("woff2"), url("/assets/fonts/open-sans-v17-latin-regular.woff") format("woff"), url("/assets/fonts/open-sans-v17-latin-regular.ttf") format("truetype"), url("/assets/fonts/open-sans-v17-latin-regular.svg#OpenSans") format("svg");
+  /* Legacy iOS */ }
+
 /*!
  * Bootstrap v3.4.1 (https://getbootstrap.com/)
  * Copyright 2011-2019 Twitter, Inc.
@@ -5855,11 +5875,16 @@ html {
 
 #page-content-wrapper {
   width: 100%;
-  padding-top: 10px; }
+  padding-top: 5px; }
 
 #wrapper.toggled #page-content-wrapper {
   position: absolute;
   margin-right: -250px; }
+
+.justify-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; }
 
 /*-------------------------------*/
 /*     Sidebar nav styles        */
