@@ -4,7 +4,7 @@ import * as Config from '../config'
 
 import 'nc-input-library'
 
-function getSchoolNames () {
+/* function getSchoolNames () {
   return axios.get(window['rootPath'] + 'school/management/get').then(resp => {
     if (resp.data.status) {
       return resp.data.data.map((data) => {
@@ -14,7 +14,7 @@ function getSchoolNames () {
       return resp
     }
   })
-}
+} */
 
 $(document).ready(function () {
   let selectedSchool: School

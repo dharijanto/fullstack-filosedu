@@ -8,11 +8,8 @@
 @import 'layout/main';
 @import 'layout/sidebar';
 
-$font-logo: 'Amatic SC', cursive;
-$font-body: 'Open Sans', sans-serif;
-
 body {
-  background: linear-gradient(to top, #008f7a 0%, #0089ba 20%, #008f7a 100%);
+  background: linear-gradient(to top, $bg-color-first 10%, $bg-color-second 50%, $bg-color-first 100%);
 }
 
 @media (min-width: 1024px) {

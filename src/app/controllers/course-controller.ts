@@ -31,6 +31,8 @@ class CourseController extends BaseController {
       next()
     })
 
+    this.addInterceptor(PassportHelper.ensureLoggedIn())
+
     // Landing page
     this.routeGet('/', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       CourseService.getTopicDetails(req.user && req.user.id).then(resp => {
@@ -44,8 +46,24 @@ class CourseController extends BaseController {
       })
     })
 
-    this.routeGet('/:topicId/penjumlahan', (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug', (req, res, next) => {
+      const topicId = req.params.topicId
+      Promise.join(
+        CourseService.getTopic(topicId),
+        CourseService.getSubtopicDetails(topicId, req.user && req.user.id)
+      ).spread((resp, resp2) => {
+        if (resp.status && resp.data && resp2.status && resp2.data) {
+          res.locals.topic = resp.data
+          res.locals.subtopics = resp2.data
+          // console.log(JSON.stringify(resp2.data, null, 2))
+          res.render('subtopics')
+        } else {
+          next(new Error('Failed to getSubtopicDetails(): ' + resp2.errMessage))
+        }
+      })
+    })
 
+    this.routeGet('/:topicId/:topicSlug', (req, res, next) => {
     })
 
     // TopicExercise leaderboard

@@ -45,6 +45,18 @@ class CourseService extends CRUDService {
     })
   }
 
+  getSubtopicDetails (topicId = -1, userId = -1) {
+    return super.rawReadQuery(
+      `SELECT * FROM subtopicsView WHERE topicId = ${topicId} AND userId = ${userId}`
+    ).then(resp => {
+      if (resp.status) {
+        return { status: true, data: Formatter.objectify(resp.data) }
+      } else {
+        return { status: false, errMessage: resp.errMessage }
+      }
+    })
+  }
+
   getAllTopics () {
     return this.getModels('Topic').findAll({ order: [['topicNo', 'ASC']] }).then(resp => {
       return { status: true, data: resp }

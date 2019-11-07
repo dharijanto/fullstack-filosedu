@@ -25,7 +25,9 @@ class SQLViewService extends CRUDService {
           subtopics.subtopicNo AS subtopicNo,
           # Need to cap to 4, so that when displayed on topic page, all subtopics have the same weight
           IFNULL(LEAST(4, (timeBadges.count / exercisesCount.count)), 0) AS timeBadges,
-          IFNULL(LEAST(4, (starBadges.count / exercisesCount.count)), 0) AS starBadges
+          IFNULL(LEAST(4, (starBadges.count / exercisesCount.count)), 0) AS starBadges,
+          IF (IFNULL(LEAST(4, (timeBadges.count / exercisesCount.count)), 0) = 4, 1, 0) AS complete,
+          exercisesCount.count AS exerciseCount
        FROM subtopics
        CROSS JOIN users
        # Number of star badges in the subtopic
@@ -74,18 +76,19 @@ class SQLViewService extends CRUDService {
       (SELECT users.id AS userId, topics.id AS id,
               topics.topic AS topicName,
               topics.topicNo AS topicNo,
-              COUNT(*) AS subtopicCount,
+              subtopicsView.count AS subtopicCount,
               IFNULL(SUM(checkmarkBadges.count), 0) AS checkmarkBadges,
               IFNULL(SUM(starBadges.count), 0) AS starBadges,
-              AVG(subtopicsView.starBadges) AS subtopicsStarBadges,
-              AVG(subtopicsView.timeBadges) AS subtopicsTimeBadges
+              subtopicsView.starBadges AS subtopicsStarBadges,
+              subtopicsView.timeBadges AS subtopicsTimeBadges
         FROM topics
         CROSS JOIN users
         # Subtopics information
         LEFT OUTER JOIN (
           SELECT topicId, userId,
                  AVG(starBadges) AS starBadges,
-                 AVG(timeBadges) AS timeBadges
+                 AVG(timeBadges) AS timeBadges,
+                 COUNT(*) AS count
           FROM subtopicsView
           GROUP BY topicId, userId
         ) AS subtopicsView ON subtopicsView.topicId = topics.id AND subtopicsView.userId = users.id

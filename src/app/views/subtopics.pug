@@ -1,59 +1,43 @@
 extends layout/base-with-subbar.pug
 
 append head
-  link(rel='stylesheet' href='/assets/css/topics.css')
+  link(rel='stylesheet' href='/assets/css/subtopics.css')
 
 block minibarMidMenu
-  h1 Matematika
+  h1
+    | Matematika
+    svg.svg-inline--fa.fa-chevron-right.fa-w-10.bread(aria-hidden='true' data-prefix='fa' data-icon='chevron-right' role='img' xmlns='http://www.w3.org/2000/svg' viewbox='0 0 320 512' data-fa-i2svg='')
+      path(fill='currentColor' d='M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z')
+    // <i class="bread fa fa-chevron-right" aria-hidden="true"></i>
+    | #{topic.topic}
 
 block pageContent
   .container
     .row
-      for topic in topics
+      for subtopic in subtopics
+        - let starsCount = parseInt(subtopic.starBadges)
+        - let timersCount = parseInt(subtopic.timeBadges)
         .col-md-6.col-lg-6
-          .card-blok
+          .card-blok.subtopic(class=`${subtopic.complete ? 'complete' : 'incomplete'}`)
             .card-blok-inner
               .justify-between
                 a(href=`${topic.id}/${getSlug(topic.topicName)}`)
-                  h1= topic.topicName
-                .badge-checkmark
-                  span
-                    if topic.checkmarkBadges > 0
-                      img(src='assets/img/ic-checked@3x.png' alt='')
-                    else
-                      img(src='assets/img/ic-checked-dist@3x.png' alt='')
-                  ul
-                    li
-                      if topic.starBadges > 0
-                        img(src='assets/img/star@3x.png' alt='')
-                        | + #{topic.starBadges - 1}
-                      else
-                        img(src='assets/img/star-dist@3x.png' alt='')
-                    li
-                      if topic.checkmarkBadges > 0
-                        img(src='assets/img/timer@3x.png' alt='')
-                        | + #{topic.checkmarkBadges - 1}
-                      else
-                        img(src='assets/img/timer-dist@3x.png' alt='')
-              p.value-topik #{topic.subtopicCount} Sub-Topik
+                  h1= subtopic.subtopicName
+              p.value-topik #{subtopic.exerciseCount} Latihan
               .progress-bintang
                 span.rating
-                  - let starsCount = parseInt(topic.subtopicsStarBadges)
                   - let emptyStarsCount = 4 - starsCount
                   while starsCount-- > 0
                     img(src='/assets/img/star@3x.png' alt='bintang')
                   while emptyStarsCount-- > 0
                     img(src='/assets/img/star-dist@3x.png' alt='bintang')
                 span.timing
-                  - let timersCount = parseInt(topic.subtopicsTimeBadges)
+
                   - let emptyTimersCount = 4 - timersCount
                   while timersCount-- > 0
                     img(src='/assets/img/timer@3x.png' alt='bintang')
                   while emptyTimersCount-- >0
                     img(src='/assets/img/timer-dist@3x.png' alt='bintang')
-            a.card-block-footer(href=`/${topic.id}/${getSlug(topic.topicName)}/review`)
-              | Ulangi Review
-              i.fa.fa-undo
     //.row
       .col-md-6.col-lg-6
         .card-blok
