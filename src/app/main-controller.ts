@@ -15,7 +15,7 @@ let marked = require('marked')
 
 let AppConfig = require(path.join(__dirname, '../app-config'))
 let BaseController = require(path.join(__dirname, 'controllers/base-controller'))
-let CourseController = require(path.join(__dirname, 'controllers/course-controller'))
+import TopicController from './controllers/topic-controller'
 let CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
 let ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
 let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
@@ -50,7 +50,7 @@ class Controller extends BaseController {
     this.credentialController = new CredentialController(initData)
     this.exerciseController = new ExerciseController(initData)
     this.competencyExerciseController = new CompetencyExerciseController(initData)
-    this.courseController = new CourseController(initData)
+    this.topicController = new TopicController(initData)
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
     this.studentDashboardController = new StudentDashboardController(initData)
@@ -60,7 +60,7 @@ class Controller extends BaseController {
         this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
         this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
         this.routeUse(this.credentialController.getRouter())
-        this.routeUse(this.courseController.getRouter())
+        this.routeUse(this.topicController.getRouter())
         this.routeUse(this.exerciseController.getRouter())
         this.routeUse(this.subtopicController.getRouter())
         this.routeUse(this.syncController.getRouter())
@@ -81,7 +81,7 @@ class Controller extends BaseController {
   initialize () {
     return Promise.join(
       this.credentialController.initialize(),
-      this.courseController.initialize(),
+      this.topicController.initialize(),
       this.subtopicController.initialize(),
       this.exerciseController.initialize(),
       this.competencyExerciseController.initialize(),

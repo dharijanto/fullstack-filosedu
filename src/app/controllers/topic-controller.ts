@@ -33,7 +33,7 @@ class CourseController extends BaseController {
 
     this.addInterceptor(PassportHelper.ensureLoggedIn())
 
-    // Landing page
+    // Landing page: show all topics
     this.routeGet('/', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       CourseService.getTopicDetails(req.user && req.user.id).then(resp => {
         if (resp.status && resp.data) {
@@ -46,6 +46,7 @@ class CourseController extends BaseController {
       })
     })
 
+    // Show subtopics inside of a topic
     this.routeGet('/:topicId/:topicSlug', (req, res, next) => {
       const topicId = req.params.topicId
       Promise.join(
@@ -61,9 +62,6 @@ class CourseController extends BaseController {
           next(new Error('Failed to getSubtopicDetails(): ' + resp2.errMessage))
         }
       })
-    })
-
-    this.routeGet('/:topicId/:topicSlug', (req, res, next) => {
     })
 
     // TopicExercise leaderboard
@@ -147,7 +145,7 @@ class CourseController extends BaseController {
 
                     if (resp11.status && resp11.data && resp12.status &&
                         resp12.data && resp13.status && resp13.data &&
-                        resp14.status && resp14.data && resp15.status&& resp15.data) {
+                        resp14.status && resp14.data && resp15.status && resp15.data) {
                       res.json({
                         status: true,
                         data: {
@@ -166,17 +164,11 @@ class CourseController extends BaseController {
                     }
                   })
                 } else {
-                  return res.json({
-                    status: false,
-                    errMessage: resp3.errMessage
-                  })
+                  return res.json({ status: false, errMessage: resp3.errMessage })
                 }
               })
             } else {
-              return res.json({
-                status: false,
-                errMessage: resp2.errMessage
-              })
+              return res.json({ status: false, errMessage: resp2.errMessage })
             }
           })
         } else {
@@ -198,4 +190,4 @@ class CourseController extends BaseController {
   }
 }
 
-module.exports = CourseController
+export default CourseController
