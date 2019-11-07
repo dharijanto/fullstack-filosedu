@@ -1,6 +1,7 @@
 // This overrides some of the variables defined with 'default' keyword
 // by bootstrap, hence needs to be ordered first
 @import 'variables';
+@import 'fonts';
 
 @import "bootstrap/bootstrap";
 @import 'components/buttons';
