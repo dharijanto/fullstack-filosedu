@@ -26,7 +26,7 @@ block pageContent
           .card-blok.subtopic(class=`${subtopic.complete ? 'complete' : 'incomplete'}`)
             .card-blok-inner
               .justify-between
-                a(href=`${topic.id}/${getSlug(topic.topicName)}`)
+                a(href=`/${topic.id}/${getSlug(topic.topic)}/${subtopic.id}/${getSlug(subtopic.subtopicName)}`)
                   h1= subtopic.subtopicName
               p.description #{subtopic.exerciseCount} Latihan
               .badges

@@ -46,6 +46,7 @@ class VideoService extends CRUDService {
     })
   }
 
+  // TODO: We can use subtopicVideosView, hence we no longer need to do orderBy and limit
   getVideo (subtopicId) {
     return this._models['Videos'].findOne({where: {subtopicId}, order: [['createdAt', 'DESC']]}).then(data => {
       if (data) {

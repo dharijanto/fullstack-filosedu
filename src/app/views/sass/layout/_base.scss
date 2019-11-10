@@ -3,11 +3,11 @@
 @import 'variables';
 @import 'fonts';
 
-@import "bootstrap/bootstrap";
-@import 'components/buttons';
+@import "../bootstrap/bootstrap";
+@import '../components/buttons';
 
-@import 'layout/main';
-@import 'layout/sidebar';
+@import 'main';
+@import 'sidebar';
 
 body {
   background: linear-gradient(to top, $bg-color-first 10%, $bg-color-second 50%, $bg-color-first 100%);
