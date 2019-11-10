@@ -65,7 +65,13 @@ class VideoService extends CRUDService {
   }
 
   getAllVideos () {
-    return this.read({modelName: 'Videos', searchClause: {}})
+    // return this.read({modelName: 'Videos', searchClause: {}})
+    return this.getSequelize().query(
+      'SELECT * FROM subtopicVideosView',
+      { type: this.getSequelize().QueryTypes.SELECT }
+    ).then(data => {
+      return { status: true, data }
+    })
   }
 
   static getUploadMiddleware () {

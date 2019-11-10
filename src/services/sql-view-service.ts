@@ -12,15 +12,17 @@ const TAG = 'SQLViewService'
   We have LocalShopService, this is specifically for shop-specific code.
 */
 class SQLViewService extends CRUDService {
+  private views: string[] = []
+
   // Gives user-personalized information regarding a subtopic, which
   // includes stars, badges, etc.
-  createSubtopicsView () {
+  subtopicsView () {
     return super.getSequelize().query(`
       CREATE VIEW subtopicsView AS
       (SELECT
+          subtopics.id AS id,
           users.id AS userId,
           subtopics.topicId AS topicId,
-          subtopics.id AS subtopicId,
           subtopics.subtopic AS subtopicName,
           subtopics.subtopicNo AS subtopicNo,
           # Need to cap to 4, so that when displayed on topic page, all subtopics have the same weight
@@ -70,7 +72,7 @@ class SQLViewService extends CRUDService {
     `)
   }
 
-  createTopicsView () {
+  topicsView () {
     return super.getSequelize().query(`
       CREATE VIEW topicsView AS
       (SELECT users.id AS userId, topics.id AS id,
@@ -112,13 +114,33 @@ class SQLViewService extends CRUDService {
     `)
   }
 
+  subtopicVideosView () {
+    return super.getSequelize().query(`
+      CREATE VIEW subtopicVideosView AS
+      (SELECT
+          videos.id AS id, videos.filename AS filename,
+          videos.sourceLink AS sourceLink, videos.createdAt AS createdAt,
+          videos.updatedAt AS updatedAt, videos.subtopicId AS subtopicId
+        FROM videos
+        INNER JOIN (SELECT MAX(id) AS id FROM videos GROUP BY subtopicId) AS latestVideos ON latestVideos.id = videos.id
+        INNER JOIN subtopics ON subtopics.id = videos.subtopicId
+        GROUP BY videos.subtopicId
+      )
+    `)
+  }
+
+  constructor () {
+    super()
+    this.views = ['subtopicsView', 'topicsView', 'subtopicVideosView']
+  }
+
   // TODO: Order of deletion shouldn't need to be hard-coded like this.
   //       they should be inferred from populateViews
   destroyViews () {
     log.info(TAG, 'destroyViews()')
-    const views = ['subtopicsView', 'topicsView']
-
-    return views.reduce((acc, view) => {
+    // Since a view might depend on the other view, we have to destroy in the reversed order
+    // to honor dependencies
+    return this.views.reverse().reduce((acc, view) => {
       return acc.then(() => {
         return
       }).catch(err => {
@@ -135,16 +157,18 @@ class SQLViewService extends CRUDService {
 
   populateViews () {
     // The views are populated sequentially in the following order
-    const promises: Array<() => Promise<any>> = [
-      this.createSubtopicsView,
-      this.createTopicsView
-    ]
-    return this.destroyViews().then(result => {
+    const promises: Array<() => Promise<any>> = this.views.map(view => {
+      return this[view]
+    })
+
+    return this.destroyViews().then(() => {
       return promises.reduce((acc, promise) => {
         return acc.then(() => {
           return promise()
         })
       }, Promise.resolve())
+    }).catch(err => {
+      return { status: false, errMessage: err.message }
     })
   }
 }
