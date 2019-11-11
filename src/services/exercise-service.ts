@@ -119,19 +119,23 @@ class ExerciseService extends CRUDService {
   formatExercise (exercise: Exercise, generatedExercise: GeneratedExercise): Promise<NCResponse<FormattedSubtopicExercise>> {
     const solver = ExerciseGenerator.getExerciseSolver(exercise.data)
     const knowns = JSON.parse(generatedExercise.knowns)
-    const unknowns = JSON.parse(generatedExercise.unknowns)
+    const unknowns = JSON.parse(generatedExercise.unknowns).map(unknown => {
+      return Object.keys(unknown)
+    })
 
-    const renderedQuestions = knowns.map(known => solver.formatQuestion(known))
-    const unknownKeys = unknowns.map(unknown => Object.keys(unknown))
-    return Promise.resolve({
-      status: true,
-      data: {
-        exerciseId: exercise.id,
-        idealTime: generatedExercise.idealTime,
-        elapsedTime: Utils.getElapsedTime(generatedExercise.createdAt),
-        formattedExercise: {
-          renderedQuestions,
-          unknowns: unknownKeys
+    return Promise.map(knowns, known => {
+      return solver.formatQuestion(known)
+    }).then((renderedQuestions: string[]) => {
+      return {
+        status: true,
+        data: {
+          exerciseId: exercise.id,
+          idealTime: generatedExercise.idealTime,
+          elapsedTime: Utils.getElapsedTime(generatedExercise.createdAt),
+          formattedExercise: {
+            renderedQuestions,
+            unknowns
+          }
         }
       }
     })

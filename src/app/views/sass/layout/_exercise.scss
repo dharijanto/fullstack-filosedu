@@ -1,15 +1,10 @@
+// Need more space to fit the timer onto the minibar
 .row-minibar {
   height: 75px;
 }
 
 a {
   color: black;
-}
-
-.container {
-  .row {
-    margin-bottom: 10px;
-  }
 }
 
 #close-container {
@@ -115,4 +110,10 @@ a {
   width: 100%;
   text-align: center;
   margin: 20px auto auto 0;
+}
+
+// ImageHelper, which is uses by user-submitted exercise code relies on
+// this to center the image.
+table.image-repeat {
+  margin: auto;
 }

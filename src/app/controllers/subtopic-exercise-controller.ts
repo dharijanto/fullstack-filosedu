@@ -86,7 +86,8 @@ class SubtopicExerciseController extends BaseController {
           res.locals.subtopic = resp6.data
 
           res.locals.bundle = this.exerciseFrontendJS
-          res.render('exercise')
+          res.render('subtopic-exercise')
+          // res.render('exercise')
         } else {
           next(new Error(resp1.errMessage || resp4.errMessage || resp5.errMessage || resp6.errMessage))
         }
