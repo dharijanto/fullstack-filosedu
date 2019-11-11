@@ -20,7 +20,7 @@ let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
 
 const TAG = 'ExerciseController'
 
-class ExerciseController extends BaseController {
+class SubtopicExerciseController extends BaseController {
   private exerciseFrontendJS: string
   private competencyExerciseLogiscticJS: string
   private competencyExerciseJS: string
@@ -200,4 +200,4 @@ class ExerciseController extends BaseController {
   }
 }
 
-module.exports = ExerciseController
+export default SubtopicExerciseController

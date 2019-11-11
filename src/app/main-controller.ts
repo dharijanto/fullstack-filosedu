@@ -17,7 +17,7 @@ let AppConfig = require(path.join(__dirname, '../app-config'))
 let BaseController = require(path.join(__dirname, 'controllers/base-controller'))
 import TopicController from './controllers/topic-controller'
 let CredentialController = require(path.join(__dirname, 'controllers/credential-controller'))
-let ExerciseController = require(path.join(__dirname, 'controllers/exercise-controller'))
+import SubtopicExerciseController from './controllers/subtopic-exercise-controller'
 let SubtopicController = require(path.join(__dirname, 'controllers/subtopic-controller'))
 let PassportHelper = require(path.join(__dirname, 'utils/passport-helper'))
 
@@ -48,7 +48,7 @@ class Controller extends BaseController {
     SequelizeService.initialize(this.getDb().sequelize, this.getDb().models)
 
     this.credentialController = new CredentialController(initData)
-    this.exerciseController = new ExerciseController(initData)
+    this.exerciseController = new SubtopicExerciseController(initData)
     this.competencyExerciseController = new CompetencyExerciseController(initData)
     this.topicController = new TopicController(initData)
     this.subtopicController = new SubtopicController(initData)
