@@ -2,6 +2,8 @@
 /* Bootstrap Overides */
 /* Navbar */
 /* Custom */
+/* First two for body, first and third for subbar */
+/* Subbar */
 /* amatic-sc-regular - latin */
 @font-face {
   font-family: 'Amatic SC';
@@ -5971,7 +5973,7 @@ html {
 /*-------------------------------*/
 .hamburger {
   position: fixed;
-  top: 20px;
+  top: 10px;
   z-index: 999;
   display: block;
   width: 32px;
@@ -5983,7 +5985,6 @@ html {
 @media (max-width: 992px) {
   .hamburger {
     position: fixed;
-    top: 10px;
     right: 10px;
     z-index: 999;
     display: block;
@@ -6205,6 +6206,15 @@ body {
     justify-content: space-between;
     align-items: center;
     color: #fff; }
+    .subbar .row-minibar a.link-back {
+      position: absolute;
+      top: 94px;
+      left: 0;
+      color: #fff;
+      text-decoration: none; }
+      .subbar .row-minibar a.link-back #minibar-left-menu {
+        padding-left: 25px;
+        width: 35px; }
     .subbar .row-minibar #minibar-mid-menu h1 {
       margin: 0;
       font-size: 14px;
@@ -6215,22 +6225,17 @@ body {
       opacity: 0.6;
       text-transform: capitalize;
       display: block; }
-    .subbar .row-minibar a.link-back {
-      color: #fff;
-      text-decoration: none;
-      position: absolute;
-      left: 25px; }
     .subbar .row-minibar .bread {
       margin: 0 10px; }
 
 .container {
-  margin-top: 100px; }
+  margin-top: 145px; }
 
 @media (max-width: 992px) {
   .desktop-only {
     display: none !important; }
   .container {
-    margin-top: 50px; }
+    margin-top: 70px; }
   .subbar {
     padding-left: 0px; }
     .subbar .row-bar {
@@ -6239,6 +6244,8 @@ body {
         display: none; }
     .subbar .row-minibar {
       justify-content: center !important; }
+      .subbar .row-minibar a.link-back {
+        top: 19px !important; }
   .card-blok {
     margin: 20px 15px !important; } }
 
@@ -6281,8 +6288,7 @@ body {
     .card-blok .card-blok-inner .badges {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin: 10px 0; }
+      align-items: center; }
       .card-blok .card-blok-inner .badges .rating, .card-blok .card-blok-inner .badges .timing {
         padding: 5px 0; }
       .card-blok .card-blok-inner .badges .rating img {
