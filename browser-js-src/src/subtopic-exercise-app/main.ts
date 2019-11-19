@@ -1,19 +1,74 @@
-var $ = require('jquery')
+let axios = require('../libs/axios-wrapper')
+let log = require('../libs/logger')
+const Formatter = require('../libs/formatter')
 
-var axios = require('../libs/axios-wrapper')
-var log = require('../libs/logger')
+import * as $ from 'jquery'
+import 'jquery-serializeobject'
+import * as Promise from 'bluebird'
 
-var Promise = require('bluebird')
+import '../libs/numeric-keyboard'
 
 const ONE_SECOND_IN_MILLIS = 1000 // millisecond
 const TAG = 'Exercise-App'
 // Keep track of elapsed time between questions and sets
-var questionTime = 0
-var setTime = 0
-setInterval(function () {
-  questionTime += 1
-  setTime += 1
-}, ONE_SECOND_IN_MILLIS)
+let questionTime = 0
+let setTime = 0
+let stopwatch
+
+$(document).ready(function () {
+  // Prevent 'enter' button from submitting current form
+  $(window).keydown(function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault()
+      return false
+    }
+  })
+
+  // Populate on-screen numeric keyboard for each input
+  const vkeyboards = $('.virtual-keyboard')
+  vkeyboards.each((index, vkeyboard) => {
+    const targetInput = $(vkeyboard).siblings('.answer-input').first()
+    // Clear out the input
+    $(targetInput).val('')
+    $(vkeyboard)['NumericKeyboard']({ targetInput })
+  })
+
+  // UI-side timer to show ticks
+  stopwatch = setInterval(() => {
+    window['elapsedTime'] += 1
+    questionTime += 1
+    setTime += 1
+    // Latest UI doesn't have timer progress bar
+    // updateProgressBar()
+    $('#elapsed-time').html(Formatter.secsToTimerFormat(window['elapsedTime']))
+  }, 1000)
+  $('.exercise-timer').find('#target-time').text(Formatter.secsToTimerFormat(window['idealTime']))
+
+  $('.answer-input').on('focus', onNextQuestion)
+  $('#back-to-video').on('click', function (e) {
+    const exerciseId = $(this).data('exercise-id')
+    const href = $(this).data('href')
+    addBackToVideo(exerciseId, () => {
+      window.location.href = href
+    })
+  })
+
+  $('#leaderboard-button').on('click', function (e) {
+    $('#leaderboard-content').empty()
+    const url = new URL('leaderboard', window.location.href)
+    axios.get(url.href).then(rawResp => {
+      const resp = rawResp.data
+      $('#leaderboard-content').append(resp.data)
+    }).catch(err => {
+      alert(err)
+      console.error(err)
+    })
+  })
+
+  $('#btn-submit-answer').on('click', function (e) {
+    postAnswer()
+  })
+})
 
 function onNextQuestion () {
   const exerciseId = $('#exerciseId').val()
@@ -32,38 +87,12 @@ function onSetCompleted () {
   addSetTime(exerciseId, setTime)
 }
 
-$('.answerInput').on('focus', onNextQuestion)
-
-$('.backToVideoBtn').on('click', function (e) {
-  const exerciseId = $(this).data('exercise-id')
-  const href = $(this).data('href')
-  addBackToVideo(exerciseId, () => {
-    window.location.href = href
-  })
-})
-
-$('#leaderboard-button').on('click', function (e) {
-  $('#leaderboard-content').empty()
-  axios.post('/exercise/getLeaderboard', {
-    exerciseId: $('input[name=exerciseId]').val()
-  }).then(rawResp => {
-    const resp = rawResp.data
-    $('#leaderboard-content').append(resp.data)
-  }).catch(err => {
-    alert(err)
-    console.error(err)
-  })
-})
-
-$('.btn_submit_answer').on('click', function (e) {
-  postAnswer()
-})
-
+const analyticsURL = new URL('analytics', window.location.href).href
 // ---Analyitics  Section ---
 function addBackToVideo (exerciseId, callback) {
   $.ajax({
     method: 'POST',
-    url: '/exercise/analytics',
+    url: analyticsURL,
     data: {
       exerciseId,
       value: 1,
@@ -83,7 +112,7 @@ function addBackToVideo (exerciseId, callback) {
 function addQuestionTime (exerciseId, questionTime) {
   $.ajax({
     method: 'POST',
-    url: '/exercise/analytics',
+    url: analyticsURL,
     data: {
       exerciseId,
       value: questionTime, // in seconds
@@ -101,7 +130,7 @@ function addQuestionTime (exerciseId, questionTime) {
 function addSetTime (exerciseId, setTime) {
   $.ajax({
     method: 'POST',
-    url: '/exercise/analytics',
+    url: analyticsURL,
     data: {
       exerciseId,
       value: setTime, // in seconds
@@ -118,14 +147,17 @@ function addSetTime (exerciseId, setTime) {
 
 function postAnswer () {
   return new Promise((resolve, reject) => {
-    $('.btn_submit_answer').attr('disabled', true)
+    $('#btn-submit-answer').attr('disabled', 'true')
     onNextQuestion()
     onSetCompleted()
-    var answers = []
+    let answers = []
 
-    $('#questionSubmit').children().each((index, value) => {
-      answers.push($(value).serializeObject())
-    })
+    const forms = $('form[name="question"]')
+    for (let i = 0; i < forms.length; i++) {
+      const form = $(forms[i])
+      // [{name: "X", value: "1"}, {name: "y", value: "2"}]
+      answers.push(form['serializeObject']())
+    }
 
     axios.post(window.location.href, {
       answers,
@@ -133,7 +165,7 @@ function postAnswer () {
       exerciseId: $('input[name=exerciseId]').val()
     }).then(rawResp => {
       const resp = rawResp.data
-      $('.btn_submit_answer').removeAttr('disabled')
+      $('.btn-submit-answer').removeAttr('disabled')
       if (resp.status) {
         $('input').prop('disabled', true)
         $('input').prop('read-only', true)
@@ -158,59 +190,58 @@ function postAnswer () {
         $('.rankingScore').html(ranking)
 
         if (isPerfectScore) {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam 
+          $('.rankingScore').append(`<p>Soal diselesaikan dalam
             <b>${timeFinish} detik</b>. Waktu ini ada di
             urutan ${currentRanking} dari ${totalRanking}</p>`)
         } else {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam 
+          $('.rankingScore').append(`<p>Soal diselesaikan dalam
             <b>${timeFinish} detik</b>.
             Hanya nilai 100 yang masuk penilaian ranking. </p>`)
         }
 
         // TODO: This message and conditional checking should be from backend
-        if (parseInt(score) < 80) {
+        if (parseInt(score, 10) < 80) {
           $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
         }
 
         correctAnswers.forEach((realAnswer, index) => {
-          var correctUnknowns = []
-          for (var unknown in realAnswer) {
+          let correctUnknowns = []
+          for (let unknown in realAnswer) {
             correctUnknowns.push(`${unknown} = ${realAnswer[unknown]}`)
           }
           $('.resultAnswer_' + index).empty()
-          var answer = null
+          let answer = null
           if (isCorrectArr[index] === true) {
             answer = $('<p style="color:green">Benar</p>')
           } else {
-            answer = $(`<p style="color:red;">Salah. 
+            answer = $(`<p style="color:red;">Salah.
               Jawaban yang benar: ${correctUnknowns.join(', ')} </p>`)
           }
           $('.resultAnswer_' + index).append(answer)
         })
-
-        $('.btn_submit_answer').addClass('hidden')
-        $('.btn_retry_question').removeClass('hidden')
-        resolve({status: true})
+        resolve({ status: true })
       } else {
         $('#submissionError').removeClass('hidden')
         $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
         console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
-        resolve({status: false})
+        resolve({ status: false })
       }
     }).catch(err => {
-      $('.btn_submit_answer').removeAttr('disabled')
+      $('.btn-submit-answer').removeAttr('disabled')
       $('#submissionError').removeClass('hidden')
       $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala: ` + err.message)
       console.error(err)
       reject(err)
     }).finally(() => {
-      clearInterval(stopWatch)
+      clearInterval(stopwatch)
+      $('#btn-retry').removeClass('hidden')
+      $('#btn-submit-answer').addClass('hidden')
     })
   })
 }
 
-$('#resetQuestion').on('click', function (e) {
-  postAnswer().then(resp => {
+$('#btn-reset').on('click', function (e) {
+  postAnswer().then((resp: any) => {
     if (resp.status) {
       window.location.reload()
     } else {
@@ -219,14 +250,14 @@ $('#resetQuestion').on('click', function (e) {
   })
 })
 
+$('#btn-retry').on('click', function (e) {
+  location.reload()
+})
+
 // ---------------- EXERCISE TIMER CODE -----------------
 // TODO: Refactor this so that exercise and topic-exercise share the same code
 // How long since the exercise was generated
-const stopWatch = setInterval(() => {
-  window['elapsedTime'] += 1
-  updateProgressBar()
-}, 1000)
-
+/*
 function updateProgressBar () {
   // Get current value of progress bar
   if (window['idealTime']) {
@@ -234,10 +265,10 @@ function updateProgressBar () {
     const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
     $('.progress-bar').css('width', currentPercent + '%')
   }
-  $('#elapsedTime').html(`Elapsed: <strong> ${parseInt(elapsedTime)} detik</strong>`)
-}
+  $('#elapsed-time').html(`Elapsed: <strong> ${parseInt(window['elapsedTime'], 10)} detik</strong>`)
+} */
 
 // when page first load, first call only
-updateProgressBar()
+// updateProgressBar()
 // ------------------------------------------------------
 // ------------------------------------------------------

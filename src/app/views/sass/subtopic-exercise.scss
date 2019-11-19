@@ -1,3 +1,12 @@
+// Change background and subbar's colors
+$bg-color-first: #845ec2;
+$bg-color-second: #7C3FE1;
+$bg-color-third: #855DC4;
+
+// We need more space for timer
+$row-minibar-height: 80px;
+$row-bar-height: 100px;
+
 @import 'layout/base';
 @import 'layout/subbar';
 @import 'layout/exercise';

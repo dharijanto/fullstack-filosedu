@@ -1,10 +1,9 @@
-// Need more space to fit the timer onto the minibar
-.row-minibar {
-  height: 75px;
-}
-
 a {
   color: black;
+}
+
+.exercise-container {
+  margin-top: 20px;
 }
 
 #close-container {
@@ -32,11 +31,7 @@ a {
   width: 50%;
 }
 
-#exercise {
-  margin-top: 50px;
-}
-
-#questionSubmit {
+#questions-container {
   form {
     max-width: 600px;
     margin-right: auto;

@@ -27,7 +27,7 @@ class SubtopicExerciseController extends BaseController {
 
   initialize () {
     return Promise.join(
-      PathFormatter.hashAsset('app', '/assets/js/exercise-app-bundle.js'),
+      PathFormatter.hashAsset('app', '/assets/js/subtopic-exercise-app-bundle.js'),
       PathFormatter.hashAsset('app', '/assets/js/competency-exercise-logistic-app-bundle.js'),
       PathFormatter.hashAsset('app', '/assets/js/competency-exercise-app-bundle.js')
     ).spread((result: string, result2: string, result3: string) => {
@@ -45,7 +45,8 @@ class SubtopicExerciseController extends BaseController {
     })
 
     // Continue/start an exercise
-    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/',
+    PassportHelper.ensureLoggedIn(), (req, res, next) => {
       const userId = req.user.id
       const exerciseId = req.params.exerciseId
       const subtopicId = req.params.subtopicId
@@ -94,14 +95,12 @@ class SubtopicExerciseController extends BaseController {
       }).catch(next)
     })
 
-    this.routeGet('/getExerciseStars', PassportHelper.ensureLoggedIn(), (req, res, next) => {
-      const exerciseId = parseInt(req.query.exerciseId, 10)
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/star-badges',
+    PassportHelper.ensureLoggedIn(), (req, res, next) => {
+      const exerciseId = req.params.exerciseId
       if (exerciseId === undefined) {
         res.json({ status: false, errMessage: `exerciseId is needed` })
-      } else if (!req.isAuthenticated) {
-        res.json({ status: false, errMessage: `Unauthorized` })
       } else {
-        // subtopic stars
         ExerciseService.getExerciseStars(req.user.id, exerciseId).then(resp => {
           res.json(resp)
         }).catch(err => {
@@ -110,12 +109,11 @@ class SubtopicExerciseController extends BaseController {
       }
     })
 
-    this.routePost('/exercise/getLeaderboard', (req, res, next) => {
-      const exerciseId = parseInt(req.body.exerciseId, 10)
+    this.routeGet('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/leaderboard',
+    (req, res, next) => {
+      const exerciseId = req.params.exerciseId
       if (exerciseId === undefined) {
-        res.json({ status: false, errMessage: `exerciseId is needed` })
-      } else if (!req.isAuthenticated) {
-        res.json({ status: false, errMessage: `Unauthorized` })
+        res.json({ status: false, errMessage: `exerciseId is required!` })
       } else {
         ExerciseService.getExerciseLeaderboard(exerciseId).then(resp => {
           res.json(resp)
@@ -127,11 +125,11 @@ class SubtopicExerciseController extends BaseController {
 
     // Exercise submission
     this.routePost(
-      '/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/:exerciseSlug',
+      '/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/',
       PassportHelper.ensureLoggedIn(),
       (req, res, next) => {
         const userId = req.user.id
-        const exerciseId = req.body.exerciseId
+        const exerciseId = req.params.exerciseId
         const answers: ExerciseAnswer = req.body.answers
         console.dir(req.body)
         ExerciseService.finishExercise(exerciseId, userId, answers).then(resp => {
@@ -159,7 +157,7 @@ class SubtopicExerciseController extends BaseController {
 
             // TODO: This should be done on the service, so that we can share type definitions with
             //       frontend
-            Promise.join(
+            return Promise.join(
               ExerciseService.getRenderedExerciseStars(userId, exerciseId),
               ExerciseService.getExerciseLeaderboard(exerciseId),
               ExerciseService.getCurrentRanking(grade.timeFinish, exerciseId),
@@ -182,14 +180,21 @@ class SubtopicExerciseController extends BaseController {
                 }
               })
             })
+          } else {
+            throw new Error(resp.errMessage)
           }
+        }).catch(err => {
+          res.json({
+            status: false,
+            errMessage: err.message
+          })
         })
       })
 
-    this.routePost('/exercise/analytics', (req, res, next) => {
+    this.routePost('/:topicId/:topicSlug/:subtopicId/:subtopicSlug/:exerciseId/analytics', (req, res, next) => {
       // Event type
       const key = req.body.key
-      const exerciseId = req.body.exerciseId
+      const exerciseId = req.params.exerciseId
       const userId = (req.user && req.user.id) || -1
       const value = req.body.value
       analyticsService.addExerciseData(key, value, exerciseId, userId).then(resp => {

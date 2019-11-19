@@ -3,46 +3,36 @@ extends layout/base-with-subbar.pug
 append head
   link(rel="stylesheet" href="/assets/css/subtopic-exercise.css")
 
-  style.
-    body {
-      background-image: linear-gradient(to top, #008f7a 0%, #0089ba 20%, #008f7a 100%);
-    }
-
 block minibarLeftMenu
-  a.link-back(href='/' data-toggle='modal')
-    i.fa.fa-times
+  a.link-back(href=`..` data-toggle='modal')
+    div#minibar-left-menu
+      i.fa.fa-times
 
 block minibarMidMenu
   //h1 Review #{topicName}
   h1
     span.desktop-only
-      | #{"Matematika "}
+      | Matematika
       i.bread.fa.fa-chevron-right
-      |  #{"Penjumlahan "}
+      |  #{subtopic.topic.topic}
       i.bread.fa.fa-chevron-right
-    span  Review Penjumlahan
+    span=  subtopic.subtopic
     span.mobile-only#sub-heading
-      // Target Waktu: 30 Menit
       .exercise-timer
         img(src='/assets/img/chronometer@3x.png' alt='')
-        span#elapsedTime
+        span#elapsed-time 0:00
         span #{" / "}
-        span#targetTime
+        span#target-time 0:00
         span #{"  "}
         span
           button#btn-reset Ulang
 
 block pageContent
   .container.text-center
-    #header
-      #timer
-        if idealTime > 0
-          //span#targetTime(style="{color: black !important}") Goal: #[strong #{idealTime} detik]
-          img(src="/assets/img/chronometer.png" srcset="/assets/img/chronometer@2x.png 2x, /assets/img/chronometer@3x.png 3x" class="chronometer")
-          span#elapsedTime.black-text
-    #exercise
-      div.text-center#questionSubmit
-        - let exerciseIndex = 0
+    .title
+      button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
+    .exercise-container
+      div.text-center#questions-container
         // each formattedExercise in formattedExercises
         each question, index in formattedExercise.renderedQuestions
             //- if ((formattedExercise.renderedQuestions).length > 0)
@@ -56,8 +46,8 @@ block pageContent
                 for unknown in formattedExercise.unknowns[index]
                   .user-answer
                     span.variable #{unknown} =
-                    input.answerInput(name=`${unknown}` placeholder='{ketik disini}')
-                    div(class=`resultAnswer_${exerciseIndex}`)
+                    input.answer-input(name=`${unknown}` placeholder='{ketik disini}')
+                    div(class=`resultAnswer_${index}`)
                     .virtual-keyboard
                     // include includes/numpad
       div.text-center(style="margin-bottom:5%;")

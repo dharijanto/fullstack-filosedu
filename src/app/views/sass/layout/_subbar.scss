@@ -39,7 +39,7 @@
   background: linear-gradient(to top, $bg-color-third, $bg-color-first);
   top: 0;
   .row-bar {
-    height: 75px;
+    height: $row-bar-height;
     padding: 0 25px;
     display: flex;
     justify-content: space-between;
@@ -56,11 +56,24 @@
   }
   .row-minibar {
     padding: 0 25px;
-    height: 50px;
+    height: $row-minibar-height;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: #fff;
+
+    a.link-back {
+      position: absolute;
+      top: $row-minibar-height / 2 - 6 + $row-bar-height;
+      left: 0;
+      color: #fff;
+      text-decoration: none;
+      // padding: 20px;
+      #minibar-left-menu {
+        padding-left: 25px;
+        width: 35px;
+      }
+    }
   
     #minibar-mid-menu {
       h1 {
@@ -78,29 +91,24 @@
       }
     }
   
-    a.link-back {
-      color: #fff;
-      text-decoration: none;
-      position: absolute;
-      left: 25px;
-    }
     .bread {
       margin: 0 10px;
-  }
+    }
   }
 }
 
-
+// Since subbar occupies to top-most part of the screen, we need to offset the content
 .container { 
-  margin-top: 100px;
+  margin-top: $row-bar-height + $row-minibar-height + $row-bar-margin-bottom;
 }
 
 @media (max-width: 992px) {
   .desktop-only {
     display: none !important;
   }
+  // On this scale, only the minibar is shown, hence the offset changes
   .container {
-    margin-top: 50px;
+    margin-top: $row-minibar-height + $row-bar-margin-bottom;
   }
   .subbar {
     padding-left: 0px;
@@ -112,6 +120,9 @@
     }
     .row-minibar {
         justify-content: center !important;
+        a.link-back {
+          top: $row-minibar-height / 2 - 6 !important;
+        }
     }
   }
   .card-blok {

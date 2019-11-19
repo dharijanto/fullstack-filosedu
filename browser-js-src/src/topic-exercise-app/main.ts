@@ -22,6 +22,8 @@ setInterval(function () {
   setTime += 1
 }, ONE_SECOND_IN_MILLIS) */
 
+let stopwatch
+
 $(document).ready(function () {
   // Prevent 'enter' button from submitting current form
   $(window).keydown(function (event) {
@@ -40,6 +42,7 @@ $(document).ready(function () {
     $(vkeyboard)['NumericKeyboard']({ targetInput })
   })
 
+  // TODO: implement this on the UI
   $('#leaderboard-button').on('click', function (e) {
     $('#leaderboard-content').empty()
     axios.get(`/topics/${topicId}/getLeaderboard`).then(rawResp => {
@@ -71,9 +74,8 @@ $(document).ready(function () {
   })
 
   // UI-side timer to show ticks
-  setInterval(() => {
+  stopwatch = setInterval(() => {
     window['elapsedTime'] += 1
-
     // Latest UI doesn't have timer progress bar
     // updateProgressBar()
     $('#elapsedTime').html(Formatter.secsToTimerFormat(window['elapsedTime']))
@@ -87,11 +89,11 @@ $(document).ready(function () {
 function submitAnswers () {
   return new Promise((resolve, reject) => {
     const userAnswers = []
-    const jqueryForms = $('form[name="question"]')
-    for (let i = 0; i < jqueryForms.length; i++) {
-      const jqueryForm = $(jqueryForms[i])
+    const forms = $('form[name="question"]')
+    for (let i = 0; i < forms.length; i++) {
+      const form = $(forms[i])
       // [{name: "X", value: "1"}, {name: "y", value: "2"}]
-      userAnswers.push(jqueryForm['serializeObject']())
+      userAnswers.push(form['serializeObject']())
     }
 
     axios.post(window.location.href, {
@@ -157,6 +159,8 @@ function submitAnswers () {
       $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
       console.error(err)
       reject(err)
+    }).finally(() => {
+      clearInterval(stopwatch)
     })
   })
 }

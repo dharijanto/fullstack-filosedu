@@ -5,38 +5,33 @@ append head
 
 block minibarLeftMenu
   a.link-back(href='/' data-toggle='modal')
-    i.fa.fa-times
+    div#minibar-left-menu
+      i.fa.fa-times
 
 block minibarMidMenu
   //h1 Review #{topicName}
   h1
     span.desktop-only
-      | #{"Matematika "}
+      | Matematika
       i.bread.fa.fa-chevron-right
-      |  #{"Penjumlahan "}
+      |  #{topicName}
       i.bread.fa.fa-chevron-right
-    span  Review Penjumlahan
+    span  Review #{topicName}
     span.mobile-only#sub-heading
       // Target Waktu: 30 Menit
       .exercise-timer
         img(src='/assets/img/chronometer@3x.png' alt='')
-        span#elapsedTime
+        span#elapsedTime 0:00
         span #{" / "}
-        span#targetTime
+        span#targetTime 0:00
         span #{"  "}
         span
           button#btn-reset Ulang
 
 block pageContent
   .container.text-center
-    #header
-      #timer
-        if idealTime > 0
-          //span#targetTime(style="{color: black !important}") Goal: #[strong #{idealTime} detik]
-          img(src="/assets/img/chronometer.png" srcset="/assets/img/chronometer@2x.png 2x, /assets/img/chronometer@3x.png 3x" class="chronometer")
-          span#elapsedTime.black-text
-    #exercise
-      div.text-center#questionSubmit
+    .exercise-container
+      div.text-center#questions-container
         - let exerciseIndex = 0
         - let numExercises = formattedExercises.reduce((acc, formattedExercise) => acc + formattedExercise.renderedQuestions.length, 0)
         each formattedExercise in formattedExercises
