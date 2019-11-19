@@ -5973,7 +5973,7 @@ html {
 /*-------------------------------*/
 .hamburger {
   position: fixed;
-  top: 25px;
+  top: 35px;
   z-index: 999;
   display: block;
   width: 32px;
@@ -5985,6 +5985,7 @@ html {
 @media (max-width: 992px) {
   .hamburger {
     position: fixed;
+    top: 25px;
     right: 10px;
     z-index: 999;
     display: block;
