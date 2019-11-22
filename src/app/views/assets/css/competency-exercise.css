@@ -5817,7 +5817,7 @@ button.close {
   border-style: none;
   height: 50px; }
 
-.rounded-button {
+.rounded-button, .smaller-rounded-button, .smallest-rounded-button {
   width: 264px;
   height: 68px;
   border-radius: 33.8px;
@@ -5830,6 +5830,14 @@ button.close {
   letter-spacing: 1.6px;
   text-align: center;
   background-color: white; }
+
+.smaller-rounded-button {
+  width: 150px;
+  border-radius: 16px; }
+
+.smallest-rounded-button {
+  width: 50px;
+  border-radius: 16px; }
 
 body {
   position: relative;
@@ -6329,7 +6337,8 @@ a {
     margin-right: 5px;
     display: inline-block; }
   .exercise-timer #btn-reset {
-    color: black; }
+    color: black;
+    padding: 5px; }
 
 .virtual-keyboard {
   width: 100%;
@@ -6337,6 +6346,26 @@ a {
   margin: 20px auto auto 0; }
 
 table.image-repeat {
+  margin: auto; }
+
+#current-score {
+  color: white; }
+
+#leaderboard-content {
+  overflow-x: auto; }
+
+#submission-leaderboard {
+  color: white;
+  overflow-x: scroll; }
+  #submission-leaderboard table {
+    color: white; }
+
+#remarks {
+  color: white; }
+
+#badges-container {
+  border-radius: 10px;
+  padding: 10px 0 10px 0;
   margin: auto; }
 
 #contact-information {

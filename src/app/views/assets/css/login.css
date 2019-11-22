@@ -5817,7 +5817,7 @@ button.close {
   border-style: none;
   height: 50px; }
 
-.rounded-button {
+.rounded-button, .smaller-rounded-button, .smallest-rounded-button {
   width: 264px;
   height: 68px;
   border-radius: 33.8px;
@@ -5830,6 +5830,14 @@ button.close {
   letter-spacing: 1.6px;
   text-align: center;
   background-color: white; }
+
+.smaller-rounded-button {
+  width: 150px;
+  border-radius: 16px; }
+
+.smallest-rounded-button {
+  width: 50px;
+  border-radius: 16px; }
 
 body {
   position: relative;
