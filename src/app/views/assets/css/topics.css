@@ -6209,12 +6209,14 @@ body {
     color: #fff; }
     .subbar .row-minibar a.link-back {
       position: absolute;
-      top: 94px;
       left: 0;
+      padding-top: 47px;
+      padding-bottom: 47px;
+      padding-left: 25px;
+      padding-right: 25px;
       color: #fff;
       text-decoration: none; }
       .subbar .row-minibar a.link-back #minibar-left-menu {
-        padding-left: 25px;
         width: 35px; }
     .subbar .row-minibar #minibar-mid-menu h1 {
       margin: 0;
@@ -6246,7 +6248,10 @@ body {
     .subbar .row-minibar {
       justify-content: center !important; }
       .subbar .row-minibar a.link-back {
-        top: 19px !important; }
+        padding-top: 9.5px;
+        padding-bottom: 9.5px;
+        padding-left: 25px;
+        padding-right: 25px; }
   .card-blok {
     margin: 20px 15px !important; } }
 
