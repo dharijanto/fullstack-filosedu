@@ -63,14 +63,17 @@
     color: #fff;
 
     a.link-back {
+      $link-back-horizontal-padding: ($row-minibar-height / 2 - 6 + $row-bar-height) / 2;
+      $link-back-vertical-padding: 25px;
       position: absolute;
-      top: $row-minibar-height / 2 - 6 + $row-bar-height;
       left: 0;
+      padding-top: $link-back-horizontal-padding;
+      padding-bottom: $link-back-horizontal-padding;
+      padding-left: 25px;
+      padding-right: 25px;
       color: #fff;
       text-decoration: none;
-      // padding: 20px;
       #minibar-left-menu {
-        padding-left: 25px;
         width: 35px;
       }
     }
@@ -121,7 +124,12 @@
     .row-minibar {
         justify-content: center !important;
         a.link-back {
-          top: $row-minibar-height / 2 - 6 !important;
+          $link-back-horizontal-padding: ($row-minibar-height / 2 - 6) / 2;
+          $link-back-vertical-padding: 25px;
+          padding-top: $link-back-horizontal-padding;
+          padding-bottom: $link-back-horizontal-padding;
+          padding-left: $link-back-vertical-padding;
+          padding-right: $link-back-vertical-padding;
         }
     }
   }
