@@ -25,11 +25,18 @@ block pageContent
     .row
       .col-lg-6.col-md-6
         .row
-          .col-lg-12.col-md-12.col-sm-12.col-xs-12
+          .col-lg-2.col-md-2.col-sm-2.col-xs-2
+            button.smallest-rounded-button(onclick=`location.href='${prevLink || ''}'` type="button")
+              img(src="/assets/img/arrow-pointing-to-left.png" srcset="/assets/img/arrow-pointing-to-left@2x.png 2x, /assets/img/arrow-pointing-to-left@3x.png 3x" class="arrow-pointing-to-left")
+          .col-lg-8.col-md-8.col-sm-8.col-xs-8
             .video-detail
               h1 #{subtopic.subtopic}
               h3 #{exercises.length} Latihan
               p !{subtopicData.detail}
+          .col-lg-2.col-md-2.col-sm-2.col-xs-2
+            button.smallest-rounded-button(onclick=`location.href='${nextLink || ''}'` type="button")
+              img(src="/assets/img/arrow-pointing-to-right.png" srcset="/assets/img/arrow-pointing-to-right@2x.png 2x, /assets/img/arrow-pointing-to-right@3x.png 3x" class="arrow-pointing-to-right")
+        .row
           .col-lg-12.col-md-12.col-sm-12.col-xs-12
               .embed-video
                 | !{videoSource}

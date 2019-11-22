@@ -21,3 +21,15 @@
   text-align: center;
   background-color: white;
 }
+
+.smaller-rounded-button {
+  @extend .rounded-button;
+  width: 150px;
+  border-radius: 16px;
+}
+
+.smallest-rounded-button {
+  @extend .rounded-button;
+  width: 50px;
+  border-radius: 16px;
+}

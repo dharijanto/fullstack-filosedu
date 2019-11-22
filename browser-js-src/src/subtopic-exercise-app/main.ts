@@ -8,7 +8,6 @@ import * as Promise from 'bluebird'
 
 import '../libs/numeric-keyboard'
 
-const ONE_SECOND_IN_MILLIS = 1000 // millisecond
 const TAG = 'Exercise-App'
 // Keep track of elapsed time between questions and sets
 let questionTime = 0
@@ -16,6 +15,8 @@ let setTime = 0
 let stopwatch
 
 $(document).ready(function () {
+  // Force scroll to the top page, otherwise chrome remembers current scrolling
+  $(document).scrollTop(0)
   // Prevent 'enter' button from submitting current form
   $(window).keydown(function (event) {
     if (event.keyCode === 13) {
@@ -58,7 +59,11 @@ $(document).ready(function () {
     const url = new URL('leaderboard', window.location.href)
     axios.get(url.href).then(rawResp => {
       const resp = rawResp.data
-      $('#leaderboard-content').append(resp.data)
+      if (resp.status) {
+        $('#leaderboard-content').append(resp.data)
+      } else {
+        console.error(resp.errMessage)
+      }
     }).catch(err => {
       alert(err)
       console.error(err)
@@ -181,27 +186,30 @@ function postAnswer () {
         const totalRanking = resp.data.totalRanking
         const isPerfectScore = score === 100
 
-        $('#currentScore').removeClass('hidden')
-        $('#currentScore').text(`Nilai yang diperoleh: ${score}`)
-        $('.bestScore').empty()
-        $('.bestScore').append(starsHTML)
-        $('.bestTimer').empty()
-        $('.bestTimer').append(timersHTML)
-        $('.rankingScore').html(ranking)
+        $('#current-score').removeClass('hidden').text(`Nilai: ${score}`)
+        $('#star-badges').empty().append(starsHTML)
+        $('#time-badges').empty().append(timersHTML)
+        $('#submission-leaderboard').html(ranking)
 
+        let leaderboardMessage
         if (isPerfectScore) {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam
-            <b>${timeFinish} detik</b>. Waktu ini ada di
-            urutan ${currentRanking} dari ${totalRanking}</p>`)
+          leaderboardMessage = `<p>Soal diselesaikan dalam
+          <b>${timeFinish} detik</b>. Waktu ini ada di
+          urutan ke ${currentRanking} dari ${totalRanking}.</p>`
         } else {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam
+          leaderboardMessage = `<p>Soal diselesaikan dalam
             <b>${timeFinish} detik</b>.
-            Hanya nilai 100 yang masuk penilaian ranking. </p>`)
+            Hanya nilai 100 yang masuk penilaian ranking. </p>`
         }
+        $('#submission-leaderboard').prepend(leaderboardMessage)
 
         // TODO: This message and conditional checking should be from backend
         if (parseInt(score, 10) < 80) {
-          $('.bestScore').append('<p>Dapatkan skor diatas 80 untuk memperoleh bintang</p>')
+          $('#remarks').append('<p>Dapatkan nilai diatas 80 untuk memperoleh bintang.</p>')
+        } else if (parseInt(score, 10) < 100) {
+          $('#remarks').append('<p>Dapatkan nilai 100 untuk memperoleh jam.</p>')
+        } else if (parseInt(timeFinish, 10) > parseInt(window['idealTime'], 10)) {
+          $('#remarks').append('<p>Kerjakan lebih cepat untuk memperoleh jam.</p>')
         }
 
         correctAnswers.forEach((realAnswer, index) => {
@@ -221,15 +229,11 @@ function postAnswer () {
         })
         resolve({ status: true })
       } else {
-        $('#submissionError').removeClass('hidden')
-        $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
-        console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
-        resolve({ status: false })
+        throw new Error(resp.errMessage)
       }
     }).catch(err => {
       $('.btn-submit-answer').removeAttr('disabled')
-      $('#submissionError').removeClass('hidden')
-      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala: ` + err.message)
+      $('#error-message').removeClass('hidden').text(`Gagal memasukan jawaban: ` + err.message)
       console.error(err)
       reject(err)
     }).finally(() => {
@@ -242,33 +246,14 @@ function postAnswer () {
 
 $('#btn-reset').on('click', function (e) {
   postAnswer().then((resp: any) => {
-    if (resp.status) {
-      window.location.reload()
-    } else {
-      window.location.reload()
+    if (!resp.status) {
+      console.error('Failed to reset: ' + resp.errMessage)
     }
+  }).finally(() => {
+    window.location.reload()
   })
 })
 
 $('#btn-retry').on('click', function (e) {
-  location.reload()
+  window.location.reload()
 })
-
-// ---------------- EXERCISE TIMER CODE -----------------
-// TODO: Refactor this so that exercise and topic-exercise share the same code
-// How long since the exercise was generated
-/*
-function updateProgressBar () {
-  // Get current value of progress bar
-  if (window['idealTime']) {
-    console.log(`idealTime=${window['idealTime']} elapsedTime=${window['elapsedTime']}`)
-    const currentPercent = Math.min(window['elapsedTime'], window['idealTime']) / window['idealTime'] * 100.0
-    $('.progress-bar').css('width', currentPercent + '%')
-  }
-  $('#elapsed-time').html(`Elapsed: <strong> ${parseInt(window['elapsedTime'], 10)} detik</strong>`)
-} */
-
-// when page first load, first call only
-// updateProgressBar()
-// ------------------------------------------------------
-// ------------------------------------------------------

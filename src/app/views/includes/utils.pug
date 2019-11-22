@@ -6,20 +6,20 @@ mixin renderExerciseStars(numStars, size, maxStars = 4)
   - var stars = numStars > maxStars ? maxStars : numStars
   - var emptyStars = maxStars - stars
   while stars-- > 0
-    img(src="/assets/img/star.png" width=size || 30)
+    img(src="/assets/img/star@3x.png" width=size || 30)
   while emptyStars-- > 0
-    img(src="/assets/img/star_empty.png" width=size || 30)
+    img(src="/assets/img/star-dist@3x.png" width=size || 30)
 
 
 mixin renderExerciseRanking (data)
   table.table.table-bordered
     thead
       tr
-        th Ranking
+        th #
         th Nama
         th Sekolah
         th Kelas
-        th Waktu Selesai
+        th Waktu
     tbody
       each val, index in data
         tr
@@ -33,9 +33,9 @@ mixin renderTimerProgress (numTimers, size, maxTimers = 4)
   - var timers = numTimers > 4 ? 4 : numTimers
   - var emptyTimers = maxTimers - timers
   while timers-- > 0
-    img(src="/assets/img/timer.png" width=size || 30)
+    img(src="/assets/img/timer@3x.png" width=size || 30)
   while emptyTimers-- > 0
-    img(src="/assets/img/timer_empty.png" width=size || 30)
+    img(src="/assets/img/timer-dist@3x.png" width=size || 30)
 
 mixin renderVideoWatchStatus (isWatched, size)
   if (isWatched)

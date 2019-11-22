@@ -29,7 +29,7 @@ class Formatter {
   */
   // TODO: Refactor subtopic.pug to use this
   static getExerciseURL (exercise) {
-    return `/${exercise.subtopic.topic.id}/${getSlug(exercise.subtopic.topic.topic)}/${exercise.subtopic.id}/${getSlug(exercise.subtopic.subtopic)}/${exercise.id}/latihan`
+    return `/${exercise.subtopic.topic.id}/${getSlug(exercise.subtopic.topic.topic)}/${exercise.subtopic.id}/${getSlug(exercise.subtopic.subtopic)}/${exercise.id}/`
   }
 
   // TODO: Refactor topics.pug to use this

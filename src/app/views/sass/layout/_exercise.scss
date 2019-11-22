@@ -98,6 +98,7 @@ a {
   }
   #btn-reset {
     color: black;
+    padding: 5px;
   }
 }
 
@@ -110,5 +111,32 @@ a {
 // ImageHelper, which is uses by user-submitted exercise code relies on
 // this to center the image.
 table.image-repeat {
+  margin: auto;
+}
+
+#current-score {
+  color: white;
+}
+
+#leaderboard-content {
+  overflow-x: auto;
+}
+
+#submission-leaderboard {
+  color: white;
+  overflow-x: scroll;
+  table {
+    color: white;
+  }
+}
+
+#remarks {
+  color: white;
+}
+
+#badges-container {
+  // background: white;
+  border-radius: 10px;
+  padding: 10px 0 10px 0;
   margin: auto;
 }
