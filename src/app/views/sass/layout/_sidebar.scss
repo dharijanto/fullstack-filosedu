@@ -112,7 +112,6 @@ $font-body: 'Open Sans', sans-serif;
   .hamburger {
     position: fixed;
     top: $row-minibar-height / 2 - 15;
-    right: 10px;
     z-index: 999;
     display: block;
     width: 32px;
@@ -120,6 +119,10 @@ $font-body: 'Open Sans', sans-serif;
     margin-left: 15px;
     background: transparent;
     border: none;
+
+    &.is-closed {
+      right: 10px;
+    }
   }
 }
 
@@ -155,6 +158,7 @@ $font-body: 'Open Sans', sans-serif;
 .hamburger.is-open .hamb-bottom {
   position: absolute;
   left: 0;
+  right: auto;
   height: 4px;
   width: 100%;
 }

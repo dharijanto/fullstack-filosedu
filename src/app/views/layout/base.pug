@@ -51,15 +51,15 @@ body
             if user
               li
                 a(href='#')
-                  | Hello, #[strong #{user.fullName}]
+                  | Halo, #[strong #{user.fullName}]!
             else
               li
                 a(href='/login') Login
             li
-              a(href='/') Area Belajar
-            if !cloudServer
-              li
-                a(href='/competency-exercise') Uji Kompetensi
+              a(href='/') Daftar Topik
+            // if !cloudServer
+            //   li
+            //     a(href='/competency-exercise') Uji Kompetensi
             if user
               li
                 a(href='/logout') Logout
