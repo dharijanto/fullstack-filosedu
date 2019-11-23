@@ -35,7 +35,7 @@ class CourseService extends CRUDService {
   // TODO: Perhaps we should push some of the query into separate views?
   getTopicDetails (userId = -1): Promise<NCResponse<TopicDetails>> {
     return super.rawReadQuery(
-`SELECT * FROM topicsView WHERE userId = ${userId}`
+`SELECT * FROM topicsView WHERE userId = ${userId} ORDER BY topicNo ASC`
     ).then(resp => {
       if (resp.status) {
         return { status: true, data: Formatter.objectify(resp.data) }
@@ -47,7 +47,7 @@ class CourseService extends CRUDService {
 
   getSubtopicDetails (topicId = -1, userId = -1) {
     return super.rawReadQuery(
-      `SELECT * FROM subtopicsView WHERE topicId = ${topicId} AND userId = ${userId}`
+      `SELECT * FROM subtopicsView WHERE topicId = ${topicId} AND userId = ${userId} ORDER BY subtopicNo ASC`
     ).then(resp => {
       if (resp.status) {
         return { status: true, data: Formatter.objectify(resp.data) }
