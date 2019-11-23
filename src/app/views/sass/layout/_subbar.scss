@@ -63,10 +63,12 @@
     color: #fff;
 
     a.link-back {
-      $link-back-horizontal-padding: ($row-minibar-height / 2 - 6 + $row-bar-height) / 2;
-      $link-back-vertical-padding: 25px;
       position: absolute;
       left: 0;
+      // So that the link can easily be clicked
+      z-index: 10;
+      $link-back-horizontal-padding: ($row-minibar-height / 2 - 6 + $row-bar-height) / 2;
+      $link-back-vertical-padding: 25px;
       padding-top: $link-back-horizontal-padding;
       padding-bottom: $link-back-horizontal-padding;
       padding-left: 25px;

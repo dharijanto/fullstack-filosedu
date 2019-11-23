@@ -120,6 +120,8 @@ $font-body: 'Open Sans', sans-serif;
     background: transparent;
     border: none;
 
+    // When menu is opened, we don't want the hamburger button to be on
+    // the right, but we want it close to the menu
     &.is-closed {
       right: 10px;
     }

@@ -5994,14 +5994,15 @@ html {
   .hamburger {
     position: fixed;
     top: 25px;
-    right: 10px;
     z-index: 999;
     display: block;
     width: 32px;
     height: 32px;
     margin-left: 15px;
     background: transparent;
-    border: none; } }
+    border: none; }
+    .hamburger.is-closed {
+      right: 10px; } }
 
 .hamburger:hover,
 .hamburger:focus,
@@ -6034,6 +6035,7 @@ html {
 .hamburger.is-open .hamb-bottom {
   position: absolute;
   left: 0;
+  right: auto;
   height: 4px;
   width: 100%; }
 
@@ -6218,6 +6220,7 @@ body {
     .subbar .row-minibar a.link-back {
       position: absolute;
       left: 0;
+      z-index: 10;
       padding-top: 67px;
       padding-bottom: 67px;
       padding-left: 25px;
