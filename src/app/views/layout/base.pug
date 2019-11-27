@@ -50,19 +50,17 @@ body
               a(href='https://www.filosedu.com') Filosedu
             if user
               li
-                a(href='#')
-                  | Halo, #[strong #{user.fullName}]!
+                a(href='#') Halo, #[strong #{user.fullName}]!
+              li
+                a(href='/') Daftar Topik
+              if user.teacher
+                li
+                  a(href='/student-dashboard') Student Monitor
+              li
+                a(href='/logout') Logout
             else
               li
                 a(href='/login') Login
-            li
-              a(href='/') Daftar Topik
-            // if !cloudServer
-            //   li
-            //     a(href='/competency-exercise') Uji Kompetensi
-            if user
-              li
-                a(href='/logout') Logout
     #page-content-wrapper
       button.hamburger.is-closed(type='button', data-toggle='offcanvas')
         span.hamb-top

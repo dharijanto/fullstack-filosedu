@@ -53,17 +53,17 @@ export default class StudentDashboardController extends BaseController {
       userService.getUser(userId, req.user.schoolId).then(resp => {
         if (resp.status && resp.data) {
           res.locals.user = resp.data
-          CourseService.getTopicDetails(userId).then(resp => {
+          CourseService.getTopicsWithSubtopicsDetails(userId).then((resp: NCResponse<any>) => {
             if (resp.status && resp.data) {
               res.locals.topics = resp.data.topics
-              // console.log(JSON.stringify(resp.data, null, 2))
-              res.render('topics')
+              res.render('student-overview')
             } else {
-              next(new Error('Failed to getTopicDetails(): ' + resp.errMessage))
+              throw new Error(`Failed to get student data: ${resp.errMessage}`)
             }
+            console.log(JSON.stringify(resp, null, 2))
           })
         } else {
-          res.send(`User doesn't exist!`)
+          throw new Error(`User doesn't exist!`)
         }
       }).catch(err => {
         next(err)

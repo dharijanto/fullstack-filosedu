@@ -1,6 +1,5 @@
 import * as Promise from 'bluebird'
 import * as path from 'path'
-
 import CRUDService from './crud-service-neo'
 
 const Formatter = require(path.join(__dirname, '../lib/utils/formatter'))
@@ -53,6 +52,33 @@ class CourseService extends CRUDService {
         return { status: true, data: Formatter.objectify(resp.data) }
       } else {
         return { status: false, errMessage: resp.errMessage }
+      }
+    })
+  }
+
+  getTopicsWithSubtopicsDetails (userId) {
+    return super.rawReadQuery(
+      `
+      SELECT
+        topicsView.id AS \`topics.id\`,
+        topicsView.topicName AS \`topics.topicName\`,
+        topicsView.checkmarkBadges AS \`topics.checkmarkBadges\`,
+        topicsView.starBadges AS \`topics.starBadges\`,
+        subtopicsView.id AS \`topics.subtopics.id\`,
+        subtopicsView.subtopicName AS \`topics.subtopics.subtopicName\`,
+        subtopicsView.timeBadges AS \`topics.subtopics.timeBadges\`,
+        subtopicsView.starBadges AS \`topics.subtopics.starBadges\`
+      FROM topicsView
+      INNER JOIN subtopicsView ON subtopicsView.topicId = topicsView.id AND
+                 subtopicsView.userId = topicsView.userId
+      WHERE topicsView.userId = ${userId}
+      ORDER BY topicsView.topicNo, subtopicsView.subtopicNo
+      `
+    ).then(resp => {
+      if (resp.status) {
+        return { status: true, data: Formatter.objectify(resp.data)[0] }
+      } else {
+        return resp
       }
     })
   }

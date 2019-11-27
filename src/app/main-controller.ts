@@ -62,13 +62,14 @@ class Controller extends BaseController {
         this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
         this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))
         this.routeUse(this.credentialController.getRouter())
-        // SyncController needs to preceed exercise controller because the path defined here
-        // can match the wildcard path there, hence causing authentication issue
+        // Non-wildcard controllers
+        // NOTE: Controllers with no wildcard need to be declared first
         this.routeUse(this.syncController.getRouter())
+        this.routeUse('/student-dashboard', PassportHelper.ensureLoggedIn(), this.studentDashboardController.getRouter())
+        // Wildcard controllers
         this.routeUse(this.topicController.getRouter())
         this.routeUse(this.exerciseController.getRouter())
         this.routeUse(this.subtopicController.getRouter())
-        this.routeUse('/student-dashboard', PassportHelper.ensureLoggedIn(), this.studentDashboardController.getRouter())
         this.routeUse('/competency-exercise', this.competencyExerciseController.getRouter())
       } else {
         this.routeUse('*', (req, res, next) => {
