@@ -14,8 +14,8 @@ class Formatter {
   // 120 -> 2:00
   static secsToTimerFormat (seconds) {
     seconds = parseInt(seconds)
-    const secs = parseInt(seconds % 60, 10)
-    const mins = parseInt(seconds / 60, 10)
+    const secs = parseInt(seconds % 60, 10) + ''
+    const mins = parseInt(seconds / 60, 10) + ''
 
     return `${mins}:${secs.length > 1 ? secs : '0' + secs}`
   }
