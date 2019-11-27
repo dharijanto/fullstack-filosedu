@@ -12,7 +12,7 @@ const TAG = 'SQLViewService'
   We have LocalShopService, this is specifically for shop-specific code.
 */
 class SQLViewService extends CRUDService {
-  private views: string[] = []
+  public views: string[] = []
 
   // Gives user-personalized information regarding a subtopic, which
   // includes stars, badges, etc.

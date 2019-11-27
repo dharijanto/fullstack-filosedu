@@ -7,6 +7,7 @@ let _ = require('lodash')
 let Sequelize = require('sequelize')
 let BaseController = require(path.join(__dirname, 'base-controller'))
 let SyncService = require(path.join(__dirname, '../../services/sync-server-service'))
+let PassportHelper = require(path.join(__dirname, '../utils/passport-helper'))
 import BackupService from '../../services/backup-service'
 
 const TAG = 'SyncController'
@@ -26,6 +27,15 @@ class SyncController extends BaseController {
         res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Encoding': 'gzip' })
         res.end(data)
       }).catch(next)
+    })
+
+    this.routeGet('/backup/dry-run', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+      if (req.user.teacher) {
+        const command = BackupService.getMySQLDumpCommand()
+        res.send(command)
+      } else {
+        res.send('Unauthorized access!')
+      }
     })
 
     this.routeGet('/synchronization/histories', (req, res, next) => {

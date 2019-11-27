@@ -6,6 +6,7 @@ import * as Promise from 'bluebird'
 import { spawn, exec } from 'child_process'
 
 import SchoolService from './school-service'
+import SQLViewService from './sql-view-service'
 
 const AppConfig = require(path.join(__dirname, '../app-config'))
 
@@ -13,6 +14,17 @@ const AppConfig = require(path.join(__dirname, '../app-config'))
 Used by cloud to create backup file to be used by local server
 */
 class BackupService {
+  getMySQLDumpCommand () {
+    const skippedTables = ['analytics', 'synchronizations'].concat(SQLViewService.views)
+    const skipCommands = skippedTables.reduce((acc, tableName) => {
+      return acc + ` --ignore-table=${AppConfig.MYSQL_CONF.DB}.${tableName}`
+    }, '')
+
+    const command = `mysqldump ${skipCommands} ` +
+              `-u${AppConfig.MYSQL_CONF.USERNAME} ${AppConfig.MYSQL_CONF.PASSWORD ? '-p' + AppConfig.MYSQL_CONF.PASSWORD : '' } ` +
+              `${AppConfig.MYSQL_CONF.DB}`
+    return command
+  }
   // Return sqldump in gzipped format
   getSQLDumpForLocalServer (schoolIdentifier): Promise<Buffer> {
     if (!AppConfig.CLOUD_SERVER) {
@@ -22,10 +34,7 @@ class BackupService {
         if (resp.status && resp.data) {
           return new Promise((resolve, reject) => {
             // Exclude analytics and synchronizations tables since they're only used by cloud server
-            exec(`mysqldump --ignore-table=${AppConfig.MYSQL_CONF.DB}.analytics ` +
-              `--ignore-table=${AppConfig.MYSQL_CONF.DB}.synchronizations ` +
-              `-u${AppConfig.MYSQL_CONF.USERNAME} ${AppConfig.MYSQL_CONF.PASSWORD ? '-p' + AppConfig.MYSQL_CONF.PASSWORD : '' } ` +
-              `${AppConfig.MYSQL_CONF.DB}`, { maxBuffer: 1024 * 25000 },
+            exec(this.getMySQLDumpCommand(), { maxBuffer: 1024 * 25000 },
                 (err, stdout, stderr) => {
                   if (err) {
                     reject(err)
