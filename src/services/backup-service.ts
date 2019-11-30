@@ -34,7 +34,7 @@ class BackupService {
         if (resp.status && resp.data) {
           return new Promise((resolve, reject) => {
             // Exclude analytics and synchronizations tables since they're only used by cloud server
-            exec(this.getMySQLDumpCommand(), { maxBuffer: 1024 * 25000 },
+            exec(this.getMySQLDumpCommand(), { maxBuffer: 1024 * 50000 },
                 (err, stdout, stderr) => {
                   if (err) {
                     reject(err)
