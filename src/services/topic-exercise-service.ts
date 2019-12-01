@@ -390,9 +390,21 @@ ORDER BY score DESC LIMIT 1;`,
     // Get leaderboard data
   getRanking (topicId) {
     return this.getSequelize().query(
-`SELECT MIN(timeFinish) AS timeFinish, userId, users.fullName AS fullName, users.grade AS grade, schools.name AS schoolName
-FROM generatedTopicExercises INNER JOIN users ON users.id = generatedTopicExercises.userId INNER JOIN schools ON schools.id = users.schoolId
-WHERE submitted = TRUE AND topicId = ${topicId} AND score = 100 AND timeFinish IS NOT NULL GROUP BY userId ORDER BY MIN(timeFinish) LIMIT 10;`,
+`SELECT
+  MIN(timeFinish) AS timeFinish,
+  userId,
+  users.fullName AS fullName,
+  users.grade AS grade,
+  schools.name AS schoolName
+FROM generatedTopicExercises
+INNER JOIN users ON users.id = generatedTopicExercises.userId AND users.teacher = FALSE
+INNER JOIN schools ON schools.id = users.schoolId
+WHERE submitted = TRUE AND
+      topicId = ${topicId} AND
+      score >= 90 AND
+      timeFinish < idealTime
+GROUP BY userId
+ORDER BY MIN(timeFinish) LIMIT 10;`,
     { type: Sequelize.QueryTypes.SELECT }).then(resp => {
       return { status: true, data: resp }
     })

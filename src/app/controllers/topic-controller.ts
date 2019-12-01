@@ -65,7 +65,7 @@ class CourseController extends BaseController {
     })
 
     // TopicExercise leaderboard
-    this.routeGet('/topics/:topicId/getLeaderboard', (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/review/leaderboard', (req, res, next) => {
       let topicId = req.params.topicId
       if (topicId === undefined) {
         res.json({ status: false, errMessage: `topicId is needed` })
@@ -81,7 +81,7 @@ class CourseController extends BaseController {
     })
 
     // Topic Exercise
-    this.routeGet('/:topicId/:topicSlug/review', PassportHelper.ensureLoggedIn(), (req, res, next) => {
+    this.routeGet('/:topicId/:topicSlug/review/', PassportHelper.ensureLoggedIn(), (req, res, next) => {
       let topicId = req.params.topicId
       let userId = req.user.id
 
@@ -110,7 +110,7 @@ class CourseController extends BaseController {
     // TopicExercise submission
     // TODO: Perhaps we should call getGeneratedTopicExercise and gradeExercise inside of finishExercise to make
     //       the code cleaner?
-    this.routePost('/:topicId/:topicSlug/review', (req, res, next) => {
+    this.routePost('/:topicId/:topicSlug/review/', (req, res, next) => {
       // [{"x":"5","y":"1"},{"x":"2","y":"3"},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""},{"x":""}]
       let userAnswers = req.body.userAnswers
       let topicId = req.params.topicId
@@ -131,7 +131,7 @@ class CourseController extends BaseController {
                 timeFinish, exerciseDetails, userAnswers
               ).then(resp3 => {
                 if (resp3.status) {
-                  Promise.join(
+                  return Promise.join(
                     TopicExerciseService.getRenderedStarBadges(userId, topicId),
                     TopicExerciseService.getCurrentRanking(timeFinish, topicId),
                     TopicExerciseService.getTotalRanking(topicId),
@@ -159,7 +159,7 @@ class CourseController extends BaseController {
                         }
                       })
                     } else {
-                      res.json({ status: false, errMessage: resp11.errMessage || resp12.errMessage
+                      return res.json({ status: false, errMessage: resp11.errMessage || resp12.errMessage
                         || resp13.errMessage || resp14.errMessage || resp15.errMessage })
                     }
                   })
@@ -174,6 +174,8 @@ class CourseController extends BaseController {
         } else {
           throw (new Error(resp.errMessage))
         }
+      }).catch(err => {
+        res.json({ status: false, errMessage: 'Unknown error: ' + err.message })
       })
     })
   }

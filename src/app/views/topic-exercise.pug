@@ -3,6 +3,19 @@ extends layout/base-with-subbar.pug
 append head
   link(rel="stylesheet" href="/assets/css/topic-exercise.css")
 
+prepend contents
+  #leaderboard.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+      .modal-dialog(role='document')
+        .modal-content
+          .modal-header
+            h4#exampleModalLabel.modal-title.text-center Ranking
+              button.close(type='button', data-dismiss='modal', aria-label='Close')
+                span(aria-hidden='true') ×
+          .modal-body#leaderboard-content
+          .modal-footer
+            button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+
+
 block minibarLeftMenu
   a.link-back(href='/' data-toggle='modal')
     div#minibar-left-menu
@@ -30,6 +43,8 @@ block minibarMidMenu
 
 block pageContent
   .container.text-center
+    .title
+      button.btn.btn-primary#leaderboard-button(type='button', data-toggle='modal', data-target='#leaderboard') Lihat Ranking
     .exercise-container
       div.text-center#questions-container
         - let exerciseIndex = 0
@@ -51,17 +66,25 @@ block pageContent
                       // include includes/numpad
                 - exerciseIndex++
       div.text-center(style="margin-bottom:5%;")
-        div.scoreSection
+        //div.scoreSection
           p.hidden(id='currentScore')
           p.hidden(id='submissionError')
+        div.scoreSection
+          h3.hidden#current-score
+          p.hidden(id='error-message')
+          div#badges-container
+            p#remarks
+            p#star-badges
+              | !{starsHTML}
+            p#checkmark-badges
+              | !{checkmarkHTML}
         // a.btn.btn-primary.btn-submit-answer(href="javascript:void(0);") Submit
-        button.rounded-button#btn-submit-answer
-          | Submit #{" "}
+        button.rounded-button#btn-submit-answer Submit #{" "}
           img(src="/assets/img/arrow-pointing-to-right.png" srcset="/assets/img/arrow-pointing-to-right@2x.png 2x, /assets/img/arrow-pointing-to-right@3x.png 3x" class="arrow-pointing-to-right")
-        // a.hidden.btn.rounded-button#btn-retry(href="")
-        button.hidden.rounded-button#btn-retry
-          | Ulangi
-        // a.btn.btn-primary.btn_retry_question.hidden(href="") Retry
+        button.hidden.rounded-button#btn-retry Ulangi
+        br
+        br
+        #submission-leaderboard
 
 append scripts
   script().

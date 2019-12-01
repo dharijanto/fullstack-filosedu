@@ -206,10 +206,10 @@ function postAnswer () {
         // TODO: This message and conditional checking should be from backend
         if (parseInt(score, 10) < 80) {
           $('#remarks').append('<p>Dapatkan nilai diatas 80 untuk memperoleh bintang.</p>')
-        } else if (parseInt(score, 10) < 100) {
-          $('#remarks').append('<p>Dapatkan nilai 100 untuk memperoleh jam.</p>')
+        } else if (parseInt(score, 10) < 90) {
+          $('#remarks').append('<p>Dapatkan nilai diatas 90 untuk melewati review ini.</p>')
         } else if (parseInt(timeFinish, 10) > parseInt(window['idealTime'], 10)) {
-          $('#remarks').append('<p>Kerjakan lebih cepat untuk memperoleh jam.</p>')
+          $('#remarks').append('<p>Kerjakan lebih cepat untuk melewati review ini.</p>')
         }
 
         correctAnswers.forEach((realAnswer, index) => {

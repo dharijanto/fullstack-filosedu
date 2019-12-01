@@ -55,7 +55,7 @@ $('#btn-cloud-to-local-sync').on('click', () => {
       if (typeof resp === 'object' && 'status' in resp) {
         console.dir('resp=' + resp)
         if (resp.status) {
-          toastr.success('Success!')
+          toastr.success('Syncing...')
           if (cloudToLocalLogTimer) {
             clearInterval(cloudToLocalLogTimer)
           }

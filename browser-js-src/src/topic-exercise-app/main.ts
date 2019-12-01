@@ -25,6 +25,8 @@ setInterval(function () {
 let stopwatch
 
 $(document).ready(function () {
+  // Force scroll to the top page, otherwise chrome remembers current scrolling
+  $(document).scrollTop(0)
   // Prevent 'enter' button from submitting current form
   $(window).keydown(function (event) {
     if (event.keyCode === 13) {
@@ -45,7 +47,8 @@ $(document).ready(function () {
   // TODO: implement this on the UI
   $('#leaderboard-button').on('click', function (e) {
     $('#leaderboard-content').empty()
-    axios.get(`/topics/${topicId}/getLeaderboard`).then(rawResp => {
+    const url = new URL('leaderboard', window.location.href)
+    axios.get(url.href).then(rawResp => {
       const resp = rawResp.data
       $('#leaderboard-content').append(resp.data)
     }).catch(err => {
@@ -68,7 +71,11 @@ $(document).ready(function () {
   // reload to force a new set of questions to appear
   $('#btn-reset').on('click', function (e) {
     $('#btn-reset').attr('disabled', 'true')
-    submitAnswers().finally(() => {
+    submitAnswers().then((resp: any) => {
+      if (!resp.status) {
+        console.error('Failed to reset: ' + resp.errMessage)
+      }
+    }).finally(() => {
       window.location.reload()
     })
   })
@@ -113,16 +120,27 @@ function submitAnswers () {
         const currentRanking = resp.data.currentRanking
         const totalRanking = resp.data.totalRanking
 
-        $('#currentScore').removeClass('hidden')
-        $('#currentScore').text(`Nilai yang diperoleh: ${grade.score}`)
-        $('.stars').html(starsHTML)
-        $('.checkmark').html(checkmarkHTML)
-        $('.rankingScore').html(ranking)
+        $('#current-score').removeClass('hidden')
+        $('#current-score').text(`Nilai yang diperoleh: ${grade.score}`)
+        $('#star-badges').html(starsHTML)
+        $('#checkmark-badges').html(checkmarkHTML)
+        $('#submission-leaderboard').html(ranking)
 
+        let leaderboardMessage
         if (parseInt(grade.score, 10) === 100) {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Waktu ini ada di urutan ${currentRanking} dari ${totalRanking}</p>`)
+          leaderboardMessage = `<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Waktu ini ada di urutan ${currentRanking} dari ${totalRanking}</p>`
         } else {
-          $('.rankingScore').append(`<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Hanya nilai 100 yang masuk penilaian. </p>`)
+          leaderboardMessage = `<p>Soal diselesaikan dalam <b>${timeFinish} detik</b>. Hanya nilai 100 yang masuk penilaian. </p>`
+        }
+        $('#submission-leaderboard').prepend(leaderboardMessage)
+
+        // TODO: This message and conditional checking should be from backend
+        if (parseInt(grade.score, 10) < 80) {
+          $('#remarks').append('<p>Dapatkan nilai diatas 80 untuk memperoleh bintang.</p>')
+        } else if (parseInt(grade.score, 10) < 100) {
+          $('#remarks').append('<p>Dapatkan nilai 100 untuk memperoleh jam.</p>')
+        } else if (parseInt(timeFinish, 10) > parseInt(window['idealTime'], 10)) {
+          $('#remarks').append('<p>Kerjakan lebih cepat untuk memperoleh jam.</p>')
         }
 
         grade.correctAnswers.forEach((correctAnswer, index) => {
@@ -148,15 +166,15 @@ function submitAnswers () {
         $('#btn-retry').removeClass('hidden')
         resolve({ status: true })
       } else {
-        $('#submissionError').removeClass('hidden')
-        $('#submissionError').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
+        $('#error-message').removeClass('hidden')
+        $('#error-message').text(`Gagal memasukan jawaban: ${resp.errMessage}`)
         console.error('Gagal memasukan jawaban: ' + resp.errMessage, resp)
         resolve({ status: false })
       }
     }).catch(err => {
       $('#btn-submit-answer').removeClass('hidden')
-      $('#submissionError').removeClass('hidden')
-      $('#submissionError').text(`Gagal memasukan jawaban: server mengalami kendala`)
+      $('#error-message').removeClass('hidden')
+      $('#error-message').text(`Gagal memasukan jawaban: server mengalami kendala`)
       console.error(err)
       reject(err)
     }).finally(() => {
