@@ -1,63 +1,50 @@
-extends layout/index.pug
+extends layout/base.pug
 
 block initialization
-  - const activePage = 'register'
+  - const activePage = 'login'
 
 append head
   link(rel="stylesheet" href="/assets/vendor/select2/select2.min.css")
+  link(rel="stylesheet" href="/assets/css/login.css")
+  style.
 
 block contents
+  div#bg-image
   div.container
-    form(action="/register" method="POST")
-      div.form-group
-        #logoSchool.text-center
-      div.form-group
-        label Sekolah
-        select.select2.form-control(name="schoolId")
-          each val in schools
-            option(value=`${val.id}` data-logo=`${val.logo}`) #{val.name}
-      div.form-group
-        label Kelas
-        select.form-control(name="grade")
-          option(value="1") 1
-          option(value="2") 2
-          option(value="3") 3
-          option(value="4") 4
-          option(value="5") 5
-          option(value="6") 6
-      div.form-group
-        label Nama Lengkap
-        input(type="text" name="fullName" class="form-control")
-      div.form-group
-        label Username
-        input(type="text" name="username" class="form-control")
-      div.form-group
-        label Kata Sandi
-        input(type="password" name="password" class="form-control")
-      div.form-group
-        label Ulangi Kata Sandi
-        input(type="password" name="passwordConfirm" class="form-control")
-      div.form-group
-        label Email
-        input(type="text" name="email" class="form-control")
-      if error.length > 0
-        .alert.alert-danger(role='alert')= error
+    .col-md-6.col-sm-12#left-pane
+      #content
+        #cover-image
+        p#heading
+          | Bimbingan belajar dengan metode "Blended Learning"
+        p
+          | Merupakan metode belajar yang memadukan peran penting seorang guru dengan kecanggihan teknologi.
+    .col-md-6.col-sm-12#right-pane
+      form(role="form" action="/register" method="post")
+        .text-center.row
+          .col-md-12
+            img(src="/assets/img/login/icon.png" srcset="/assets/img/login/icon@2x.png 2x, /assets/img/login/icon@3x.png 3x" class="Icon")
+          .col-md-12
+            img(src="/assets/img/login/logo.png" srcset="/assets/img/login/logo@2x.png 2x, /assets/img/login/logo@3x.png 3x" class="Icon")
+            #slogan Belajar Lebih Menyenangkan
+        div.form-group#login-form
+          select.select2.form-control(name="schoolId" placeholder="School")
+            each val in schools
+              option(value=`${val.id}` data-logo=`${val.logo}`) #{val.name}
+          select.form-control(name="grade" placeholder="password")
+            option(value="1") Kelas 1
+            option(value="2") Kelas 2
+            option(value="3") Kelas 3
+            option(value="4") Kelas 4
+            option(value="5") Kelas 5
+            option(value="6") Kelas 6
+            input(type="text" name="fullName" class="form-control" placeholder="Nama Lengkap")
+            input(type="text" name="username" class="form-control" placeholder="Username")
+            input(type="password" name="password" class="form-control" placeholder="Password")
+            input(type="password" name="passwordConfirm" class="form-control" placeholder="Ulangi Password")
+            input(type="text" name="email" class="form-control" placeholder="Email (Optional)")
+            if error.length > 0
+              .alert.alert-danger(role='alert')= error
+            button#login-button(type="submit" class="btn btn-primary") Register
 
-      div.form-group
-        button(type="submit" class="btn btn-primary") SUBMIT
 append scripts
   script(type="text/javascript" src="/assets/vendor/select2/select2.min.js")
-  script.
-    $('.select2').select2()
-    $(document).ready(function (e) {
-      $('select[name=schoolId]').on('change', function (e) {
-        changeLogoImage($(this).find(':selected').data('logo'))
-      })
-      var dataLogoURL = $('select[name=schoolId]').find(':selected').data('logo')
-      changeLogoImage(dataLogoURL)
-    })
-
-    function changeLogoImage (logoURL) {
-      $('#logoSchool').empty()
-      $('#logoSchool').append('<img src="' + logoURL + '" class="img-responsive" style="margin:0 auto;height:300px;"/>')
-    }
