@@ -14,7 +14,7 @@ block pageContent
           .card-blok
             .card-blok-inner
               .justify-between
-                a(href=`${topic.id}/${getSlug(topic.topicName)}`)
+                a.topic-title(href=`${topic.id}/${getSlug(topic.topicName)}`)
                   h1= topic.topicName
                 .topic-badge-checkmark
                   span
