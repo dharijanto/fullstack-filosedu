@@ -6298,6 +6298,8 @@ body {
       font-weight: 600;
       letter-spacing: .6px;
       color: #222; }
+    .card-blok .card-blok-inner .topic-title {
+      position: relative; }
     .card-blok .card-blok-inner .description {
       font-size: 14px;
       color: #888;
@@ -6350,6 +6352,7 @@ body {
   .topic-badge-checkmark img {
     width: 15px; }
   .topic-badge-checkmark ul {
+    display: none;
     margin: 0px;
     padding: 8px 12px;
     list-style: none;
@@ -6373,7 +6376,17 @@ body {
         display: inline-block;
         width: 25px; }
   .topic-badge-checkmark:hover ul {
+    display: block;
     background: #fff;
     box-shadow: 0 0 18px 0 rgba(0, 0, 0, 0.1); }
   .topic-badge-checkmark:hover li {
     max-height: 50px; }
+
+.homework {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  height: 120%;
+  width: 120%;
+  border-style: solid;
+  border-color: red; }
