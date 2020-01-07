@@ -140,6 +140,14 @@ FROM
     }
   }
 
+  getAssignmentSummary (schoolId: number) {
+    return super.rawReadQuery(`SELECT * FROM assignmentSummaryView WHERE schoolId = ${schoolId}`)
+  }
+
+  getAssignments () {
+
+  }
+
 }
 
 export default new StudentMonitorService()

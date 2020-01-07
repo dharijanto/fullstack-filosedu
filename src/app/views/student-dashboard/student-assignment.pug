@@ -1,7 +1,7 @@
-extends layout/base-with-subbar
+extends ../layout/base-with-subbar
 
 append head
-  link(rel='stylesheet' href='/assets/css/student-dashboard.css')
+  link(rel='stylesheet' href='/assets/css/student-assignment.css')
   link(rel="stylesheet" type="text/css" href='/assets/vendor/data-table/css/datatables.min.css')
   link(rel="stylesheet" type="text/css" href='/assets/vendor/data-table/css/dataTables.responsive.css')
   link(rel="stylesheet" type="text/css" href='/assets/vendor/nc-input-library/style.css')
@@ -13,10 +13,8 @@ block pageContent
   .container
     .row
       .col-md-12
-        #subtopic-summary
-        #last-subtopic-submissions
-        #last-topic-submissions
-        #num-submissions-since
+        #students-summary
+        #student-detail
 
 append scripts
   script(src=`${bundle}`)

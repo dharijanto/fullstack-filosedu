@@ -57,7 +57,6 @@ class Controller extends BaseController {
 
     SchoolService.validateSchool().then(resp => {
       if (resp.status) {
-
         // NOTES: Order does matter because of path with wildcard
         this.routeUse(AppConfig.VIDEO_MOUNT_PATH, express.static(AppConfig.VIDEO_PATH, { maxAge: '1h' }))
         this.routeUse(AppConfig.IMAGE_MOUNT_PATH, express.static(AppConfig.IMAGE_PATH, { maxAge: '1h' }))

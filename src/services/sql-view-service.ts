@@ -129,9 +129,45 @@ class SQLViewService extends CRUDService {
     `)
   }
 
+  assignmentSummaryView () {
+    return super.getSequelize().query(`
+      CREATE VIEW assignmentSummaryView AS
+      (SELECT users.id AS id, users.fullName AS name,
+              users.grade AS grade, SUM(IFNULL(assignedTasks.points, 0)) AS points,
+              schools.id AS schoolId,
+              SUM(IF(assignedTasks.completed = 0, 1, 0)) AS numOutstandingAssignments,
+              SUM(IF(assignedTasks.completed = 1, 1, 0)) AS numFinishedAssignments
+      FROM users
+      INNER JOIN schools ON schools.id = users.schoolId
+      LEFT OUTER JOIN assignedTasks ON assignedTasks.userId = users.id
+      GROUP BY id, name, grade
+      )
+    `)
+  }
+
+  assignmentView () {
+    return super.getSequelize().query(`
+      CREATE VIEW assignmentView AS
+      (SELECT assignedTasks.id AS id,
+        assignedTasks.due AS due,
+        assignedTasks.completed AS completed,
+        assignedTasks.points AS points,
+        assignedTasks.onCloud AS onCloud,
+        assignedTasks.createdAt AS createdAt,
+        assignedTasks.updatedAt AS updatedAt,
+        assignedTasks.userId AS userId,
+        topics.\`topic\` AS \`topic.name\`,
+        subtopics.\`subtopic\` AS \`subtopic.name\`
+      FROM assignedTasks
+      LEFT OUTER JOIN topics ON topics.id = assignedTasks.topicId
+      LEFT OUTER JOIN subtopics ON subtopics.id = assignedTasks.subtopicId
+      )
+    `)
+  }
+
   constructor () {
     super()
-    this.views = ['subtopicsView', 'topicsView', 'subtopicVideosView']
+    this.views = ['subtopicsView', 'topicsView', 'subtopicVideosView', 'assignmentSummaryView', 'assignmentView']
   }
 
   // TODO: Order of deletion shouldn't need to be hard-coded like this.

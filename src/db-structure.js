@@ -159,6 +159,18 @@ function addTables (sequelize, models) {
   })
   models.GeneratedCompetencyExercise.belongsTo(models.User)
 
+  models.AssignedTask = sequelize.define('assignedTasks', {
+    taskId: {type: Sequelize.INTEGER},
+    // type: {type: Sequelize.ENUM(['subtopic', 'topic'])},
+    due: {type: Sequelize.STRING},
+    completed: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
+    points: {type: Sequelize.INTEGER},
+    onCloud: {type: Sequelize.BOOLEAN, default: true}
+  })
+  models.AssignedTask.belongsTo(models.User)
+  models.AssignedTask.belongsTo(models.Subtopic)
+  models.AssignedTask.belongsTo(models.Topic)
+
   models.Synchronization = sequelize.define('synchronization', {
     schoolIdentifier: {type: Sequelize.STRING}, // Identify which school
     serverHash: {type: Sequelize.STRING}, // Identify which version of school server

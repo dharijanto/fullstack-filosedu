@@ -22,12 +22,15 @@ let Formatter = require(path.join(__dirname, '../../lib/utils/formatter'))
 const TAG = 'ExerciseController'
 
 export default class StudentDashboardController extends BaseController {
-  private frontendJs: string
+  private studentDashboardJS: string
+  private studentAssignmentJS: string
   initialize () {
     return Promise.join(
-      PathFormatter.hashAsset('app', '/assets/js/student-dashboard-app-bundle.js')
-    ).spread((result: string) => {
-      this.frontendJs = result
+      PathFormatter.hashAsset('app', '/assets/js/student-dashboard-app-bundle.js'),
+      PathFormatter.hashAsset('app', '/assets/js/student-assignment-app-bundle.js')
+    ).spread((result: string, result2: string) => {
+      this.studentDashboardJS = result
+      this.studentAssignmentJS = result2
       return
     })
   }
@@ -44,8 +47,8 @@ export default class StudentDashboardController extends BaseController {
     })
 
     this.routeGet('/', (req, res, next) => {
-      res.locals.bundle = this.frontendJs
-      res.render('student-dashboard')
+      res.locals.bundle = this.studentDashboardJS
+      res.render('student-dashboard/student-dashboard')
     })
 
     this.routeGet('/badge-page', (req, res, next) => {
@@ -56,7 +59,7 @@ export default class StudentDashboardController extends BaseController {
           CourseService.getTopicsWithSubtopicsDetails(userId).then((resp: NCResponse<any>) => {
             if (resp.status && resp.data) {
               res.locals.topics = resp.data.topics
-              res.render('student-overview')
+              res.render('student-dashboard/student-overview')
             } else {
               throw new Error(`Failed to get student data: ${resp.errMessage}`)
             }
@@ -99,6 +102,45 @@ export default class StudentDashboardController extends BaseController {
       StudentMonitorService.getNumSubmissionsSince(sinceDate, untilDate, schoolId).then(resp => {
         res.json(resp)
       }).catch(next)
+    })
+
+    this.routeGet('/assignment-management', (req, res, next) => {
+      // TODO: render page with NCInputLibrary
+      res.locals.bundle = this.studentAssignmentJS
+      res.render('student-dashboard/student-assignment')
+    })
+
+    this.routeGet('/assignment/students-summary', (req, res, next) => {
+      // TODO: Details about students
+      const schoolId = req.user.schoolId
+      StudentMonitorService.getAssignmentSummary(schoolId).then(resp => {
+        res.json(resp)
+      }).catch(next)
+      /*
+        1. Name
+        2. Grade
+        3. Points
+        4. Outstanding assignments
+        5. Finished assignments
+        6. Latest assignment
+      */
+    })
+
+    this.routeGet('/assignments', (req, res, next) => {
+      const userId = req.query.userId
+
+    })
+
+    this.routePost('/assignment', (req, res, next) => {
+      const userId = req.query.userId
+    })
+
+    this.routePost('/assignment/edit', (req, res, next) => {
+      const userId = req.query.userId
+    })
+
+    this.routePost('/assignment/delete', (req, res, next) => {
+      const userId = req.query.userId
     })
   }
 
