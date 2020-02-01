@@ -156,9 +156,13 @@ class SQLViewService extends CRUDService {
         assignedTasks.createdAt AS createdAt,
         assignedTasks.updatedAt AS updatedAt,
         assignedTasks.userId AS userId,
+        schools.id AS schoolId,
         topics.\`topic\` AS \`topic.name\`,
-        subtopics.\`subtopic\` AS \`subtopic.name\`
+        topics.\`id\` AS \`topic.id\`,
+        subtopics.\`id\` AS \`subtopic.id\`
       FROM assignedTasks
+      INNER JOIN users ON users.id = assignedTasks.userId
+      INNER JOIN schools ON schools.id = users.schoolId
       LEFT OUTER JOIN topics ON topics.id = assignedTasks.topicId
       LEFT OUTER JOIN subtopics ON subtopics.id = assignedTasks.subtopicId
       )

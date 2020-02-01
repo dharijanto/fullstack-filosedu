@@ -110,6 +110,7 @@ export default class StudentDashboardController extends BaseController {
       res.render('student-dashboard/student-assignment')
     })
 
+    // Summary of all students in the school
     this.routeGet('/assignment/students-summary', (req, res, next) => {
       // TODO: Details about students
       const schoolId = req.user.schoolId
@@ -126,8 +127,12 @@ export default class StudentDashboardController extends BaseController {
       */
     })
 
+    // Detailed assignment for each of the students
     this.routeGet('/assignments', (req, res, next) => {
       const userId = req.query.userId
+      StudentMonitorService.getAssignments(userId).then(resp => {
+        res.json(resp)
+      }).catch(next)
 
     })
 

@@ -144,8 +144,8 @@ FROM
     return super.rawReadQuery(`SELECT * FROM assignmentSummaryView WHERE schoolId = ${schoolId}`)
   }
 
-  getAssignments () {
-
+  getAssignments (userId: number) {
+    return super.rawReadQuery(`SELECT * FROM assignmentView WHERE userId = ${userId}`)
   }
 
 }
