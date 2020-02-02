@@ -145,9 +145,9 @@ class SQLViewService extends CRUDService {
     `)
   }
 
-  assignmentView () {
+  assignmentsView () {
     return super.getSequelize().query(`
-      CREATE VIEW assignmentView AS
+      CREATE VIEW assignmentsView AS
       (SELECT assignedTasks.id AS id,
         assignedTasks.due AS due,
         assignedTasks.completed AS completed,
@@ -157,9 +157,12 @@ class SQLViewService extends CRUDService {
         assignedTasks.updatedAt AS updatedAt,
         assignedTasks.userId AS userId,
         schools.id AS schoolId,
-        topics.\`topic\` AS \`topic.name\`,
         topics.\`id\` AS \`topic.id\`,
-        subtopics.\`id\` AS \`subtopic.id\`
+        topics.\`topic\` AS \`topic.name\`,
+        subtopics.\`id\` AS \`subtopic.id\`,
+        subtopics.\`subtopic\` AS \`subtopic.name\`,
+        IFNULL(topics.\`topic\`, subtopics.\`subtopic\`) AS assignment,
+        IF(topics.\`topic\` IS NOT NULL, 'Topic', IF(subtopics.\`subtopic\` IS NOT NULL, 'Subtopic', 'Error')) AS type
       FROM assignedTasks
       INNER JOIN users ON users.id = assignedTasks.userId
       INNER JOIN schools ON schools.id = users.schoolId
@@ -171,7 +174,7 @@ class SQLViewService extends CRUDService {
 
   constructor () {
     super()
-    this.views = ['subtopicsView', 'topicsView', 'subtopicVideosView', 'assignmentSummaryView', 'assignmentView']
+    this.views = ['subtopicsView', 'topicsView', 'subtopicVideosView', 'assignmentSummaryView', 'assignmentsView']
   }
 
   // TODO: Order of deletion shouldn't need to be hard-coded like this.

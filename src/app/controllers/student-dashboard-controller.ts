@@ -133,19 +133,30 @@ export default class StudentDashboardController extends BaseController {
       StudentMonitorService.getAssignments(userId).then(resp => {
         res.json(resp)
       }).catch(next)
-
     })
 
     this.routePost('/assignment', (req, res, next) => {
       const userId = req.query.userId
+      const assignment = req.body
+      StudentMonitorService.addAssignment(userId, assignment).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
 
     this.routePost('/assignment/edit', (req, res, next) => {
       const userId = req.query.userId
+      const assignedTaskId = req.body.id
+      StudentMonitorService.addAssignment(userId, assignedTaskId).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
 
     this.routePost('/assignment/delete', (req, res, next) => {
       const userId = req.query.userId
+      const assignedTaskId = req.body.id
+      StudentMonitorService.addAssignment(userId, assignedTaskId).then(resp => {
+        res.json(resp)
+      }).catch(next)
     })
   }
 

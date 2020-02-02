@@ -143,3 +143,13 @@ interface FormattedTopicExercise {
   idealTime: number
   elapsedTime: number
 }
+
+interface AssignedTask extends BaseModel {
+  due: string
+  completed: 'no' | 'beforeDue' | 'afterDue'
+  points: number
+  onCloud: boolean
+  userId: number
+  topicId: number
+  subtopicId: number
+}

@@ -145,9 +145,50 @@ FROM
   }
 
   getAssignments (userId: number) {
-    return super.rawReadQuery(`SELECT * FROM assignmentView WHERE userId = ${userId}`)
+    return super.rawReadQuery(`SELECT * FROM assignmentsView WHERE userId = ${userId}`, true)
   }
 
+  addAssignment (userId: number, assignedTask: Partial<AssignedTask>): Promise<NCResponse<AssignedTask>> {
+    if (!userId || !assignedTask) {
+      return Promise.resolve({ status: false, errMessage: 'userId and task are required!' })
+    }
+    return super.create<AssignedTask>({
+      modelName: 'AssignedTask',
+      data: { userId, ...assignedTask, ...{ completed: 'no', points: 0 } }
+    })
+  }
+
+  updatedAssignment (userId: number, assignedTaskId: number): Promise<NCResponse<number>> {
+    if (!userId || !assignedTaskId) {
+      return Promise.resolve({ status: false, errMessage: 'userId and assignedTaskId are required!' })
+    }
+    return super.readOne<AssignedTask>({
+      modelName: 'AssignedTask',
+      searchClause: { userId, id: assignedTaskId }
+    }).then(resp => {
+      if (resp.status) {
+        return super.update<AssignedTask>({ modelName: 'AssignedTask', data: { id: assignedTaskId, userId } })
+      } else {
+        return { status: false, errMessage: 'Data could not be found!' }
+      }
+    })
+  }
+
+  deleteAssignment (userId: number, assignedTaskId: number): Promise<NCResponse<number>> {
+    if (!userId || !assignedTaskId) {
+      return Promise.resolve({ status: false, errMessage: 'userId and assignedTaskId are required!' })
+    }
+    return super.readOne<AssignedTask>({
+      modelName: 'AssignedTask',
+      searchClause: { userId, id: assignedTaskId }
+    }).then(resp => {
+      if (resp.status) {
+        return super.delete<AssignedTask>({ modelName: 'AssignedTask', data: { id: assignedTaskId } })
+      } else {
+        return { status: false, errMessage: 'Data could not be found!' }
+      }
+    })
+  }
 }
 
 export default new StudentMonitorService()

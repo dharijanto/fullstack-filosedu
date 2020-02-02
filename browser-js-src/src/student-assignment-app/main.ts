@@ -40,6 +40,14 @@ $(document).ready(function () {
     }
   })
 
+  function getTopicIds (): Promise<string[]> {
+    return Promise.resolve([])
+  }
+
+  function getSubtopicIds (): Promise<Array<string>> {
+    return Promise.resolve([])
+  }
+
   const ncStudentDetail = $('#student-detail').NCInputLibrary({
     design: {
       title: 'Student Detail'
@@ -48,10 +56,12 @@ $(document).ready(function () {
       ui: [
         { id: 'id', desc: 'ID', dataTable: true, input: 'hidden' },
         { id: 'assignment', desc: 'Assignment', dataTable: true, input: 'hidden' },
-        { id: 'due', desc: 'Due Date', dataTable: true, input: 'hidden' },
+        { id: 'type', desc: 'Type', dataTable: true, input: 'hidden' },
+        { id: 'due', desc: 'Due Date', dataTable: true, input: 'date', data: { dateFormat: 'YYYY-MM-DD' } },
         { id: 'completed', desc: 'Completed', dataTable: true, input: 'hidden' },
         { id: 'points', desc: 'Points', dataTable: true, input: 'hidden' },
-        { id: 'timeliness', desc: 'Timeliness', dataTable: true, input: 'hidden' },
+        { id: 'topic.id', desc: 'Topic Id', dataTable: true, input: 'select', selectData: getTopicIds },
+        { id: 'subtopic.id', desc: 'Subtopic Id', dataTable: true, input: 'select', selectData: getSubtopicIds },
         { id: 'createdAt', desc: 'Created At', dataTable: true, input: 'hidden' },
         { id: 'updatedAt', desc: 'Updated At', dataTable: true, input: 'hidden' }
       ],

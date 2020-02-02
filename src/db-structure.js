@@ -160,7 +160,6 @@ function addTables (sequelize, models) {
   models.GeneratedCompetencyExercise.belongsTo(models.User)
 
   models.AssignedTask = sequelize.define('assignedTasks', {
-    taskId: {type: Sequelize.INTEGER},
     // type: {type: Sequelize.ENUM(['subtopic', 'topic'])},
     due: {type: Sequelize.STRING},
     completed: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
