@@ -135,8 +135,8 @@ class SQLViewService extends CRUDService {
       (SELECT users.id AS id, users.fullName AS name,
               users.grade AS grade, SUM(IFNULL(assignedTasks.points, 0)) AS points,
               schools.id AS schoolId,
-              SUM(IF(assignedTasks.completed = 0, 1, 0)) AS numOutstandingAssignments,
-              SUM(IF(assignedTasks.completed = 1, 1, 0)) AS numFinishedAssignments
+              SUM(IF(assignedTasks.completed = "no", 1, 0)) AS numOutstandingAssignments,
+              SUM(IF(assignedTasks.completed != "no", 1, 0)) AS numFinishedAssignments
       FROM users
       INNER JOIN schools ON schools.id = users.schoolId
       LEFT OUTER JOIN assignedTasks ON assignedTasks.userId = users.id
@@ -161,8 +161,8 @@ class SQLViewService extends CRUDService {
         topics.\`topic\` AS \`topic.name\`,
         subtopics.\`id\` AS \`subtopic.id\`,
         subtopics.\`subtopic\` AS \`subtopic.name\`,
-        IFNULL(topics.\`topic\`, subtopics.\`subtopic\`) AS assignment,
-        IF(topics.\`topic\` IS NOT NULL, 'Topic', IF(subtopics.\`subtopic\` IS NOT NULL, 'Subtopic', 'Error')) AS type
+        IFNULL(subtopics.\`subtopic\`, topics.\`topic\`) AS assignment,
+        IF(subtopics.\`subtopic\` IS NOT NULL, 'Subtopic', IF(topics.\`topic\` IS NOT NULL, 'Topic', 'Error')) AS type
       FROM assignedTasks
       INNER JOIN users ON users.id = assignedTasks.userId
       INNER JOIN schools ON schools.id = users.schoolId

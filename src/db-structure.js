@@ -164,11 +164,11 @@ function addTables (sequelize, models) {
     due: {type: Sequelize.STRING},
     completed: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
     points: {type: Sequelize.INTEGER},
+    subtopicId: Sequelize.INTEGER,
+    topicId: Sequelize.INTEGER,
     onCloud: {type: Sequelize.BOOLEAN, default: true}
   })
   models.AssignedTask.belongsTo(models.User)
-  models.AssignedTask.belongsTo(models.Subtopic)
-  models.AssignedTask.belongsTo(models.Topic)
 
   models.Synchronization = sequelize.define('synchronization', {
     schoolIdentifier: {type: Sequelize.STRING}, // Identify which school

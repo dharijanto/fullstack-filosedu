@@ -83,13 +83,13 @@ class CourseService extends CRUDService {
     })
   }
 
-  getAllTopics () {
+  getAllTopics (): Promise<NCResponse<Topic[]>> {
     return this.getModels('Topic').findAll({ order: [['topicNo', 'ASC']] }).then(resp => {
       return { status: true, data: resp }
     })
   }
 
-  getAllSubtopics () {
+  getAllSubtopics (): Promise<NCResponse<Subtopic[]>> {
     return this.getModels('Subtopic').findAll({ order: [['subtopicNo', 'ASC']] }).then(resp => {
       return { status: true, data: resp }
     })

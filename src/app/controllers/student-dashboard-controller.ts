@@ -127,6 +127,40 @@ export default class StudentDashboardController extends BaseController {
       */
     })
 
+    this.routeGet('/topic-ids', (req, res, next) => {
+      return CourseService.getAllTopics().then(resp => {
+        let result
+        if (resp.status && resp.data) {
+          result = {
+            status: true,
+            data: resp.data.map(topic => {
+              return `${topic.id} - ${topic.topic}`
+            })
+          }
+        } else {
+          result = { status: false, errMessage: resp.errMessage }
+        }
+        res.json(result)
+      }).catch(next)
+    })
+
+    this.routeGet('/subtopic-ids', (req, res, next) => {
+      return CourseService.getAllSubtopics().then(resp => {
+        let result
+        if (resp.status && resp.data) {
+          result = {
+            status: true,
+            data: resp.data.map(subtopic => {
+              return `${subtopic.id} - ${subtopic.subtopic}`
+            })
+          }
+        } else {
+          result = { status: false, errMessage: resp.errMessage }
+        }
+        res.json(result)
+      }).catch(next)
+    })
+
     // Detailed assignment for each of the students
     this.routeGet('/assignments', (req, res, next) => {
       const userId = req.query.userId
@@ -137,7 +171,11 @@ export default class StudentDashboardController extends BaseController {
 
     this.routePost('/assignment', (req, res, next) => {
       const userId = req.query.userId
-      const assignment = req.body
+      const assignment = {
+        topicId: Formatter.splitAndRetrieveFirst(req.body['topic.id'], '-') || null,
+        subtopicId: Formatter.splitAndRetrieveFirst(req.body['subtopic.id'], '-') || null,
+        ...req.body
+      }
       StudentMonitorService.addAssignment(userId, assignment).then(resp => {
         res.json(resp)
       }).catch(next)
@@ -146,7 +184,13 @@ export default class StudentDashboardController extends BaseController {
     this.routePost('/assignment/edit', (req, res, next) => {
       const userId = req.query.userId
       const assignedTaskId = req.body.id
-      StudentMonitorService.addAssignment(userId, assignedTaskId).then(resp => {
+      const assignment = {
+        topicId: Formatter.splitAndRetrieveFirst(req.body['topic.id'], '-') || null,
+        subtopicId: Formatter.splitAndRetrieveFirst(req.body['subtopic.id'], '-') || null,
+        ...req.body
+      }
+      log.verbose(TAG, 'assignment.edit.GET: assignment=' + JSON.stringify(assignment))
+      StudentMonitorService.updateAssignment(userId, assignedTaskId, assignment).then(resp => {
         res.json(resp)
       }).catch(next)
     })
@@ -154,7 +198,7 @@ export default class StudentDashboardController extends BaseController {
     this.routePost('/assignment/delete', (req, res, next) => {
       const userId = req.query.userId
       const assignedTaskId = req.body.id
-      StudentMonitorService.addAssignment(userId, assignedTaskId).then(resp => {
+      StudentMonitorService.deleteAssignment(userId, assignedTaskId).then(resp => {
         res.json(resp)
       }).catch(next)
     })

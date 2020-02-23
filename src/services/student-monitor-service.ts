@@ -151,23 +151,57 @@ FROM
   addAssignment (userId: number, assignedTask: Partial<AssignedTask>): Promise<NCResponse<AssignedTask>> {
     if (!userId || !assignedTask) {
       return Promise.resolve({ status: false, errMessage: 'userId and task are required!' })
+    } else if (!assignedTask.due) {
+      return Promise.resolve({ status: false, errMessage: 'due date is required!' })
+    } else if (assignedTask.subtopicId && assignedTask.topicId) {
+      return Promise.resolve({ status: false, errMessage: 'Select either subtopic or topic, not both!' })
+    } else if (!assignedTask.subtopicId && !assignedTask.topicId) {
+      return Promise.resolve({ status: false, errMessage: 'Either subtopic or topic needs to be selected!' })
     }
-    return super.create<AssignedTask>({
+
+    const searchClause = { userId }
+    if (assignedTask.subtopicId) {
+      searchClause['subtopicId'] = assignedTask.subtopicId
+    } else if (assignedTask.topicId) {
+      searchClause['topicId'] = assignedTask.topicId
+    }
+
+    return super.readOne<AssignedTask>({
       modelName: 'AssignedTask',
-      data: { userId, ...assignedTask, ...{ completed: 'no', points: 0 } }
+      searchClause: searchClause
+    }).then(resp => {
+      if (resp.status) {
+        return { status: false, errMessage: 'Assignment with the same topic or subtopic already exists' }
+      } else {
+        return super.create<AssignedTask>({
+          modelName: 'AssignedTask',
+          data: { userId, ...assignedTask, ...{ completed: 'no', points: 0 } }
+        })
+      }
     })
   }
 
-  updatedAssignment (userId: number, assignedTaskId: number): Promise<NCResponse<number>> {
+  updateAssignment (userId: number, assignedTaskId: number, assignedTask: Partial<AssignedTask>): Promise<NCResponse<number>> {
     if (!userId || !assignedTaskId) {
       return Promise.resolve({ status: false, errMessage: 'userId and assignedTaskId are required!' })
+    } else if (!assignedTask.due) {
+      return Promise.resolve({ status: false, errMessage: 'due date is required!' })
+    } else if (assignedTask.subtopicId && assignedTask.topicId) {
+      return Promise.resolve({ status: false, errMessage: 'Select either subtopic or topic, not both!' })
+    } else if (!assignedTask.subtopicId && !assignedTask.topicId) {
+      return Promise.resolve({ status: false, errMessage: 'Either subtopic or topic needs to be selected!' })
     }
+
     return super.readOne<AssignedTask>({
       modelName: 'AssignedTask',
       searchClause: { userId, id: assignedTaskId }
     }).then(resp => {
-      if (resp.status) {
-        return super.update<AssignedTask>({ modelName: 'AssignedTask', data: { id: assignedTaskId, userId } })
+      if (resp.status && resp.data) {
+        if (resp.data.completed !== 'no') {
+          return { status: false, errMessage: 'An assignment that has been completed cannot be updated!' }
+        }
+        const data = { id: assignedTaskId, userId, ...assignedTask }
+        return super.update<AssignedTask>({ modelName: 'AssignedTask', data })
       } else {
         return { status: false, errMessage: 'Data could not be found!' }
       }

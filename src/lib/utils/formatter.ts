@@ -46,6 +46,10 @@ class Formatter {
     })
     return result
   }
+
+  static splitAndRetrieveFirst (text, separator) {
+    return ((text || '').split(separator) || [])[0]
+  }
 }
 
 export = Formatter

@@ -1,6 +1,8 @@
 let Config = require('../config')
 import 'nc-input-library'
 import * as toastr from 'toastr'
+import axios from 'axios'
+import { assertExpressionStatement } from 'babel-types'
 
 let rootPath = require('cmsRootPath')
 
@@ -41,11 +43,29 @@ $(document).ready(function () {
   })
 
   function getTopicIds (): Promise<string[]> {
-    return Promise.resolve([])
+    // return Promise.resolve([])
+    return axios.get('/student-dashboard/topic-ids').then(rawResp => {
+      const resp = rawResp.data
+      if (resp.status && resp.data) {
+        return [''].concat(resp.data)
+      } else {
+        console.error('Failed to retrieve topic-ids: ' + resp.errMessage)
+        return []
+      }
+    })
   }
 
   function getSubtopicIds (): Promise<Array<string>> {
-    return Promise.resolve([])
+    // return Promise.resolve([])
+    return axios.get('/student-dashboard/subtopic-ids').then(rawResp => {
+      const resp = rawResp.data
+      if (resp.status && resp.data) {
+        return [''].concat(resp.data)
+      } else {
+        console.error('Failed to retrieve subtopic-ids: ' + resp.errMessage)
+        return []
+      }
+    })
   }
 
   const ncStudentDetail = $('#student-detail').NCInputLibrary({
