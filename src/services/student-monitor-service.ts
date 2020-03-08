@@ -184,11 +184,14 @@ FROM
   }
 
   updateAssignment (userId: number, assignedTaskId: number, assignedTask: Partial<AssignedTask>): Promise<NCResponse<number>> {
+    const topicId = assignedTask.topicId
+    const subtopicId = assignedTask.subtopicId
+
     if (!userId || !assignedTaskId) {
       return Promise.resolve({ status: false, errMessage: 'userId and assignedTaskId are required!' })
     } else if (!assignedTask.due) {
       return Promise.resolve({ status: false, errMessage: 'due date is required!' })
-    } else if (assignedTask.subtopicId && assignedTask.topicId) {
+    } else if (subtopicId && topicId) {
       return Promise.resolve({ status: false, errMessage: 'Select either subtopic or topic, not both!' })
     }/*  else if (!assignedTask.subtopicId && !assignedTask.topicId) {
       return Promise.resolve({ status: false, errMessage: 'Either subtopic or topic needs to be selected!' })
@@ -202,23 +205,41 @@ FROM
         if (resp.data.completed !== 'no') {
           return { status: false, errMessage: 'An assignment that has been completed cannot be updated!' }
         } else {
-          const data = {
-            id: assignedTaskId,
-            userId,
-            due: assignedTask.due
-          } as Partial<AssignedTask>
-
-          // Ignore empty topicId and subtopicId
-          if (assignedTask.topicId) {
-            data.topicId = assignedTask.topicId
+          // If subtopicId or topicId is specified, we need to make sure
+          // there's not already the same assignment
+          if (subtopicId || topicId) {
+            // Check if there's already
+            return super.readOne<AssignedTask>({
+              modelName: 'AssignedTask',
+              searchClause: Object.assign({ userId }, topicId && { topicId }, subtopicId && { subtopicId })
+            }).then(resp => {
+              if (resp.status) {
+                return { status: false, errMessage: 'The same subtopic or topic is already assigned!' }
+              } else {
+                return { status: true }
+              }
+            })
+          } else {
+            return { status: true }
           }
-          if (assignedTask.subtopicId) {
-            data.subtopicId = assignedTask.subtopicId
-          }
-          return super.update<AssignedTask>({ modelName: 'AssignedTask', data })
         }
       } else {
-        return { status: false, errMessage: 'Data could not be found!' }
+        return { status: false, errMessage: 'Assignment could not be found!' }
+      }
+    }).then(resp => {
+      if (resp.status) {
+        const data = Object.assign({
+          id: assignedTaskId,
+          userId,
+          due: assignedTask.due
+        },
+          // Ignore potentially empty topicId and subtopicId, which means user doesn't wanna update them
+          topicId && { topicId },
+          subtopicId && { subtopicId }
+        )
+        return super.update<AssignedTask>({ modelName: 'AssignedTask', data })
+      } else {
+        return resp
       }
     })
   }
