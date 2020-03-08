@@ -1,10 +1,13 @@
-import * as Promise from 'bluebird'
 import * as path from 'path'
+
+import * as Promise from 'bluebird'
+import * as Sequelize from 'sequelize'
+
 import CRUDService from './crud-service-neo'
 
 const Formatter = require(path.join(__dirname, '../lib/utils/formatter'))
 let log = require('npmlog')
-let Sequelize = require('sequelize')
+// let Sequelize = require('sequelize')
 
 /* let CRUDService = require(path.join(__dirname, 'crud-service')) */
 
@@ -90,7 +93,11 @@ class CourseService extends CRUDService {
   }
 
   getAllSubtopics (): Promise<NCResponse<Subtopic[]>> {
-    return this.getModels('Subtopic').findAll({ order: [['subtopicNo', 'ASC']] }).then(resp => {
+    return this.getModels('Subtopic').findAll({
+      where: { 'subtopicNo': {[Sequelize.Op.ne]: null} },
+      order: [['subtopicNo', 'ASC']],
+      include: [{ model: this.getModels('Topic') }]
+    }).then(resp => {
       return { status: true, data: resp }
     })
   }

@@ -88,7 +88,7 @@ export default class CRUDService {
                                  }): Promise<NCResponse<T>> {
     const opts = { modelName, searchClause, order }
     return this.read({ modelName, searchClause, order, include, limit: 1, trx, lock }).then(resp => {
-      if (resp.status && resp.data) {
+      if (resp.status && resp.data && resp.data.length > 0) {
         return { status: true, data: resp.data[0] }
       } else {
         return { status: false, errMessage: resp.errMessage }

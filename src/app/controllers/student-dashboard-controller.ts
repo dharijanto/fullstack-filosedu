@@ -134,7 +134,7 @@ export default class StudentDashboardController extends BaseController {
           result = {
             status: true,
             data: resp.data.map(topic => {
-              return `${topic.id} - ${topic.topic}`
+              return `${topic.id} - ${topic.topicNo}: ${topic.topic}`
             })
           }
         } else {
@@ -151,7 +151,7 @@ export default class StudentDashboardController extends BaseController {
           result = {
             status: true,
             data: resp.data.map(subtopic => {
-              return `${subtopic.id} - ${subtopic.subtopic}`
+              return `${subtopic.id} - ${subtopic?.topic?.topic}: ${subtopic.subtopicNo} - ${subtopic.subtopic}`
             })
           }
         } else {

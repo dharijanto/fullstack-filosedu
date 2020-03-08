@@ -10,6 +10,7 @@ import CRUDService from './crud-service-neo'
 
 const TAG = 'StudentMonitorService'
 
+// TODO: Separate out student monitor from student assignment
 class StudentMonitorService extends CRUDService {
   getSubtopicStats (schoolId, generatedExercisesWhereClause, showAllStudents): Promise<NCResponse<any>> {
     if (!schoolId) {
@@ -171,6 +172,7 @@ FROM
       searchClause: searchClause
     }).then(resp => {
       if (resp.status) {
+        // console.log(JSON.stringify(resp))
         return { status: false, errMessage: 'Assignment with the same topic or subtopic already exists' }
       } else {
         return super.create<AssignedTask>({
@@ -188,9 +190,9 @@ FROM
       return Promise.resolve({ status: false, errMessage: 'due date is required!' })
     } else if (assignedTask.subtopicId && assignedTask.topicId) {
       return Promise.resolve({ status: false, errMessage: 'Select either subtopic or topic, not both!' })
-    } else if (!assignedTask.subtopicId && !assignedTask.topicId) {
+    }/*  else if (!assignedTask.subtopicId && !assignedTask.topicId) {
       return Promise.resolve({ status: false, errMessage: 'Either subtopic or topic needs to be selected!' })
-    }
+    } */
 
     return super.readOne<AssignedTask>({
       modelName: 'AssignedTask',
@@ -199,9 +201,22 @@ FROM
       if (resp.status && resp.data) {
         if (resp.data.completed !== 'no') {
           return { status: false, errMessage: 'An assignment that has been completed cannot be updated!' }
+        } else {
+          const data = {
+            id: assignedTaskId,
+            userId,
+            due: assignedTask.due
+          } as Partial<AssignedTask>
+
+          // Ignore empty topicId and subtopicId
+          if (assignedTask.topicId) {
+            data.topicId = assignedTask.topicId
+          }
+          if (assignedTask.subtopicId) {
+            data.subtopicId = assignedTask.subtopicId
+          }
+          return super.update<AssignedTask>({ modelName: 'AssignedTask', data })
         }
-        const data = { id: assignedTaskId, userId, ...assignedTask }
-        return super.update<AssignedTask>({ modelName: 'AssignedTask', data })
       } else {
         return { status: false, errMessage: 'Data could not be found!' }
       }
