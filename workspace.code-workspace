@@ -8,6 +8,7 @@
 		"files.exclude": {
 			"dist/": true,
 			"images/": true
-		}
+		},
+		"typescript.tsdk": "node_modules/typescript/lib"
 	},
 }
