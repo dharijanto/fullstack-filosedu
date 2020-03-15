@@ -25,7 +25,7 @@ $(document).ready(function () {
       ],
       conf: {
         order: [['name', 'asc']],
-        getURL: () => `/student-dashboard/assignment/students-summary`,
+        getURL: () => `/student-assignment/students-summary`,
         onRowClicked: (data: any) => {
           // ncLastSubtopicSubmissions.reloadTable()
           userId = data.id
@@ -44,7 +44,7 @@ $(document).ready(function () {
 
   function getTopicIds (): Promise<string[]> {
     // return Promise.resolve([])
-    return axios.get('/student-dashboard/topic-ids').then(rawResp => {
+    return axios.get('/student-assignment/topic-ids').then(rawResp => {
       const resp = rawResp.data
       if (resp.status && resp.data) {
         return [''].concat(resp.data)
@@ -57,7 +57,7 @@ $(document).ready(function () {
 
   function getSubtopicIds (): Promise<Array<string>> {
     // return Promise.resolve([])
-    return axios.get('/student-dashboard/subtopic-ids').then(rawResp => {
+    return axios.get('/student-assignment/subtopic-ids').then(rawResp => {
       const resp = rawResp.data
       if (resp.status && resp.data) {
         return [''].concat(resp.data)
@@ -87,7 +87,7 @@ $(document).ready(function () {
       ],
       conf: {
         order: [['updatedAt', 'desc']],
-        getURL: () => `/student-dashboard/assignments?userId=${userId}`,
+        getURL: () => `/student-assignment/assignments?userId=${userId}`,
         onRowClicked: (data) => {
           return
         },
@@ -99,9 +99,9 @@ $(document).ready(function () {
         networkTimeout: Config.NETWORK_TIMEOUT
       },
       ui: [
-        { id: 'add', desc: 'Add', postTo: () => `/student-dashboard/assignment?userId=${userId}` },
-        { id: 'edit', desc: 'Edit', postTo: () => `/student-dashboard/assignment/edit?userId=${userId}` },
-        { id: 'delete', desc: 'Delete', postTo: () => `/student-dashboard/assignment/delete?userId=${userId}` }
+        { id: 'add', desc: 'Add', postTo: () => `/student-assignment/assignment?userId=${userId}` },
+        { id: 'edit', desc: 'Edit', postTo: () => `/student-assignment/assignment/edit?userId=${userId}` },
+        { id: 'delete', desc: 'Delete', postTo: () => `/student-assignment/assignment/delete?userId=${userId}` }
       ]
     }
   })
@@ -117,7 +117,7 @@ $(document).ready(function () {
 `)
 
   ncStudentSummaryCustomView.find('#btn-student-progress').on('click', () => {
-    window.open(`/student-dashboard/badge-page?userId=${userId}`, '_blank')
+    window.open(`/student-assignment/badge-page?userId=${userId}`, '_blank')
   })
   ncStudentsSummary.setFirstCustomView(ncStudentSummaryCustomView)
 })

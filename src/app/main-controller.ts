@@ -4,6 +4,7 @@ import SequelizeService from '../services/sequelize-service'
 
 import CompetencyExerciseController from './controllers/competency-exercise-controller'
 import StudentDashboardController from './controllers/student-dashboard-controller'
+import StudentAssignmentController from './controllers/student-assignment-controller'
 import PassportManager from '../lib/passport-manager'
 import SchoolService from '../services/school-service'
 
@@ -54,6 +55,7 @@ class Controller extends BaseController {
     this.subtopicController = new SubtopicController(initData)
     this.syncController = new SyncController(initData)
     this.studentDashboardController = new StudentDashboardController(initData)
+    this.studentAssignmentController = new StudentAssignmentController(initData)
 
     SchoolService.validateSchool().then(resp => {
       if (resp.status) {
@@ -65,6 +67,8 @@ class Controller extends BaseController {
         // NOTE: Controllers with no wildcard need to be declared first
         this.routeUse(this.syncController.getRouter())
         this.routeUse('/student-dashboard', PassportHelper.ensureLoggedIn(), this.studentDashboardController.getRouter())
+        this.routeUse('/student-assignment', PassportHelper.ensureLoggedIn(), this.studentAssignmentController.getRouter())
+
         // Wildcard controllers
         this.routeUse(this.topicController.getRouter())
         this.routeUse(this.exerciseController.getRouter())
@@ -90,7 +94,8 @@ class Controller extends BaseController {
       this.exerciseController.initialize(),
       this.competencyExerciseController.initialize(),
       this.syncController.initialize(),
-      this.studentDashboardController.initialize()
+      this.studentDashboardController.initialize(),
+      this.studentAssignmentController.initialize()
     )
   }
 }
