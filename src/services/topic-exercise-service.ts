@@ -59,7 +59,7 @@ class TopicExerciseService extends CRUDService {
             return this.formatExercise(resp.data)
           // If there's expired generated exercise or no generated exercise to be restored
           } else if ((resp.status && resp.data && resp.data.topicExerciseHash !== topicExerciseHash) ||
-                    (resp.status && !resp.data)) {
+                    !resp.status) {
             return this.generateAndSaveExercise(topicId, userId).then(resp5 => {
               if (resp5.status && resp5.data) {
                 return this.formatExercise(resp5.data)
@@ -69,7 +69,7 @@ class TopicExerciseService extends CRUDService {
             })
           } else {
             // We should never get here..
-            throw new Error('Unexpected error!')
+            throw new Error(`Unexpected error: resp.status=${resp.status} resp.data=${resp.data}`)
           }
         } else {
           throw new Error(`Failed to retrieve topic or topicExerciseHash: ${resp2.errMessage || resp3.errMessage}`)

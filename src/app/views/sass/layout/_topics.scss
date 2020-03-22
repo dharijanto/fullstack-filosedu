@@ -166,10 +166,12 @@
 // Used to mark assigned task
 .homework {
   position: absolute;
-  top: -10%;
-  left: -10%;
-  height: 120%;
-  width: 120%;
+  top: -10px;
+  bottom: 10px;
+  left: -10px;
+  right: -10px;
+  // height: 110%;
+  // width: 120%;
   border-style: solid;
   border-color: red;
 }
