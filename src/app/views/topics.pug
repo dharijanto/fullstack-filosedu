@@ -15,9 +15,11 @@ block pageContent
             .card-blok-inner
               .justify-between
                 a.topic-title(href=`${topic.id}/${getSlug(topic.topicName)}`)
+                  .homework
                   h1= topic.topicName
                 .topic-badge-checkmark
                   span
+                    // .homework
                     if topic.checkmarkBadges > 0
                       img(src='assets/img/ic-checked@3x.png' alt='')
                     else

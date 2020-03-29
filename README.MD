@@ -35,7 +35,7 @@ client_max_body_size 50M;
   * Although other tables, such as topic, subtopic, and exercises are modifiable from CMS
     they're not going to be synced to cloud. They're modifable just for convinience
 ## Table Indexing
-* After a server is synchronized (cloud-to-local), we are allowed to delete all the entries on 
+* After a server is synchronized (cloud-to-local), we are allowed to delete all the entries on
   synchronizations table where serverHash equals to what it was before sync. This should help
   retaining small table size.
 * When doing a local-to-cloud sync, the process is so slow. It can take up to 15 minutes at the
@@ -97,6 +97,42 @@ client_max_body_size 50M;
 * When syncing to server,
 
 #### Phase 2
+
+
+### Homework System
+There are two kind of homework assignments:
+  * Subtopic homework
+    * Semi-accomplished on 5 star-badges
+      * Color becomes orange
+      * Reward = 10 points before due date
+      * Reward = 5 points after due date
+    * Accomplished on 5 star-badges and 5 time-badges
+      * Color becomes green
+      * Reward = 20 points before due date
+      * Reward = 10 points after due date
+  * Topic homework
+    * Semi-accomplished on a star-badge on review exercise
+      * Color becomes orange
+      * Reward = 16 points before due date
+      * Reward = 8 points after due date
+    * Accomplished on a star-badge on review exercise
+      * Color becomes green
+      * Reward = 34 points before due date
+      * Reward = 17 points after due date
+
+When topics/subtopics are already completed before they're assigned, points will be given only when teacher created assignments from the dashboard.
+
+#### Implementation Detail
+* New columns are created on topicsView and subtopicsView that identify whether a topic or subtopic has an associated assignment. This is used to render assignment border on topics and subtopics page. Also the box needs to be rendered on subtopic page.
+* When a subtopic or topic exercise is submitted, a check needs to be made with assignedTask table and score is given accordingly.
+  * Subtopic
+    * If stars = 5, set points according to deadline
+    * If time-badges = 5, set additional points according to deadline
+  * Topic
+    * If star is achieved, set points according to deadline
+    * If time is achieved, set points according to deadline
+
+
 
 ## Functional Testing
 ## Synchronization

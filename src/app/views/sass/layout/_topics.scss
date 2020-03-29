@@ -33,7 +33,7 @@
     h1 {
       font-size: 18px;
       // Avoid empty column when subsequent subtopic's title occupies different number of lines
-      min-height: 40px;
+      // min-height: 40px;
       margin: 3px 0;
       font-weight: 600;
       letter-spacing: .6px;
@@ -116,6 +116,9 @@
   width: 30px;
   height: 17px;
   position: relative;
+  span {
+    position: relative;
+  }
   img {
       width: 15px;
   }
@@ -140,9 +143,9 @@
           overflow: hidden;
           box-sizing: border-box;
 
-          &:hover {
+          /* &:hover {
               color: #FFF;
-          }
+          } */
           img {
               display: inline-block;
               width: 25px;
@@ -150,13 +153,11 @@
       }
   }
   &:hover  {
-
       ul {
           display: block;
           background: #fff;
           box-shadow: 0 0 18px 0 rgba(0, 0, 0, 0.1);
       }
-
       li {
           max-height: 50px;
       }
@@ -167,7 +168,7 @@
 .homework {
   position: absolute;
   top: -10px;
-  bottom: 10px;
+  bottom: -10px;
   left: -10px;
   right: -10px;
   // height: 110%;
