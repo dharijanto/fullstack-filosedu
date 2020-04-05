@@ -163,7 +163,7 @@ function addTables (sequelize, models) {
     // type: {type: Sequelize.ENUM(['subtopic', 'topic'])},
     due: {type: Sequelize.STRING},
     starsCompleted: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
-    timeCompleted: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
+    timersCompleted: {type: Sequelize.ENUM(['no', 'beforeDue', 'afterDue']), defaultValue: 'no'},
     points: {type: Sequelize.INTEGER},
     subtopicId: Sequelize.INTEGER,
     topicId: Sequelize.INTEGER,

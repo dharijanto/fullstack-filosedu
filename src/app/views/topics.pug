@@ -15,7 +15,8 @@ block pageContent
             .card-blok-inner
               .justify-between
                 a.topic-title(href=`${topic.id}/${getSlug(topic.topicName)}`)
-                  .homework
+                  if topic.assignmentColor
+                    .homework
                   h1= topic.topicName
                 .topic-badge-checkmark
                   span

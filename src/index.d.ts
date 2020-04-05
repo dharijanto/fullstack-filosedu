@@ -146,7 +146,8 @@ interface FormattedTopicExercise {
 
 interface AssignedTask extends BaseModel {
   due: string
-  completed: 'no' | 'beforeDue' | 'afterDue'
+  starsCompleted: 'no' | 'beforeDue' | 'afterDue'
+  timersCompleted: 'no' | 'beforeDue' | 'afterDue'
   points: number
   onCloud: boolean
   userId: number

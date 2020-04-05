@@ -79,10 +79,12 @@ class SQLViewService extends CRUDService {
               topics.topic AS topicName,
               topics.topicNo AS topicNo,
               subtopicsView.count AS subtopicCount,
-              IFNULL(SUM(checkmarkBadges.count), 0) AS checkmarkBadges,
-              IFNULL(SUM(starBadges.count), 0) AS starBadges,
+              IFNULL(checkmarkBadges.count, 0) AS checkmarkBadges,
+              IFNULL(starBadges.count, 0) AS starBadges,
               subtopicsView.starBadges AS subtopicsStarBadges,
-              subtopicsView.timeBadges AS subtopicsTimeBadges
+              subtopicsView.timeBadges AS subtopicsTimeBadges,
+              assignedTasksView.assignmentColor AS assignmentColor
+              #(SELECT starsCompleted FROM assignedTasks WHERE topicId = topics.id AND userId = users.id) AS starsCompleted
         FROM topics
         CROSS JOIN users
         # Subtopics information
@@ -108,7 +110,15 @@ class SQLViewService extends CRUDService {
           WHERE submitted = 1 AND score >= 80
           GROUP BY topicId, userId
         ) AS starBadges ON starBadges.topicId = topics.id AND starBadges.userId = users.id
-        GROUP BY topics.id, users.id
+        LEFT OUTER JOIN (
+          SELECT IF(starsCompleted != 'no', 'yes', 'no') AS starsCompleted,
+                 IF(timersCompleted != 'no', 'yes', 'no') AS timersCompleted,
+                 IF(timersCompleted != 'no', 'green', IF(starsCompleted != 'no', 'orange', 'red')) AS assignmentColor,
+                 topicId,
+                 userId
+          FROM assignedTasks
+        ) AS assignedTasksView ON assignedTasksView.userId = users.id AND assignedTasksView.topicId = topics.id
+        # GROUP BY topics.id, users.id
         ORDER BY topicNo ASC
       )
     `)
@@ -135,8 +145,8 @@ class SQLViewService extends CRUDService {
       (SELECT users.id AS id, users.fullName AS name,
               users.grade AS grade, SUM(IFNULL(assignedTasks.points, 0)) AS points,
               schools.id AS schoolId,
-              SUM(IF(assignedTasks.completed = "no", 1, 0)) AS numOutstandingAssignments,
-              SUM(IF(assignedTasks.completed != "no", 1, 0)) AS numFinishedAssignments
+              SUM(IF(assignedTasks.starsCompleted = "no", 1, 0)) AS numOutstandingAssignments,
+              SUM(IF(assignedTasks.starsCompleted != "no", 1, 0)) AS numFinishedAssignments
       FROM users
       INNER JOIN schools ON schools.id = users.schoolId
       LEFT OUTER JOIN assignedTasks ON assignedTasks.userId = users.id
@@ -150,7 +160,8 @@ class SQLViewService extends CRUDService {
       CREATE VIEW assignmentsView AS
       (SELECT assignedTasks.id AS id,
         assignedTasks.due AS due,
-        assignedTasks.completed AS completed,
+        assignedTasks.starsCompleted AS starsCompleted,
+        assignedTasks.timersCompleted AS timersCompleted,
         assignedTasks.points AS points,
         assignedTasks.onCloud AS onCloud,
         assignedTasks.createdAt AS createdAt,

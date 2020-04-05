@@ -177,7 +177,7 @@ FROM
       } else {
         return super.create<AssignedTask>({
           modelName: 'AssignedTask',
-          data: { userId, ...assignedTask, ...{ completed: 'no', points: 0 } }
+          data: { userId, ...assignedTask, ...{ starsCompleted: 'no', timersCompleted: 'no', points: 0 } }
         })
       }
     })
@@ -202,7 +202,7 @@ FROM
       searchClause: { userId, id: assignedTaskId }
     }).then(resp => {
       if (resp.status && resp.data) {
-        if (resp.data.completed !== 'no') {
+        if (resp.data.starsCompleted !== 'no') {
           return { status: false, errMessage: 'An assignment that has been completed cannot be updated!' }
         } else {
           // If subtopicId or topicId is specified, we need to make sure
