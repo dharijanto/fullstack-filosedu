@@ -1,3 +1,13 @@
+# Background
+This is the heart of non-profit Ed-Tech, [Filosedu](www.filosedu.com), whose goal is to help Indonesian kids have access to K12 education.
+The story behind Filosedu can be found [here](https://medium.com/@adennyh/filosedu-free-k-12-tutoring-centers-eebe7d20b107). And the engineering write up [here](https://medium.com/@adennyh/filosedu-how-does-filosedu-free-tutoring-center-work-how-to-open-a-new-one-20807af73c4a)
+
+# Live Demo
+- https://app.filosedu.com/
+- School: Filosedu Bandung Elmuloka
+- Username: trial
+- Password: 1234
+
 # Installation
 ## Nginx
 Things POSTed using HTTP protocol like sync data is pretty large. They can be > 1MB at times.
