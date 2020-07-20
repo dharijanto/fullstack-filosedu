@@ -19,7 +19,7 @@
     "connect-ensure-login": "^0.1.1",
     "flatToTrees": "^0.1.2",
     "ip": "^1.1.5",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.19",
     "marked": "^0.3.6",
     "mathjax-node": "^1.2.1",
     "moment": "^2.22.2",
