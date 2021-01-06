@@ -15,7 +15,7 @@
   "homepage": "https://bitbucket.org/nusantaracloud/filosedu#readme",
   "dependencies": {
     "aws-sdk": "^2.188.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "connect-ensure-login": "^0.1.1",
     "flatToTrees": "^0.1.2",
     "ip": "^1.1.5",
